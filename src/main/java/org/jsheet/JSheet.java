@@ -1,6 +1,6 @@
 package org.jsheet;
 
-import org.jsheet.expr.Expr;
+import org.jsheet.parser.ExprWrapper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +16,7 @@ public class JSheet extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane);
 
-        table.setDefaultRenderer(Expr.class, new ExpressionRenderer());
+        table.setDefaultRenderer(ExprWrapper.class, new ExpressionRenderer());
     }
 
     private static void createAndShowGUI() {

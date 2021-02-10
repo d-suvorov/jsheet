@@ -1,13 +1,14 @@
 package org.jsheet;
 
-import org.jsheet.expr.Expr;
+import org.jsheet.parser.ExprWrapper;
 
 import javax.swing.table.DefaultTableCellRenderer;
 
 public class ExpressionRenderer extends DefaultTableCellRenderer {
     @Override
     protected void setValue(Object value) {
-        double res = ((Expr) value).eval();
+        ExprWrapper wrapper = (ExprWrapper) value;
+        double res = wrapper.expression.eval();
         setText(String.format("%.2f", res));
     }
 }

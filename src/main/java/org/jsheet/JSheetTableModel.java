@@ -1,5 +1,7 @@
 package org.jsheet;
 
+import org.jsheet.expr.Expr;
+import org.jsheet.parser.ExprWrapper;
 import org.jsheet.parser.ParserUtils;
 
 import javax.swing.table.AbstractTableModel;
@@ -39,7 +41,8 @@ public class JSheetTableModel extends AbstractTableModel {
         if (value instanceof String) {
             String strValue = (String) value;
             if (strValue.startsWith("=")) {
-                return ParserUtils.parse(strValue.substring(1));
+                Expr expr = ParserUtils.parse(strValue.substring(1));
+                return new ExprWrapper(strValue, expr);
             }
         }
         return value;
