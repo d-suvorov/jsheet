@@ -1,11 +1,16 @@
-package org.jsheet.expression;
+package org.jsheet.expr;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Function extends Expr {
-    private String name;
-    private Expr[] args;
+    private final String name;
+    private final List<Expr> args;
+
+    public Function(String name, List<Expr> args) {
+        this.name = name;
+        this.args = args;
+    }
 
     @Override
     public double eval() {
@@ -16,16 +21,16 @@ public class Function extends Expr {
     }
 
     private double evalPow() {
-        if (args.length != 2)
+        if (args.size() != 2)
             throw new AssertionError();
-        double base = args[0].eval();
-        double exp = args[1].eval();
+        double base = args.get(0).eval();
+        double exp = args.get(1).eval();
         return Math.pow(base, exp);
     }
 
     @Override
     public String toString() {
-        String argsStr = Arrays.stream(args)
+        String argsStr = args.stream()
             .map(Expr::toString)
             .collect(Collectors.joining(", "));
         return String.format("%s(%s)", name, argsStr);

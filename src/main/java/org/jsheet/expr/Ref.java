@@ -1,7 +1,11 @@
-package org.jsheet.expression;
+package org.jsheet.expr;
 
 public class Ref extends Expr {
-    private String name;
+    private final String name;
+
+    public Ref(String name) {
+        this.name = name;
+    }
 
     @Override
     public double eval() {

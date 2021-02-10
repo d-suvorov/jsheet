@@ -1,7 +1,11 @@
-package org.jsheet.expression;
+package org.jsheet.expr;
 
-public class Value extends Expr {
-    private double value;
+public class Const extends Expr {
+    private final double value;
+
+    public Const(double value) {
+        this.value = value;
+    }
 
     @Override
     public double eval() {
