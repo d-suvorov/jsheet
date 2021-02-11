@@ -4,13 +4,21 @@ import org.jsheet.ExpressionBaseVisitor;
 import org.jsheet.ExpressionParser;
 import org.jsheet.expr.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class AbstractTreeBuilder extends ExpressionBaseVisitor<Expr> {
+    private final List<String> refs = new ArrayList<>();
+
+    public List<String> getRefs() {
+        return refs;
+    }
+
     @Override
     public Ref visitRef(ExpressionParser.RefContext ctx) {
         String id = ctx.ID().getText();
+        refs.add(id);
         return new Ref(id);
     }
 

@@ -1,5 +1,10 @@
 package org.jsheet.expr;
 
+import org.jsheet.model.JSheetCell;
+import org.jsheet.model.JSheetTableModel;
+
+import java.util.Map;
+
 public class Binop extends Expr {
     private final String op;
     private final Expr lhs;
@@ -12,9 +17,9 @@ public class Binop extends Expr {
     }
 
     @Override
-    public double eval() {
-        double lhsValue = lhs.eval();
-        double rhsValue = rhs.eval();
+    public double eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
+        double lhsValue = lhs.eval(model, refToCell);
+        double rhsValue = rhs.eval(model, refToCell);
         switch (op) {
             case "+": return lhsValue + rhsValue;
             case "-": return lhsValue - rhsValue;

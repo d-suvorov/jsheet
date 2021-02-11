@@ -1,6 +1,7 @@
 package org.jsheet;
 
-import org.jsheet.parser.ExprWrapper;
+import org.jsheet.model.ExprWrapper;
+import org.jsheet.model.JSheetTableModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,14 +10,15 @@ public class JSheet extends JPanel {
     public JSheet() {
         super(new GridLayout(1, 0));
 
-        final JTable table = new JSheetTable(new JSheetTableModel());
+        JSheetTableModel model = new JSheetTableModel();
+        final JTable table = new JSheetTable(model);
         //table.setPreferredScrollableViewportSize(new Dimension(500, 500));
         table.setFillsViewportHeight(true);
 
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane);
 
-        table.setDefaultRenderer(ExprWrapper.class, new ExpressionRenderer());
+        table.setDefaultRenderer(ExprWrapper.class, new ExpressionRenderer(model));
     }
 
     private static void createAndShowGUI() {
