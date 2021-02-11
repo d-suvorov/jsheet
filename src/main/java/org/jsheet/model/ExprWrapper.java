@@ -2,6 +2,7 @@ package org.jsheet.model;
 
 import org.jsheet.expr.Expr;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,22 +20,24 @@ public class ExprWrapper {
         this.refs = refs;
     }
 
+    public Map<String, JSheetCell> getRefToCell() {
+        return Collections.unmodifiableMap(refToCell);
+    }
+
     @Override
     public String toString() {
         return definition;
     }
 
     public double eval(JSheetTableModel model) {
-        if (!refs.isEmpty())
+        if (refToCell == null)
             resolveRefs(model);
         return expression.eval(model, refToCell);
     }
 
-    private void resolveRefs(JSheetTableModel model) {
+    void resolveRefs(JSheetTableModel model) {
         if (refToCell == null) {
             refToCell = new HashMap<>();
-        } else {
-            refToCell.clear();
         }
         for (String ref : refs) {
             JSheetCell cell = model.resolveRef(ref);
