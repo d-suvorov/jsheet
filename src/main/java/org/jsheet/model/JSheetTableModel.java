@@ -62,7 +62,7 @@ public class JSheetTableModel extends AbstractTableModel {
         if (value instanceof String) {
             String strValue = (String) value;
             if (strValue.startsWith("=")) {
-                ExprWrapper wrapper = ParserUtils.parse(strValue.substring(1));
+                ExprWrapper wrapper = ParserUtils.parse(strValue);
                 wrapper.resolveRefs(this);
                 Map<String, JSheetCell> refToCell = wrapper.getRefToCell();
                 for (var c : refToCell.values()) {

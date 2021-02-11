@@ -8,13 +8,15 @@ import org.jsheet.expr.Expr;
 import org.jsheet.model.ExprWrapper;
 
 public class ParserUtils {
-    public static ExprWrapper parse(String s) {
-        ExpressionLexer lexer = new ExpressionLexer(new ANTLRInputStream(s));
+    // TODO reuse these instances somehow
+    public static ExprWrapper parse(String definition) {
+        String formula = definition.substring(1); // truncate '='
+        ExpressionLexer lexer = new ExpressionLexer(new ANTLRInputStream(formula));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         ExpressionParser parser = new ExpressionParser(tokens);
         ExpressionParser.ExprContext tree = parser.expr();
         AbstractTreeBuilder treeBuilder = new AbstractTreeBuilder();
         Expr expr = treeBuilder.visit(tree);
-        return new ExprWrapper(s, expr, treeBuilder.getRefs());
+        return new ExprWrapper(definition, expr, treeBuilder.getRefs());
     }
 }
