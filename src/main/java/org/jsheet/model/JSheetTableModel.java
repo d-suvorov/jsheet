@@ -39,7 +39,11 @@ public class JSheetTableModel extends AbstractTableModel {
         return true;
     }
 
-    /** if a current and/or a new value is a formula updates {@code referencedBy} */
+    /**
+     * 1. If a current value is a formula, removes links to cells {@code referencedBy} it.
+     * 2. If a new value is a formula, adds links to cells {@code referencedBy} it.
+     * 3. Invalidate formulae results current cell is {@code referencedBy}.
+     **/
     @Override
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
         JSheetCell current = new JSheetCell(rowIndex, columnIndex);
@@ -51,6 +55,7 @@ public class JSheetTableModel extends AbstractTableModel {
             }
         }
         data[rowIndex][columnIndex] = getModelValue(value, current);
+        invalidateReferencingCurrent(current);
     }
 
     private Object getModelValue(Object value, JSheetCell current) {
@@ -60,7 +65,7 @@ public class JSheetTableModel extends AbstractTableModel {
                 ExprWrapper wrapper = ParserUtils.parse(strValue.substring(1));
                 wrapper.resolveRefs(this);
                 Map<String, JSheetCell> refToCell = wrapper.getRefToCell();
-                for (JSheetCell c : refToCell.values()) {
+                for (var c : refToCell.values()) {
                     referencedBy
                         .computeIfAbsent(c, k -> new ArrayList<>())
                         .add(current);
@@ -71,6 +76,17 @@ public class JSheetTableModel extends AbstractTableModel {
             }
         }
         throw new AssertionError();
+    }
+
+    private void invalidateReferencingCurrent(JSheetCell current) {
+        Collection<JSheetCell> cells = referencedBy.get(current);
+        if (cells == null)
+            return;
+        for (var c : cells) {
+            ExprWrapper wrapper = (ExprWrapper) getValueAt(c.row, c.column);
+            wrapper.invalidate();
+            fireTableCellUpdated(c.row, c.column);
+        }
     }
 
     private Object getLiteral(Object value, String strValue) {

@@ -11,6 +11,9 @@ public class ExprWrapper {
     public final String definition;
     public final Expr expression;
 
+    private boolean computed = false;
+    private double value;
+
     private final List<String> refs;
     private Map<String, JSheetCell> refToCell;
 
@@ -29,10 +32,18 @@ public class ExprWrapper {
         return definition;
     }
 
+    public void invalidate() {
+        computed = false;
+    }
+
     public double eval(JSheetTableModel model) {
+        if (computed)
+            return value;
         if (refToCell == null)
             resolveRefs(model);
-        return expression.eval(model, refToCell);
+        computed = true;
+        value = expression.eval(model, refToCell);
+        return value;
     }
 
     void resolveRefs(JSheetTableModel model) {
