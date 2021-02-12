@@ -19,7 +19,7 @@ public class JSheet extends JPanel implements ActionListener {
 
         JSheetTableModel model = new JSheetTableModel();
         final JTable table = new JSheetTable(model);
-        //table.setPreferredScrollableViewportSize(new Dimension(500, 500));
+        table.setPreferredScrollableViewportSize(new Dimension(1500, 800));
         table.setFillsViewportHeight(true);
 
         JScrollPane scrollPane = new JScrollPane(table);

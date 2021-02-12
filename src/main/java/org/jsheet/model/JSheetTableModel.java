@@ -11,8 +11,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class JSheetTableModel extends AbstractTableModel {
-    private static final int DEFAULT_ROW_COUNT = 10;
-    private static final int DEFAULT_COLUMN_COUNT = 10;
+    private static final int DEFAULT_ROW_COUNT = 50;
+    private static final int DEFAULT_COLUMN_COUNT = 26;
 
     private final Object[][] data = new Object[DEFAULT_ROW_COUNT][DEFAULT_COLUMN_COUNT];
 
