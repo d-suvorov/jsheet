@@ -7,6 +7,8 @@ import javax.swing.table.TableModel;
 public class JSheetTable extends JTable {
     public JSheetTable(TableModel model) {
         super(model);
+        setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        setCellSelectionEnabled(true);
     }
 
     @Override
