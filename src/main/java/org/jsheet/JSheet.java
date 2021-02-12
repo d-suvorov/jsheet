@@ -5,9 +5,15 @@ import org.jsheet.model.JSheetTableModel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
-public class JSheet extends JPanel {
+import static java.awt.event.ActionEvent.CTRL_MASK;
+import static java.awt.event.KeyEvent.*;
+
+@SuppressWarnings("MagicConstant")
+public class JSheet extends JPanel implements ActionListener {
     public JSheet() {
         super(new GridLayout(1, 0));
 
@@ -22,6 +28,11 @@ public class JSheet extends JPanel {
         table.setDefaultRenderer(ExprWrapper.class, new ExpressionRenderer(model));
     }
 
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        System.out.println(e);
+    }
+
     private static void createAndShowGUI() {
         JFrame frame = new JFrame("JSheet");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -30,65 +41,64 @@ public class JSheet extends JPanel {
         newContentPane.setOpaque(true);
         frame.setContentPane(newContentPane);
 
-        frame.setJMenuBar(createMenu());
+        frame.setJMenuBar(createMenu(newContentPane));
 
         frame.pack();
         frame.setVisible(true);
     }
 
-    private static JMenuBar createMenu() {
-        JMenuBar menuBar;
-        JMenu menu;
-        JMenuItem menuItem;
-
-        menuBar = new JMenuBar();
-
-        // "File" menu
-        {
-            menu = new JMenu("File");
-            menu.setMnemonic(KeyEvent.VK_F);
-            menuBar.add(menu);
-
-            menuItem = new JMenuItem("New", KeyEvent.VK_N);
-            menu.add(menuItem);
-
-            menuItem = new JMenuItem("Open", KeyEvent.VK_O);
-            menu.add(menuItem);
-
-            menuItem = new JMenuItem("Save", KeyEvent.VK_S);
-            menu.add(menuItem);
-
-            menuItem = new JMenuItem("Close", KeyEvent.VK_C);
-            menu.add(menuItem);
-        }
-
-        // "Edit" menu
-        {
-            menu = new JMenu("Edit");
-            menu.setMnemonic(KeyEvent.VK_E);
-            menuBar.add(menu);
-
-            menuItem = new JMenuItem("Cut", KeyEvent.VK_T);
-            menu.add(menuItem);
-
-            menuItem = new JMenuItem("Copy", KeyEvent.VK_C);
-            menu.add(menuItem);
-
-            menuItem = new JMenuItem("Paste", KeyEvent.VK_P);
-            menu.add(menuItem);
-        }
-
-        // "Help" menu
-        {
-            menu = new JMenu("Help");
-            menu.setMnemonic(KeyEvent.VK_H);
-            menuBar.add(menu);
-
-            menuItem = new JMenuItem("About", KeyEvent.VK_A);
-            menu.add(menuItem);
-        }
-
+    private static JMenuBar createMenu(ActionListener listener) {
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.add(getJMenu(
+            listener, "File", KeyEvent.VK_F,
+            new String[] {"New", "Open", "Save", "Close"},
+            new int[] {VK_N, VK_O, VK_S, VK_C},
+            new KeyStroke[] {
+                KeyStroke.getKeyStroke(VK_N, CTRL_MASK),
+                KeyStroke.getKeyStroke(VK_O, CTRL_MASK),
+                KeyStroke.getKeyStroke(VK_S, CTRL_MASK),
+                KeyStroke.getKeyStroke(VK_Q, CTRL_MASK),
+            }
+        ));
+        menuBar.add(getJMenu(
+            listener, "Edit", KeyEvent.VK_E,
+            new String[] {"Cut", "Copy", "Paste"},
+            new int[] {VK_T, VK_C, VK_P},
+            new KeyStroke[] {
+                KeyStroke.getKeyStroke(VK_X, CTRL_MASK),
+                KeyStroke.getKeyStroke(VK_C, CTRL_MASK),
+                KeyStroke.getKeyStroke(VK_P, CTRL_MASK)
+            }
+        ));
+        menuBar.add(getJMenu(
+            listener, "Help", VK_H,
+            new String[] {"About"},
+            new int[] {VK_A},
+            new KeyStroke[] { null }
+        ));
         return menuBar;
+    }
+
+    private static JMenu getJMenu(
+        ActionListener listener,
+        String name, int mnemonic,
+        String[] names,
+        int[] mnemonics,
+        KeyStroke[] accelerators)
+    {
+        if (names.length != mnemonics.length || mnemonics.length != accelerators.length) {
+            throw new IllegalArgumentException();
+        }
+        JMenu menu = new JMenu(name);
+        menu.setMnemonic(mnemonic);
+        for (int i = 0; i < names.length; i++) {
+            JMenuItem item = new JMenuItem(names[i], mnemonics[i]);
+            if (accelerators[i] != null)
+                item.setAccelerator(accelerators[i]);
+            item.addActionListener(listener);
+            menu.add(item);
+        }
+        return menu;
     }
 
     public static void main(String[] args) {
