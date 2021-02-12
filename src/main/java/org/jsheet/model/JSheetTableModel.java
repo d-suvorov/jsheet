@@ -59,6 +59,8 @@ public class JSheetTableModel extends AbstractTableModel {
     }
 
     private Object getModelValue(Object value, JSheetCell current) {
+        if (value == null)
+            return null;
         if (value instanceof String) {
             String strValue = (String) value;
             if (strValue.startsWith("=")) {
