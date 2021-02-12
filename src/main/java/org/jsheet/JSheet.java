@@ -2,6 +2,7 @@ package org.jsheet;
 
 import org.jsheet.model.ExprWrapper;
 import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.RowNumberedTableModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,7 +19,13 @@ public class JSheet extends JPanel implements ActionListener {
         super(new GridLayout(1, 0));
 
         JSheetTableModel model = new JSheetTableModel();
-        final JTable table = new JSheetTable(model);
+        RowNumberedTableModel wrapperModel = new RowNumberedTableModel(model);
+        final JTable table = new JSheetTable(wrapperModel);
+
+        // Make a column with row numbers not resizable
+        table.getColumnModel().getColumn(0).setPreferredWidth(30);
+        table.getColumnModel().getColumn(0).setMaxWidth(60);
+
         //table.setPreferredScrollableViewportSize(new Dimension(500, 500));
         table.setFillsViewportHeight(true);
 
