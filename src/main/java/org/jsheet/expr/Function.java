@@ -2,10 +2,15 @@ package org.jsheet.expr;
 
 import org.jsheet.model.JSheetCell;
 import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.Result;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.jsheet.model.Result.failure;
+import static org.jsheet.model.Result.success;
 
 public class Function extends Expr {
     private final String name;
@@ -17,18 +22,26 @@ public class Function extends Expr {
     }
 
     @Override
-    public double eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
-        if (name.equals("pow")) {
-            return evalPow(model, refToCell);
+    public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
+        List<Double> argsResults = new ArrayList<>();
+        for (var e : args) {
+            Result res = e.eval(model, refToCell);
+            if (!res.isPresent())
+                return res;
+            argsResults.add(res.get());
         }
-        throw new AssertionError("unimplemented");
+        if (name.equals("pow")) {
+            if (argsResults.size() != 2)
+                return failure("Wrong number of arguments for function: pow");
+            else
+                return success(evalPow(argsResults));
+        }
+        return failure("Unknown function: " + name);
     }
 
-    private double evalPow(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
-        if (args.size() != 2)
-            throw new AssertionError();
-        double base = args.get(0).eval(model, refToCell);
-        double exp = args.get(1).eval(model, refToCell);
+    private double evalPow(List<Double> args) {
+        double base = args.get(0);
+        double exp = args.get(1);
         return Math.pow(base, exp);
     }
 

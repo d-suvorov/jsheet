@@ -116,13 +116,17 @@ public class JSheetTableModel extends AbstractTableModel {
         return new JSheetCell(rowIndex, columnIndex);
     }
 
-    public double eval(JSheetCell cell) {
+    public Result eval(JSheetCell cell) {
         Object value = getValueAt(cell.row, cell.column);
+        String strCell = getColumnName(cell.column) + cell.row;
+        if (value == null) {
+            return Result.failure(String.format("Cell %s is uninitialized", strCell));
+        }
         if (value instanceof ExprWrapper) {
             return ((ExprWrapper) value).eval(this);
-        } else if (value instanceof Double) {
-            return (Double) value;
+        } else if (value instanceof Number) {
+            return Result.success(((Number) value).doubleValue());
         }
-        throw new AssertionError("unimplemented");
+        return Result.failure(String.format("Wrong value type in the cell %s", strCell));
     }
 }

@@ -2,8 +2,10 @@ package org.jsheet.expr;
 
 import org.jsheet.model.JSheetCell;
 import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.Result;
 
 import java.util.Map;
+import java.util.function.BiFunction;
 
 public class Binop extends Expr {
     private final String op;
@@ -16,17 +18,20 @@ public class Binop extends Expr {
         this.rhs = rhs;
     }
 
+    @SuppressWarnings("Convert2MethodRef")
     @Override
-    public double eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
-        double lhsValue = lhs.eval(model, refToCell);
-        double rhsValue = rhs.eval(model, refToCell);
+    public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
+        Result lhsResult = lhs.eval(model, refToCell);
+        Result rhsResult = rhs.eval(model, refToCell);
+        BiFunction<Double, Double, Double> binary;
         switch (op) {
-            case "+": return lhsValue + rhsValue;
-            case "-": return lhsValue - rhsValue;
-            case "*": return lhsValue * rhsValue;
-            case "/": return lhsValue / rhsValue;
+            case "+": binary = (a, b) -> a + b; break;
+            case "-": binary = (a, b) -> a - b; break;
+            case "*": binary = (a, b) -> a * b; break;
+            case "/": binary = (a, b) -> a / b; break;
+            default: throw new AssertionError();
         }
-        throw new AssertionError();
+        return Result.compose(lhsResult, rhsResult, binary);
     }
 
     @Override

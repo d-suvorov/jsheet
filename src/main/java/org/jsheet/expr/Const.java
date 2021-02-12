@@ -2,6 +2,7 @@ package org.jsheet.expr;
 
 import org.jsheet.model.JSheetCell;
 import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.Result;
 
 import java.util.Map;
 
@@ -13,8 +14,8 @@ public class Const extends Expr {
     }
 
     @Override
-    public double eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
-        return value;
+    public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
+        return Result.success(value);
     }
 
     @Override

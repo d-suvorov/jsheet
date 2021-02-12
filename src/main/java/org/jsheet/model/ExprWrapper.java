@@ -12,7 +12,7 @@ public class ExprWrapper {
     public final Expr expression;
 
     private boolean computed = false;
-    private double value;
+    private Result result;
 
     private final List<String> refs;
     private Map<String, JSheetCell> refToCell;
@@ -36,14 +36,14 @@ public class ExprWrapper {
         computed = false;
     }
 
-    public double eval(JSheetTableModel model) {
+    public Result eval(JSheetTableModel model) {
         if (computed)
-            return value;
+            return result;
         if (refToCell == null)
             resolveRefs(model);
         computed = true;
-        value = expression.eval(model, refToCell);
-        return value;
+        result = expression.eval(model, refToCell);
+        return result;
     }
 
     void resolveRefs(JSheetTableModel model) {

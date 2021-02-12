@@ -2,6 +2,7 @@ package org.jsheet.expr;
 
 import org.jsheet.model.JSheetCell;
 import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.Result;
 
 import java.util.Map;
 
@@ -13,12 +14,12 @@ public class Ref extends Expr {
     }
 
     @Override
-    public double eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
+    public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
         JSheetCell cell = refToCell.get(name);
         if (cell != null) {
             return model.eval(cell);
         }
-        throw new AssertionError("unimplemented");
+        return Result.failure(String.format("Reference %s unresolved", name));
     }
 
     @Override
