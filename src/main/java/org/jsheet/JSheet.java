@@ -13,41 +13,43 @@ import static java.awt.event.ActionEvent.CTRL_MASK;
 import static java.awt.event.KeyEvent.*;
 
 @SuppressWarnings("MagicConstant")
-public class JSheet extends JPanel implements ActionListener {
-    public JSheet() {
-        super(new GridLayout(1, 0));
-
-        JSheetTableModel model = new JSheetTableModel();
-        final JTable table = new JSheetTable(model);
-        table.setPreferredScrollableViewportSize(new Dimension(1500, 800));
-        table.setFillsViewportHeight(true);
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        add(scrollPane);
-
-        table.setDefaultRenderer(ExprWrapper.class, new ExpressionRenderer(model));
-    }
+public class JSheet extends JFrame implements ActionListener {
+    public static final String NAME = "jsheet";
 
     @Override
     public void actionPerformed(ActionEvent e) {
         System.out.println(e);
     }
 
-    private static void createAndShowGUI() {
-        JFrame frame = new JFrame("JSheet");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    private static class JSheetPanel extends JPanel {
+        public JSheetPanel() {
+            super(new GridLayout(1, 0));
 
-        JSheet newContentPane = new JSheet();
-        newContentPane.setOpaque(true);
-        frame.setContentPane(newContentPane);
+            JSheetTableModel model = new JSheetTableModel();
+            final JTable table = new JSheetTable(model);
+            table.setPreferredScrollableViewportSize(new Dimension(1500, 800));
+            table.setFillsViewportHeight(true);
 
-        frame.setJMenuBar(createMenu(newContentPane));
+            JScrollPane scrollPane = new JScrollPane(table);
+            add(scrollPane);
 
-        frame.pack();
-        frame.setVisible(true);
+            table.setDefaultRenderer(ExprWrapper.class, new ExpressionRenderer(model));
+        }
     }
 
-    private static JMenuBar createMenu(ActionListener listener) {
+    public JSheet(String title) {
+        super(title);
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        JSheetPanel newContentPane = new JSheetPanel();
+        newContentPane.setOpaque(true);
+        setContentPane(newContentPane);
+
+        setJMenuBar(createMenu(this));
+    }
+
+    private JMenuBar createMenu(ActionListener listener) {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(getJMenu(
             listener, "File", KeyEvent.VK_F,
@@ -99,6 +101,12 @@ public class JSheet extends JPanel implements ActionListener {
             menu.add(item);
         }
         return menu;
+    }
+
+    private static void createAndShowGUI() {
+        JFrame frame = new JSheet(NAME);
+        frame.pack();
+        frame.setVisible(true);
     }
 
     public static void main(String[] args) {
