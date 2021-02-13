@@ -15,6 +15,17 @@ import static java.awt.event.KeyEvent.*;
 @SuppressWarnings("MagicConstant")
 public class JSheet extends JFrame implements ActionListener {
     public static final String NAME = "jsheet";
+    public static final String VERSION = "1.0-SNAPSHOT";
+    public static final String ABOUT_DIALOG_TITLE = "About";
+    public static final String ABOUT_DIALOG_TEXT = NAME + " is a neat spreadsheet editor\n" +
+        "Version: " + VERSION;
+
+    private final ActionListener aboutActionListener = event -> JOptionPane.showMessageDialog(
+        this,
+        ABOUT_DIALOG_TEXT,
+        ABOUT_DIALOG_TITLE,
+        JOptionPane.INFORMATION_MESSAGE
+    );
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -46,13 +57,13 @@ public class JSheet extends JFrame implements ActionListener {
         newContentPane.setOpaque(true);
         setContentPane(newContentPane);
 
-        setJMenuBar(createMenu(this));
+        setJMenuBar(createMenu());
     }
 
-    private JMenuBar createMenu(ActionListener listener) {
+    private JMenuBar createMenu() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(getJMenu(
-            listener, "File", KeyEvent.VK_F,
+            "File", KeyEvent.VK_F,
             new String[] {"New", "Open", "Save", "Close"},
             new int[] {VK_N, VK_O, VK_S, VK_C},
             new KeyStroke[] {
@@ -60,33 +71,37 @@ public class JSheet extends JFrame implements ActionListener {
                 KeyStroke.getKeyStroke(VK_O, CTRL_MASK),
                 KeyStroke.getKeyStroke(VK_S, CTRL_MASK),
                 KeyStroke.getKeyStroke(VK_Q, CTRL_MASK),
-            }
+            },
+            new ActionListener[] {this, this, this, this}
         ));
         menuBar.add(getJMenu(
-            listener, "Edit", KeyEvent.VK_E,
+            "Edit", KeyEvent.VK_E,
             new String[] {"Cut", "Copy", "Paste"},
             new int[] {VK_T, VK_C, VK_P},
             new KeyStroke[] {
                 KeyStroke.getKeyStroke(VK_X, CTRL_MASK),
                 KeyStroke.getKeyStroke(VK_C, CTRL_MASK),
                 KeyStroke.getKeyStroke(VK_P, CTRL_MASK)
-            }
+            },
+            new ActionListener[] {this, this, this}
         ));
         menuBar.add(getJMenu(
-            listener, "Help", VK_H,
+            "Help", VK_H,
             new String[] {"About"},
             new int[] {VK_A},
-            new KeyStroke[] { null }
+            new KeyStroke[] { null },
+            new ActionListener[] {aboutActionListener}
         ));
         return menuBar;
     }
 
     private static JMenu getJMenu(
-        ActionListener listener,
         String name, int mnemonic,
         String[] names,
         int[] mnemonics,
-        KeyStroke[] accelerators)
+        KeyStroke[] accelerators,
+        ActionListener[] listeners
+    )
     {
         if (names.length != mnemonics.length || mnemonics.length != accelerators.length) {
             throw new IllegalArgumentException();
@@ -97,7 +112,7 @@ public class JSheet extends JFrame implements ActionListener {
             JMenuItem item = new JMenuItem(names[i], mnemonics[i]);
             if (accelerators[i] != null)
                 item.setAccelerator(accelerators[i]);
-            item.addActionListener(listener);
+            item.addActionListener(listeners[i]);
             menu.add(item);
         }
         return menu;
