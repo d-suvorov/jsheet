@@ -1,5 +1,6 @@
 package org.jsheet.model;
 
+import java.util.Objects;
 import java.util.function.BiFunction;
 
 /**
@@ -48,5 +49,28 @@ public class Result {
         if (!a.isPresent()) return a;
         if (!b.isPresent()) return b;
         return Result.success(f.apply(a.get(), b.get()));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Result result = (Result) o;
+
+        if (Double.compare(result.value, value) != 0) return false;
+        if (isPresent != result.isPresent) return false;
+        return Objects.equals(message, result.message);
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        temp = Double.doubleToLongBits(value);
+        result = (int) (temp ^ (temp >>> 32));
+        result = 31 * result + (message != null ? message.hashCode() : 0);
+        result = 31 * result + (isPresent ? 1 : 0);
+        return result;
     }
 }

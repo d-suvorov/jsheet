@@ -3,32 +3,61 @@ package org.jsheet.model;
 import org.jsheet.parser.ParserUtils;
 
 import javax.swing.table.AbstractTableModel;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class JSheetTableModel extends AbstractTableModel {
     private static final int DEFAULT_ROW_COUNT = 50;
     private static final int DEFAULT_COLUMN_COUNT = 26;
 
-    private final Object[][] data = new Object[DEFAULT_ROW_COUNT][DEFAULT_COLUMN_COUNT];
+    private final List<Object[]> data;
 
     // TODO circular dependencies
     private final Map<JSheetCell, Collection<JSheetCell>> referencedBy = new HashMap<>();
 
+    public JSheetTableModel() {
+        this(DEFAULT_ROW_COUNT, DEFAULT_COLUMN_COUNT);
+    }
+
+    public JSheetTableModel(int rowCount, int columnCount) {
+        if (rowCount == 0 || columnCount == 0)
+            throw new IllegalArgumentException();
+        data = new ArrayList<>(rowCount);
+        for (int i = 0; i < rowCount; i++) {
+            data.add(new Object[columnCount]);
+        }
+    }
+
+    /**
+     * Takes a raw {@code data} of strings and tries to reinsert them as model values.
+     */
+    private JSheetTableModel(List<Object[]> data) {
+        this.data = data;
+        for (int row = 0; row < getRowCount(); row++) {
+            for (int column = 0; column < getColumnCount(); column++) {
+                Object value = getValueAt(row, column);
+                // tries to parse functions and numbers from strings
+                setValueAt(value, row, column);
+            }
+        }
+    }
+
     @Override
     public int getRowCount() {
-        return data.length;
+        return data.size();
     }
 
     @Override
     public int getColumnCount() {
-        return data[0].length;
+        return data.get(0).length;
     }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return data[rowIndex][columnIndex];
+        return data.get(rowIndex)[columnIndex];
     }
 
     @Override
@@ -51,7 +80,7 @@ public class JSheetTableModel extends AbstractTableModel {
                 referencedBy.get(c).remove(current);
             }
         }
-        data[rowIndex][columnIndex] = getModelValue(value, current);
+        data.get(rowIndex)[columnIndex] = getModelValue(value, current);
         invalidateReferencingCurrent(current);
     }
 
@@ -71,7 +100,7 @@ public class JSheetTableModel extends AbstractTableModel {
                 }
                 return wrapper;
             } else {
-                return getLiteral(value, strValue);
+                return getLiteral(strValue);
             }
         }
         throw new AssertionError();
@@ -104,9 +133,9 @@ public class JSheetTableModel extends AbstractTableModel {
         }
     }
 
-    private Object getLiteral(Object value, String strValue) {
+    private Object getLiteral(String value) {
         try {
-            return Double.parseDouble(strValue);
+            return Double.parseDouble(value);
         } catch (NumberFormatException e) {
             return value;
         }
@@ -143,5 +172,56 @@ public class JSheetTableModel extends AbstractTableModel {
             return Result.success(((Number) value).doubleValue());
         }
         return Result.failure(String.format("Wrong value type in the cell %s", strCell));
+    }
+
+    private int nonEmptyRowsCount() {
+        int lastNonEmpty = -1;
+        for (int i = getRowCount() - 1; i >= 0; i--) {
+            boolean nonEmpty = Arrays.stream(data.get(i))
+                .anyMatch(Objects::nonNull);
+            if (nonEmpty) {
+                lastNonEmpty = i;
+                break;
+            }
+        }
+        return lastNonEmpty + 1;
+    }
+
+    /**
+     * Deserializes a model from a CSV {@code file}.
+     */
+    public static JSheetTableModel read(File file) throws IOException {
+        List<Object[]> data = new ArrayList<>();
+        try (var reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] values = line.split(",", -1);
+                Object[] row = new Object[values.length];
+                for (int i = 0; i < values.length; i++) {
+                    String value = values[i];
+                    if (value.length() > 1 && value.startsWith("\"") && value.endsWith("\"")) {
+                        value = value.substring(1, value.length() - 1);
+                    }
+                    row[i] = value.isEmpty() ? null : value;
+                }
+                data.add(row);
+            }
+        }
+        return new JSheetTableModel(data);
+    }
+
+    /**
+     * Serializes {@code model} in a CSV {@code file}.
+     */
+    public static void write(File file, JSheetTableModel model) throws IOException {
+        try (var writer = new BufferedWriter(new FileWriter(file))) {
+            for (int row = 0; row < model.nonEmptyRowsCount(); row++) {
+                String strRow = Arrays.stream(model.data.get(row))
+                    .map(o -> o == null ? "" : o.toString())
+                    .collect(Collectors.joining(","));
+                writer.write(strRow);
+                writer.newLine();
+            }
+        }
     }
 }
