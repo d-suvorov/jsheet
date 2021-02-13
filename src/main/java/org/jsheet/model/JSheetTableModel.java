@@ -3,10 +3,7 @@ package org.jsheet.model;
 import org.jsheet.parser.ParserUtils;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,7 +39,7 @@ public class JSheetTableModel extends AbstractTableModel {
     /**
      * 1. If a current value is a formula, removes links to cells {@code referencedBy} it.
      * 2. If a new value is a formula, adds links to cells {@code referencedBy} it.
-     * 3. Invalidate formulae results current cell is {@code referencedBy}.
+     * 3. Invalidate formulae results current cell is transitively {@code referencedBy}.
      **/
     @Override
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
@@ -81,10 +78,26 @@ public class JSheetTableModel extends AbstractTableModel {
     }
 
     private void invalidateReferencingCurrent(JSheetCell current) {
-        Collection<JSheetCell> cells = referencedBy.get(current);
-        if (cells == null)
+        Collection<JSheetCell> direct = referencedBy.get(current);
+        if (direct == null)
             return;
-        for (var c : cells) {
+
+        Set<JSheetCell> invalid = new HashSet<>();
+        Queue<JSheetCell> queue = new ArrayDeque<>(direct);
+        while (!queue.isEmpty()) {
+            JSheetCell cell = queue.remove();
+            invalid.add(cell);
+            Collection<JSheetCell> cells = referencedBy.get(cell);
+            if (cells == null)
+                continue;
+            for (var c : cells) {
+                if (!invalid.contains(c)) {
+                    queue.add(c);
+                }
+            }
+        }
+
+        for (var c : invalid) {
             ExprWrapper wrapper = (ExprWrapper) getValueAt(c.row, c.column);
             wrapper.invalidate();
             fireTableCellUpdated(c.row, c.column);
