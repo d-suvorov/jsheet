@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import static java.awt.event.ActionEvent.CTRL_MASK;
 import static java.awt.event.KeyEvent.*;
@@ -24,6 +25,9 @@ public class JSheet extends JFrame {
 
     private JSheetTableModel model;
     private JTable table;
+
+    private File currentDirectory = Paths.get("").toFile();
+    private File currentFile = null;
 
     // File menu
     private final ActionListener newActionListener = event -> {
@@ -64,9 +68,16 @@ public class JSheet extends JFrame {
     );
 
     private void save() {
-        File file = new File("test");
+        if (currentFile == null) {
+            JFileChooser chooser = new JFileChooser(currentDirectory);
+            if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+            currentFile = chooser.getSelectedFile();
+            currentDirectory = currentFile.getParentFile();
+        }
         try {
-            JSheetTableModel.write(file, model);
+            JSheetTableModel.write(currentFile, model);
         } catch (IOException e) {
             e.printStackTrace();
         }
