@@ -24,8 +24,8 @@ public class JSheet extends JFrame {
     public static final String ABOUT_DIALOG_TEXT = NAME + " is a neat spreadsheet editor\n"
         + "Version: " + VERSION;
 
-    public static final String CONFIRM_CLOSE_DIALOG_TITLE = "Save changes before closing?";
-    public static final String CONFIRM_CLOSE_DIALOG_TEXT
+    public static final String SAVE_CHANGES_DIALOG_TITLE = "Save changes?";
+    public static final String SAVE_CHANGES_DIALOG_TEXT
         = "Your changes will be lost if you don't save them";
 
     private JSheetTableModel model;
@@ -36,7 +36,23 @@ public class JSheet extends JFrame {
 
     // File menu
     private final ActionListener newActionListener = event -> {
-        throw new AssertionError("unimplemented");
+        if (model.isModified()) {
+            int option = JOptionPane.showConfirmDialog(this,
+                SAVE_CHANGES_DIALOG_TITLE,
+                SAVE_CHANGES_DIALOG_TEXT,
+                JOptionPane.YES_NO_CANCEL_OPTION);
+            switch (option) {
+                case JOptionPane.YES_OPTION:
+                    save();
+                    break;
+                case JOptionPane.NO_OPTION:
+                    break;
+                case JOptionPane.CANCEL_OPTION:
+                    return;
+            }
+        }
+        model = new JSheetTableModel();
+        table.setModel(model);
     };
 
     private final ActionListener openActionListener = event -> {
@@ -72,6 +88,17 @@ public class JSheet extends JFrame {
         JOptionPane.INFORMATION_MESSAGE
     );
 
+    private void open() {
+        File file = new File("test");
+        JSheetTableModel newModel = null;
+        try {
+            newModel = JSheetTableModel.read(file);
+        } catch (IOException | CsvValidationException e) {
+            e.printStackTrace();
+        }
+        table.setModel(newModel);
+    }
+
     private void save() {
         if (currentFile == null) {
             JFileChooser chooser = new JFileChooser(currentDirectory);
@@ -88,22 +115,11 @@ public class JSheet extends JFrame {
         }
     }
 
-    private void open() {
-        File file = new File("test");
-        JSheetTableModel newModel = null;
-        try {
-            newModel = JSheetTableModel.read(file);
-        } catch (IOException | CsvValidationException e) {
-            e.printStackTrace();
-        }
-        table.setModel(newModel);
-    }
-
     void quit() {
         if (model.isModified()) {
             int option = JOptionPane.showConfirmDialog(this,
-                CONFIRM_CLOSE_DIALOG_TITLE,
-                CONFIRM_CLOSE_DIALOG_TEXT,
+                SAVE_CHANGES_DIALOG_TITLE,
+                SAVE_CHANGES_DIALOG_TEXT,
                 JOptionPane.YES_NO_CANCEL_OPTION);
             switch (option) {
                 case JOptionPane.YES_OPTION:
