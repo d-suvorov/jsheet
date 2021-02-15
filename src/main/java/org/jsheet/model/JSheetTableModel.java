@@ -1,13 +1,18 @@
 package org.jsheet.model;
 
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvValidationException;
 import org.jsheet.parser.ParserUtils;
 
 import javax.swing.table.AbstractTableModel;
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class JSheetTableModel extends AbstractTableModel {
     private static final int DEFAULT_ROW_COUNT = 50;
@@ -190,18 +195,14 @@ public class JSheetTableModel extends AbstractTableModel {
     /**
      * Deserializes a model from a CSV {@code file}.
      */
-    public static JSheetTableModel read(File file) throws IOException {
+    public static JSheetTableModel read(File file) throws IOException, CsvValidationException {
         List<Object[]> data = new ArrayList<>();
-        try (var reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] values = line.split(",", -1);
-                Object[] row = new Object[values.length];
-                for (int i = 0; i < values.length; i++) {
-                    String value = values[i];
-                    if (value.length() > 1 && value.startsWith("\"") && value.endsWith("\"")) {
-                        value = value.substring(1, value.length() - 1);
-                    }
+        try (var reader = new CSVReader(new FileReader(file))) {
+            String[] line;
+            while ((line = reader.readNext()) != null) {
+                Object[] row = new Object[line.length];
+                for (int i = 0; i < line.length; i++) {
+                    String value = line[i];
                     row[i] = value.isEmpty() ? null : value;
                 }
                 data.add(row);
@@ -214,13 +215,12 @@ public class JSheetTableModel extends AbstractTableModel {
      * Serializes {@code model} in a CSV {@code file}.
      */
     public static void write(File file, JSheetTableModel model) throws IOException {
-        try (var writer = new BufferedWriter(new FileWriter(file))) {
+        try (var writer = new CSVWriter(new FileWriter(file))) {
             for (int row = 0; row < model.nonEmptyRowsCount(); row++) {
-                String strRow = Arrays.stream(model.data.get(row))
+                String[] strRow = Arrays.stream(model.data.get(row))
                     .map(o -> o == null ? "" : o.toString())
-                    .collect(Collectors.joining(","));
-                writer.write(strRow);
-                writer.newLine();
+                    .toArray(String[]::new);
+                writer.writeNext(strRow);
             }
         }
     }

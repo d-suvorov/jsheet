@@ -1,5 +1,6 @@
 package org.jsheet;
 
+import com.opencsv.exceptions.CsvValidationException;
 import org.jsheet.model.ExprWrapper;
 import org.jsheet.model.JSheetTableModel;
 
@@ -76,7 +77,7 @@ public class JSheet extends JFrame {
         JSheetTableModel newModel = null;
         try {
             newModel = JSheetTableModel.read(file);
-        } catch (IOException e) {
+        } catch (IOException | CsvValidationException e) {
             e.printStackTrace();
         }
         table.setModel(newModel);

@@ -1,5 +1,6 @@
 package org.jsheet;
 
+import com.opencsv.exceptions.CsvValidationException;
 import org.jsheet.model.ExprWrapper;
 import org.jsheet.model.JSheetTableModel;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,7 +20,7 @@ public class FileLoadStoreTest {
         Object[][] data = {
             { "1", "2", "3", "4", "5" },
             { null, null, null, null, null },
-            { "abc", "=A0+BO", null, null, "42" },
+            { "a,bc", "=A0+BO", "ab\nc", null, "42" },
             { null, null, null, null, null },
             { null, null, null, null, null }
         };
@@ -31,8 +32,8 @@ public class FileLoadStoreTest {
     }
 
     @Test
-    void testFileLoadStore() throws IOException {
-        File file = File.createTempFile("test", "csv");
+    void testFileLoadStore() throws IOException, CsvValidationException {
+        File file = File.createTempFile("test", ".csv");
         file.deleteOnExit();
 
         JSheetTableModel.write(file, model);
