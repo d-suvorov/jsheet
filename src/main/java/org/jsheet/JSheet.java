@@ -19,9 +19,14 @@ import static java.awt.event.KeyEvent.*;
 public class JSheet extends JFrame {
     public static final String NAME = "jsheet";
     public static final String VERSION = "1.0-SNAPSHOT";
+
     public static final String ABOUT_DIALOG_TITLE = "About";
-    public static final String ABOUT_DIALOG_TEXT = NAME + " is a neat spreadsheet editor\n" +
-        "Version: " + VERSION;
+    public static final String ABOUT_DIALOG_TEXT = NAME + " is a neat spreadsheet editor\n"
+        + "Version: " + VERSION;
+
+    public static final String CONFIRM_CLOSE_DIALOG_TITLE = "Save changes before closing?";
+    public static final String CONFIRM_CLOSE_DIALOG_TEXT
+        = "Your changes will be lost if you don't save them";
 
     private JSheetTableModel model;
     private JTable table;
@@ -42,8 +47,8 @@ public class JSheet extends JFrame {
         save();
     };
 
-    private final ActionListener closeActionListener = event -> {
-        throw new AssertionError("unimplemented");
+    private final ActionListener quitActionListener = event -> {
+        quit();
     };
 
     // Edit menu
@@ -94,6 +99,25 @@ public class JSheet extends JFrame {
         table.setModel(newModel);
     }
 
+    void quit() {
+        if (model.isModified()) {
+            int option = JOptionPane.showConfirmDialog(this,
+                CONFIRM_CLOSE_DIALOG_TITLE,
+                CONFIRM_CLOSE_DIALOG_TEXT,
+                JOptionPane.YES_NO_CANCEL_OPTION);
+            switch (option) {
+                case JOptionPane.YES_OPTION:
+                    save();
+                    break;
+                case JOptionPane.NO_OPTION:
+                    break;
+                case JOptionPane.CANCEL_OPTION:
+                    return;
+            }
+        }
+        System.exit(0);
+    }
+
     private class JSheetPanel extends JPanel {
         public JSheetPanel() {
             super(new GridLayout(1, 0));
@@ -126,8 +150,8 @@ public class JSheet extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(getJMenu(
             "File", KeyEvent.VK_F,
-            new String[] { "New", "Open", "Save", "Close" },
-            new int[] { VK_N, VK_O, VK_S, VK_C },
+            new String[] { "New", "Open", "Save", "Quit" },
+            new int[] { VK_N, VK_O, VK_S, VK_Q },
             new KeyStroke[] {
                 KeyStroke.getKeyStroke(VK_N, CTRL_MASK),
                 KeyStroke.getKeyStroke(VK_O, CTRL_MASK),
@@ -138,7 +162,7 @@ public class JSheet extends JFrame {
                 newActionListener,
                 openActionListener,
                 saveActionListener,
-                closeActionListener
+                quitActionListener
             }
         ));
         menuBar.add(getJMenu(

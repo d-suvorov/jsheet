@@ -23,6 +23,8 @@ public class JSheetTableModel extends AbstractTableModel {
     // TODO circular dependencies
     private final Map<JSheetCell, Collection<JSheetCell>> referencedBy = new HashMap<>();
 
+    private boolean modified = false;
+
     public JSheetTableModel() {
         this(DEFAULT_ROW_COUNT, DEFAULT_COLUMN_COUNT);
     }
@@ -77,6 +79,7 @@ public class JSheetTableModel extends AbstractTableModel {
      **/
     @Override
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
+        modified = true;
         JSheetCell current = new JSheetCell(rowIndex, columnIndex);
         Object prev = getValueAt(rowIndex, columnIndex);
         if (prev instanceof ExprWrapper) {
@@ -177,6 +180,14 @@ public class JSheetTableModel extends AbstractTableModel {
             return Result.success(((Number) value).doubleValue());
         }
         return Result.failure(String.format("Wrong value type in the cell %s", strCell));
+    }
+
+    public boolean isModified() {
+        return modified;
+    }
+
+    public void setModified(boolean modified) {
+        this.modified = modified;
     }
 
     private int nonEmptyRowsCount() {
