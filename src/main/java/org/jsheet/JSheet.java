@@ -8,6 +8,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -72,10 +74,7 @@ public class JSheet extends JFrame {
         saveTo(file);
     };
 
-    private final ActionListener quitActionListener = event -> {
-        if (saveChanged()) return;
-        System.exit(0);
-    };
+    private final ActionListener quitActionListener = event -> quit();
 
     // Edit menu
 
@@ -163,6 +162,11 @@ public class JSheet extends JFrame {
         }
     }
 
+    private void quit() {
+        if (saveChanged()) return;
+        System.exit(0);
+    }
+
     private class JSheetPanel extends JPanel {
         public JSheetPanel() {
             super(new GridLayout(1, 0));
@@ -181,13 +185,15 @@ public class JSheet extends JFrame {
 
     public JSheet(String title) {
         super(title);
-
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent evt) {
+                quit();
+            }
+        });
         JSheetPanel newContentPane = new JSheetPanel();
         newContentPane.setOpaque(true);
         setContentPane(newContentPane);
-
         setJMenuBar(createMenu());
     }
 
