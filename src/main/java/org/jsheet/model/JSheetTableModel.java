@@ -79,7 +79,7 @@ public class JSheetTableModel extends AbstractTableModel {
      **/
     @Override
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
-        modified = true;
+        setModified(true);
         JSheetCell current = new JSheetCell(rowIndex, columnIndex);
         Object prev = getValueAt(rowIndex, columnIndex);
         if (prev instanceof ExprWrapper) {
@@ -184,6 +184,10 @@ public class JSheetTableModel extends AbstractTableModel {
 
     public boolean isModified() {
         return modified;
+    }
+
+    public void setModified(boolean modified) {
+        this.modified = modified;
     }
 
     private int nonEmptyRowsCount() {

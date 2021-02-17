@@ -119,6 +119,7 @@ public class JSheet extends JFrame {
             return true;
         }
         updateCurrentFile(file);
+        model.setModified(false);
         return false;
     }
 
