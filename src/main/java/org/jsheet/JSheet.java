@@ -61,9 +61,7 @@ public class JSheet extends JFrame {
         }
     };
 
-    private final ActionListener saveActionListener = event -> {
-        save();
-    };
+    private final ActionListener saveActionListener = event -> save();
 
     private final ActionListener quitActionListener = event -> {
         if (saveChanged()) return;
@@ -92,11 +90,14 @@ public class JSheet extends JFrame {
         JOptionPane.INFORMATION_MESSAGE
     );
 
-    private void save() {
+    /**
+     * @return {@code true} if the user wants to abort current action or {@code false} otherwise.
+     */
+    private boolean save() {
         if (currentFile == null) {
             JFileChooser chooser = new JFileChooser(currentDirectory);
             if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
-                return;
+                return true;
             }
             currentFile = chooser.getSelectedFile();
             currentDirectory = currentFile.getParentFile();
@@ -105,7 +106,9 @@ public class JSheet extends JFrame {
             JSheetTableModel.write(currentFile, model);
         } catch (IOException e) {
             e.printStackTrace();
+            return true;
         }
+        return false;
     }
 
     /**
@@ -122,8 +125,7 @@ public class JSheet extends JFrame {
             JOptionPane.YES_NO_CANCEL_OPTION);
         switch (option) {
             case JOptionPane.YES_OPTION:
-                save();
-                return false;
+                return save();
             case JOptionPane.NO_OPTION:
                 return false;
             case JOptionPane.CANCEL_OPTION:
