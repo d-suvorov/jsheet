@@ -36,42 +36,14 @@ public class JSheet extends JFrame {
 
     // File menu
     private final ActionListener newActionListener = event -> {
-        if (model.isModified()) {
-            int option = JOptionPane.showConfirmDialog(this,
-                SAVE_CHANGES_DIALOG_TITLE,
-                SAVE_CHANGES_DIALOG_TEXT,
-                JOptionPane.YES_NO_CANCEL_OPTION);
-            switch (option) {
-                case JOptionPane.YES_OPTION:
-                    save();
-                    break;
-                case JOptionPane.NO_OPTION:
-                    break;
-                case JOptionPane.CANCEL_OPTION:
-                    return;
-            }
-        }
+        if (saveChanged()) return;
         currentFile = null;
         model = new JSheetTableModel();
         table.setModel(model);
     };
 
     private final ActionListener openActionListener = event -> {
-        if (model.isModified()) {
-            int option = JOptionPane.showConfirmDialog(this,
-                SAVE_CHANGES_DIALOG_TITLE,
-                SAVE_CHANGES_DIALOG_TEXT,
-                JOptionPane.YES_NO_CANCEL_OPTION);
-            switch (option) {
-                case JOptionPane.YES_OPTION:
-                    save();
-                    break;
-                case JOptionPane.NO_OPTION:
-                    break;
-                case JOptionPane.CANCEL_OPTION:
-                    return;
-            }
-        }
+        if (saveChanged()) return;
 
         JFileChooser chooser = new JFileChooser(currentDirectory);
         if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
@@ -94,14 +66,15 @@ public class JSheet extends JFrame {
     };
 
     private final ActionListener quitActionListener = event -> {
-        quit();
+        if (saveChanged()) return;
+        System.exit(0);
     };
 
     // Edit menu
+
     private final ActionListener cutActionListener = event -> {
         throw new AssertionError("unimplemented");
     };
-
     private final ActionListener copyActionListener = event -> {
         throw new AssertionError("unimplemented");
     };
@@ -111,6 +84,7 @@ public class JSheet extends JFrame {
     };
 
     // About menu
+
     private final ActionListener aboutActionListener = event -> JOptionPane.showMessageDialog(
         this,
         ABOUT_DIALOG_TEXT,
@@ -134,23 +108,30 @@ public class JSheet extends JFrame {
         }
     }
 
-    void quit() {
-        if (model.isModified()) {
-            int option = JOptionPane.showConfirmDialog(this,
-                SAVE_CHANGES_DIALOG_TITLE,
-                SAVE_CHANGES_DIALOG_TEXT,
-                JOptionPane.YES_NO_CANCEL_OPTION);
-            switch (option) {
-                case JOptionPane.YES_OPTION:
-                    save();
-                    break;
-                case JOptionPane.NO_OPTION:
-                    break;
-                case JOptionPane.CANCEL_OPTION:
-                    return;
-            }
+    /**
+     * If the current sheet has changed, ask user whether they want
+     * to save it before closing and save if necessary.
+     * @return {@code true} if the user wants to abort current action or {@code false} otherwise.
+     */
+    private boolean saveChanged() {
+        if (!model.isModified())
+            return false;
+        int option = JOptionPane.showConfirmDialog(this,
+            SAVE_CHANGES_DIALOG_TEXT,
+            SAVE_CHANGES_DIALOG_TITLE,
+            JOptionPane.YES_NO_CANCEL_OPTION);
+        switch (option) {
+            case JOptionPane.YES_OPTION:
+                save();
+                return false;
+            case JOptionPane.NO_OPTION:
+                return false;
+            case JOptionPane.CANCEL_OPTION:
+            case JOptionPane.CLOSED_OPTION:
+                return true;
+            default:
+                throw new AssertionError();
         }
-        System.exit(0);
     }
 
     private class JSheetPanel extends JPanel {
