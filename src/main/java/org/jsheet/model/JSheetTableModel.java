@@ -186,10 +186,6 @@ public class JSheetTableModel extends AbstractTableModel {
         return modified;
     }
 
-    public void setModified(boolean modified) {
-        this.modified = modified;
-    }
-
     private int nonEmptyRowsCount() {
         int lastNonEmpty = -1;
         for (int i = getRowCount() - 1; i >= 0; i--) {
