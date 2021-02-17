@@ -28,6 +28,8 @@ public class JSheet extends JFrame {
     public static final String SAVE_CHANGES_DIALOG_TEXT
         = "Your changes will be lost if you don't save them";
 
+    public static final String ERROR_MESSAGE_TITLE = "Error";
+
     private JSheetTableModel model;
     private JTable table;
 
@@ -57,6 +59,10 @@ public class JSheet extends JFrame {
             currentFile = file;
             currentDirectory = currentFile.getParentFile();
         } catch (IOException | CsvValidationException e) {
+            JOptionPane.showMessageDialog(this,
+                String.format("Cannot read %s: %s", file.getName(), e.getMessage()),
+                ERROR_MESSAGE_TITLE,
+                JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     };
