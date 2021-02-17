@@ -56,7 +56,36 @@ public class JSheet extends JFrame {
     };
 
     private final ActionListener openActionListener = event -> {
-        open();
+        if (model.isModified()) {
+            int option = JOptionPane.showConfirmDialog(this,
+                SAVE_CHANGES_DIALOG_TITLE,
+                SAVE_CHANGES_DIALOG_TEXT,
+                JOptionPane.YES_NO_CANCEL_OPTION);
+            switch (option) {
+                case JOptionPane.YES_OPTION:
+                    save();
+                    break;
+                case JOptionPane.NO_OPTION:
+                    break;
+                case JOptionPane.CANCEL_OPTION:
+                    return;
+            }
+        }
+
+        JFileChooser chooser = new JFileChooser(currentDirectory);
+        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File file = chooser.getSelectedFile();
+        try {
+            model = JSheetTableModel.read(file);
+            table.setModel(model);
+            currentFile = file;
+            currentDirectory = currentFile.getParentFile();
+        } catch (IOException | CsvValidationException e) {
+            e.printStackTrace();
+        }
     };
 
     private final ActionListener saveActionListener = event -> {
@@ -87,17 +116,6 @@ public class JSheet extends JFrame {
         ABOUT_DIALOG_TITLE,
         JOptionPane.INFORMATION_MESSAGE
     );
-
-    private void open() {
-        File file = new File("test");
-        JSheetTableModel newModel = null;
-        try {
-            newModel = JSheetTableModel.read(file);
-        } catch (IOException | CsvValidationException e) {
-            e.printStackTrace();
-        }
-        table.setModel(newModel);
-    }
 
     private void save() {
         if (currentFile == null) {
