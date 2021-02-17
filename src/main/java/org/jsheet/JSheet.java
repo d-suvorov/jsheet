@@ -11,9 +11,11 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 import static java.awt.event.ActionEvent.CTRL_MASK;
 import static java.awt.event.KeyEvent.*;
+import static javax.swing.KeyStroke.getKeyStroke;
 
 @SuppressWarnings("MagicConstant")
 public class JSheet extends JFrame {
@@ -37,6 +39,7 @@ public class JSheet extends JFrame {
     private File currentFile = null;
 
     // File menu
+
     private final ActionListener newActionListener = event -> {
         if (saveChanged()) return;
         currentFile = null;
@@ -46,18 +49,13 @@ public class JSheet extends JFrame {
 
     private final ActionListener openActionListener = event -> {
         if (saveChanged()) return;
-
-        JFileChooser chooser = new JFileChooser(currentDirectory);
-        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+        File file = askForFile();
+        if (file == null)
             return;
-        }
-
-        File file = chooser.getSelectedFile();
         try {
             model = JSheetTableModel.read(file);
             table.setModel(model);
-            currentFile = file;
-            currentDirectory = currentFile.getParentFile();
+            updateCurrentFile(file);
         } catch (IOException | CsvValidationException e) {
             JOptionPane.showMessageDialog(this,
                 String.format("Cannot read %s: %s", file.getName(), e.getMessage()),
@@ -69,6 +67,11 @@ public class JSheet extends JFrame {
 
     private final ActionListener saveActionListener = event -> save();
 
+    private final ActionListener saveAsActionListener = event -> {
+        File file = askForFile();
+        saveTo(file);
+    };
+
     private final ActionListener quitActionListener = event -> {
         if (saveChanged()) return;
         System.exit(0);
@@ -79,6 +82,7 @@ public class JSheet extends JFrame {
     private final ActionListener cutActionListener = event -> {
         throw new AssertionError("unimplemented");
     };
+
     private final ActionListener copyActionListener = event -> {
         throw new AssertionError("unimplemented");
     };
@@ -96,25 +100,41 @@ public class JSheet extends JFrame {
         JOptionPane.INFORMATION_MESSAGE
     );
 
-    /**
-     * @return {@code true} if the user wants to abort current action or {@code false} otherwise.
-     */
     private boolean save() {
-        if (currentFile == null) {
-            JFileChooser chooser = new JFileChooser(currentDirectory);
-            if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
-                return true;
-            }
-            currentFile = chooser.getSelectedFile();
-            currentDirectory = currentFile.getParentFile();
-        }
+        File file = currentFile != null ? currentFile : askForFile();
+        return saveTo(file);
+    }
+
+    private boolean saveTo(File file) {
+        if (file == null)
+            return true;
         try {
-            JSheetTableModel.write(currentFile, model);
+            JSheetTableModel.write(file, model);
         } catch (IOException e) {
+            JOptionPane.showMessageDialog(this,
+                String.format("Cannot write %s: %s", file.getName(), e.getMessage()),
+                ERROR_MESSAGE_TITLE,
+                JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
             return true;
         }
+        updateCurrentFile(file);
         return false;
+    }
+
+    private File askForFile() {
+        JFileChooser chooser = new JFileChooser(currentDirectory);
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return null;
+        }
+        return chooser.getSelectedFile();
+    }
+
+    private void updateCurrentFile(File file) {
+        if (!Objects.equals(currentFile, file)) {
+            currentFile = file;
+            currentDirectory = currentFile.getParentFile();
+        }
     }
 
     /**
@@ -174,18 +194,20 @@ public class JSheet extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(getJMenu(
             "File", KeyEvent.VK_F,
-            new String[] { "New", "Open", "Save", "Quit" },
-            new int[] { VK_N, VK_O, VK_S, VK_Q },
+            new String[] { "New", "Open", "Save", "Save As", "Quit" },
+            new int[] { VK_N, VK_O, VK_S, VK_A, VK_Q },
             new KeyStroke[] {
-                KeyStroke.getKeyStroke(VK_N, CTRL_MASK),
-                KeyStroke.getKeyStroke(VK_O, CTRL_MASK),
-                KeyStroke.getKeyStroke(VK_S, CTRL_MASK),
-                KeyStroke.getKeyStroke(VK_Q, CTRL_MASK),
+                getKeyStroke(VK_N, CTRL_MASK),
+                getKeyStroke(VK_O, CTRL_MASK),
+                getKeyStroke(VK_S, CTRL_MASK),
+                null,
+                getKeyStroke(VK_Q, CTRL_MASK),
             },
             new ActionListener[] {
                 newActionListener,
                 openActionListener,
                 saveActionListener,
+                saveAsActionListener,
                 quitActionListener
             }
         ));
@@ -194,9 +216,9 @@ public class JSheet extends JFrame {
             new String[] { "Cut", "Copy", "Paste" },
             new int[] { VK_T, VK_C, VK_P },
             new KeyStroke[] {
-                KeyStroke.getKeyStroke(VK_X, CTRL_MASK),
-                KeyStroke.getKeyStroke(VK_C, CTRL_MASK),
-                KeyStroke.getKeyStroke(VK_P, CTRL_MASK)
+                getKeyStroke(VK_X, CTRL_MASK),
+                getKeyStroke(VK_C, CTRL_MASK),
+                getKeyStroke(VK_P, CTRL_MASK)
             },
             new ActionListener[] {
                 cutActionListener,
