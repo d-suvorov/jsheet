@@ -51,6 +51,7 @@ public class JSheet extends JFrame {
                     return;
             }
         }
+        currentFile = null;
         model = new JSheetTableModel();
         table.setModel(model);
     };
