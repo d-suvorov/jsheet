@@ -20,7 +20,8 @@ public class JSheetTableModel extends AbstractTableModel {
 
     private final List<Object[]> data;
 
-    // TODO circular dependencies
+    // Dependency graph
+    private final Map<JSheetCell, Collection<JSheetCell>> references = new HashMap<>();
     private final Map<JSheetCell, Collection<JSheetCell>> referencedBy = new HashMap<>();
 
     private boolean modified = false;
@@ -85,6 +86,8 @@ public class JSheetTableModel extends AbstractTableModel {
         if (prev instanceof ExprWrapper) {
             ExprWrapper wrapper = (ExprWrapper) prev;
             for (var c : wrapper.getRefToCell().values()) {
+                // There was a link: current -> c
+                references.get(current).remove(c);
                 referencedBy.get(c).remove(current);
             }
         }
@@ -102,6 +105,10 @@ public class JSheetTableModel extends AbstractTableModel {
                 wrapper.resolveRefs(this);
                 Map<String, JSheetCell> refToCell = wrapper.getRefToCell();
                 for (var c : refToCell.values()) {
+                    // There is a new link: current -> c
+                    references
+                        .computeIfAbsent(current, k -> new ArrayList<>())
+                        .add(c);
                     referencedBy
                         .computeIfAbsent(c, k -> new ArrayList<>())
                         .add(current);
