@@ -20,9 +20,7 @@ public class JSheetTableModel extends AbstractTableModel {
 
     private final List<Object[]> data;
 
-    // Dependency graph
-    private final Map<JSheetCell, Collection<JSheetCell>> references = new HashMap<>();
-    private final Map<JSheetCell, Collection<JSheetCell>> referencedBy = new HashMap<>();
+    private final DependencyManager dependencies = new DependencyManager();
 
     private boolean modified = false;
 
@@ -85,13 +83,10 @@ public class JSheetTableModel extends AbstractTableModel {
         Object prev = getValueAt(rowIndex, columnIndex);
         if (prev instanceof ExprWrapper) {
             ExprWrapper wrapper = (ExprWrapper) prev;
-            for (var c : wrapper.getRefToCell().values()) {
-                // There was a link: current -> c
-                references.get(current).remove(c);
-                referencedBy.get(c).remove(current);
-            }
+            dependencies.removeFormula(current, wrapper);
         }
         data.get(rowIndex)[columnIndex] = getModelValue(value, current);
+        dependencies.recalculateDependencies();
         invalidateReferencingCurrent(current);
     }
 
@@ -103,16 +98,7 @@ public class JSheetTableModel extends AbstractTableModel {
             if (strValue.startsWith("=")) {
                 ExprWrapper wrapper = ParserUtils.parse(strValue);
                 wrapper.resolveRefs(this);
-                Map<String, JSheetCell> refToCell = wrapper.getRefToCell();
-                for (var c : refToCell.values()) {
-                    // There is a new link: current -> c
-                    references
-                        .computeIfAbsent(current, k -> new ArrayList<>())
-                        .add(c);
-                    referencedBy
-                        .computeIfAbsent(c, k -> new ArrayList<>())
-                        .add(current);
-                }
+                dependencies.addFormula(current, wrapper);
                 return wrapper;
             } else {
                 return getLiteral(strValue);
@@ -122,26 +108,7 @@ public class JSheetTableModel extends AbstractTableModel {
     }
 
     private void invalidateReferencingCurrent(JSheetCell current) {
-        Collection<JSheetCell> direct = referencedBy.get(current);
-        if (direct == null)
-            return;
-
-        Set<JSheetCell> invalid = new HashSet<>();
-        Queue<JSheetCell> queue = new ArrayDeque<>(direct);
-        while (!queue.isEmpty()) {
-            JSheetCell cell = queue.remove();
-            invalid.add(cell);
-            Collection<JSheetCell> cells = referencedBy.get(cell);
-            if (cells == null)
-                continue;
-            for (var c : cells) {
-                if (!invalid.contains(c)) {
-                    queue.add(c);
-                }
-            }
-        }
-
-        for (var c : invalid) {
+        for (var c : dependencies.getDependentOn(current)) {
             ExprWrapper wrapper = (ExprWrapper) getValueAt(c.row, c.column);
             wrapper.invalidate();
             fireTableCellUpdated(c.row, c.column);
@@ -176,6 +143,9 @@ public class JSheetTableModel extends AbstractTableModel {
     }
 
     public Result eval(JSheetCell cell) {
+        if (dependencies.inCircular(cell))
+            return Result.failure("Circular dependency");
+
         Object value = getValueAt(cell.row, cell.column);
         String strCell = getColumnName(cell.column) + cell.row;
         if (value == null) {
@@ -239,6 +209,179 @@ public class JSheetTableModel extends AbstractTableModel {
                     .map(o -> o == null ? "" : o.toString())
                     .toArray(String[]::new);
                 writer.writeNext(strRow);
+            }
+        }
+    }
+
+    private class DependencyManager {
+        List<JSheetCell> formulae = new ArrayList<>();
+
+        // Dependency graph
+        private final Map<JSheetCell, Collection<JSheetCell>> references = new HashMap<>();
+        private final Map<JSheetCell, Collection<JSheetCell>> referencedBy = new HashMap<>();
+
+        // Strongly connected components mappings
+        private final Map<Integer, Collection<JSheetCell>> components = new HashMap<>();
+        private final Map<JSheetCell, Integer> cellToComponent = new HashMap<>();
+        // Cells that cannot be evaluated due to circular dependencies
+        private final Set<JSheetCell> circular = new HashSet<>();
+
+        // Strongly connected components computation algorithm state
+        Set<JSheetCell> visited = new HashSet<>();
+        List<JSheetCell> order = new ArrayList<>();
+        int currentComponent;
+
+        void addFormula(JSheetCell cell, ExprWrapper formula) {
+            formulae.add(cell);
+            Map<String, JSheetCell> refToCell = formula.getRefToCell();
+            for (var c : refToCell.values()) {
+                addLink(cell, c);
+            }
+        }
+
+        void removeFormula(JSheetCell cell, ExprWrapper formula) {
+            formulae.remove(cell);
+            for (var c : formula.getRefToCell().values()) {
+                removeLink(cell, c);
+            }
+        }
+
+        void recalculateDependencies() {
+            recalculateComponents();
+            recalculateCircular();
+            printDebug();
+        }
+
+        void addLink(JSheetCell from, JSheetCell to) {
+            references
+                .computeIfAbsent(from, k -> new ArrayList<>())
+                .add(to);
+            referencedBy
+                .computeIfAbsent(to, k -> new ArrayList<>())
+                .add(from);
+        }
+
+        void removeLink(JSheetCell from, JSheetCell to) {
+            references.get(from).remove(to);
+            referencedBy.get(to).remove(from);
+        }
+
+        /**
+         * @return a set of cells that are which transitively depend on {@code cell}.
+         */
+        Collection<JSheetCell> getDependentOn(JSheetCell cell) {
+            Collection<JSheetCell> direct = referencedBy.get(cell);
+            if (direct == null)
+                return Collections.emptySet();
+            return getDependentOn(direct);
+        }
+
+        /**
+         * @return a set of cells that are which transitively depend on {@code cells}.
+         */
+        Collection<JSheetCell> getDependentOn(Collection<JSheetCell> cells) {
+            Set<JSheetCell> dependent = new HashSet<>();
+            Queue<JSheetCell> queue = new ArrayDeque<>(cells);
+            while (!queue.isEmpty()) {
+                JSheetCell v = queue.remove();
+                dependent.add(v);
+                Collection<JSheetCell> us = referencedBy.get(v);
+                if (us == null)
+                    continue;
+                for (var u : us) {
+                    if (!dependent.contains(u)) {
+                        queue.add(u);
+                    }
+                }
+            }
+            return dependent;
+        }
+
+        void recalculateComponents() {
+            int n = formulae.size();
+
+            components.clear();
+            cellToComponent.clear();
+            order.clear();
+            visited.clear();
+
+            for (var u : formulae) {
+                if (!visited.contains(u)) {
+                    dfs1(u);
+                }
+            }
+
+            currentComponent = 0;
+            for (int i = n - 1; i >= 0; i--) {
+                JSheetCell u = order.get(i);
+                if (!cellToComponent.containsKey(u)) {
+                    dfs2(u);
+                    currentComponent++;
+                }
+            }
+        }
+
+        private void printDebug() {
+            System.out.println("SCCs");
+            for (var e : components.entrySet()) {
+                System.out.print(e.getKey() + ": {");
+                for (var u : e.getValue()) {
+                    System.out.print(u + ", ");
+                }
+                System.out.println("}");
+            }
+            System.out.println("====");
+            System.out.println("Circular: {");
+            for (var u : circular) {
+                System.out.print(u + " ");
+            }
+            System.out.println("}");
+            System.out.println("====");
+        }
+
+        void recalculateCircular() {
+            circular.clear();
+            for (var e : components.entrySet()) {
+                if (e.getValue().size() > 1) {
+                    circular.addAll(e.getValue());
+                }
+            }
+            circular.addAll(getDependentOn(circular));
+        }
+
+        boolean inCircular(JSheetCell cell) {
+            return circular.contains(cell);
+        }
+
+        void dfs1(JSheetCell u) {
+            visited.add(u);
+            Collection<JSheetCell> cells = references.get(u);
+            if (cells != null) {
+                for (var v : cells) {
+                    // Discard links to plain values
+                    if (!(getValueAt(v.row, v.column) instanceof ExprWrapper))
+                        continue;
+                    if (!visited.contains(v))
+                        dfs1(v);
+                }
+            }
+            order.add(u);
+        }
+
+        void dfs2(JSheetCell u) {
+            components
+                .computeIfAbsent(currentComponent, k -> new ArrayList<>())
+                .add(u);
+            cellToComponent.put(u, currentComponent);
+            Collection<JSheetCell> cells = references.get(u);
+            if (cells != null) {
+                for (var v : cells) {
+                    // Discard links to plain values
+                    if (!(getValueAt(v.row, v.column) instanceof ExprWrapper))
+                        continue;
+                    if (!cellToComponent.containsKey(v))
+                        dfs2(v);
+                }
             }
         }
     }
