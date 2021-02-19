@@ -179,7 +179,7 @@ public class JSheet extends JFrame {
             JScrollPane scrollPane = new JScrollPane(table);
             add(scrollPane);
 
-            table.setDefaultRenderer(ExprWrapper.class, new ExpressionRenderer(model));
+            table.setDefaultRenderer(ExprWrapper.class, new ExpressionRenderer());
         }
     }
 

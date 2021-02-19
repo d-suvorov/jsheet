@@ -16,10 +16,10 @@ public class Ref extends Expr {
     @Override
     public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
         JSheetCell cell = refToCell.get(name);
-        if (cell != null) {
-            return model.eval(cell);
+        if (cell == null) {
+            return Result.failure(String.format("Reference %s unresolved", name));
         }
-        return Result.failure(String.format("Reference %s unresolved", name));
+        return model.getResultAt(cell);
     }
 
     @Override

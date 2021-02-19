@@ -11,7 +11,6 @@ public class ExprWrapper {
     public final String definition;
     public final Expr expression;
 
-    private boolean computed = false;
     private Result result;
 
     private final List<String> refs;
@@ -27,23 +26,19 @@ public class ExprWrapper {
         return Collections.unmodifiableMap(refToCell);
     }
 
-    @Override
-    public String toString() {
-        return definition;
-    }
-
-    public void invalidate() {
-        computed = false;
-    }
-
     public Result eval(JSheetTableModel model) {
-        if (computed)
-            return result;
         if (refToCell == null)
             resolveRefs(model);
-        computed = true;
         result = expression.eval(model, refToCell);
         return result;
+    }
+
+    public Result getResult() {
+        return result;
+    }
+
+    public void setResult(Result result) {
+        this.result = result;
     }
 
     void resolveRefs(JSheetTableModel model) {
@@ -55,5 +50,10 @@ public class ExprWrapper {
             if (cell != null)
                 refToCell.put(ref, cell);
         }
+    }
+
+    @Override
+    public String toString() {
+        return definition;
     }
 }

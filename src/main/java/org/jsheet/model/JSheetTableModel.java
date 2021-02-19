@@ -19,11 +19,7 @@ public class JSheetTableModel extends AbstractTableModel {
     private static final int DEFAULT_COLUMN_COUNT = 26;
 
     private final List<Object[]> data;
-
-    // Dependency graph
-    private final Map<JSheetCell, Collection<JSheetCell>> references = new HashMap<>();
-    private final Map<JSheetCell, Collection<JSheetCell>> referencedBy = new HashMap<>();
-
+    private final DependencyManager dependencies = new DependencyManager();
     private boolean modified = false;
 
     public JSheetTableModel() {
@@ -85,14 +81,10 @@ public class JSheetTableModel extends AbstractTableModel {
         Object prev = getValueAt(rowIndex, columnIndex);
         if (prev instanceof ExprWrapper) {
             ExprWrapper wrapper = (ExprWrapper) prev;
-            for (var c : wrapper.getRefToCell().values()) {
-                // There was a link: current -> c
-                references.get(current).remove(c);
-                referencedBy.get(c).remove(current);
-            }
+            dependencies.removeFormula(current, wrapper);
         }
         data.get(rowIndex)[columnIndex] = getModelValue(value, current);
-        invalidateReferencingCurrent(current);
+        dependencies.recomputeAll(current);
     }
 
     private Object getModelValue(Object value, JSheetCell current) {
@@ -103,49 +95,13 @@ public class JSheetTableModel extends AbstractTableModel {
             if (strValue.startsWith("=")) {
                 ExprWrapper wrapper = ParserUtils.parse(strValue);
                 wrapper.resolveRefs(this);
-                Map<String, JSheetCell> refToCell = wrapper.getRefToCell();
-                for (var c : refToCell.values()) {
-                    // There is a new link: current -> c
-                    references
-                        .computeIfAbsent(current, k -> new ArrayList<>())
-                        .add(c);
-                    referencedBy
-                        .computeIfAbsent(c, k -> new ArrayList<>())
-                        .add(current);
-                }
+                dependencies.addFormula(current, wrapper);
                 return wrapper;
             } else {
                 return getLiteral(strValue);
             }
         }
         throw new AssertionError();
-    }
-
-    private void invalidateReferencingCurrent(JSheetCell current) {
-        Collection<JSheetCell> direct = referencedBy.get(current);
-        if (direct == null)
-            return;
-
-        Set<JSheetCell> invalid = new HashSet<>();
-        Queue<JSheetCell> queue = new ArrayDeque<>(direct);
-        while (!queue.isEmpty()) {
-            JSheetCell cell = queue.remove();
-            invalid.add(cell);
-            Collection<JSheetCell> cells = referencedBy.get(cell);
-            if (cells == null)
-                continue;
-            for (var c : cells) {
-                if (!invalid.contains(c)) {
-                    queue.add(c);
-                }
-            }
-        }
-
-        for (var c : invalid) {
-            ExprWrapper wrapper = (ExprWrapper) getValueAt(c.row, c.column);
-            wrapper.invalidate();
-            fireTableCellUpdated(c.row, c.column);
-        }
     }
 
     private Object getLiteral(String value) {
@@ -175,14 +131,17 @@ public class JSheetTableModel extends AbstractTableModel {
         return new JSheetCell(rowIndex, columnIndex);
     }
 
-    public Result eval(JSheetCell cell) {
+    /**
+     * If {@code cell} contains a formula than its result is already computed
+     */
+    public Result getResultAt(JSheetCell cell) {
         Object value = getValueAt(cell.row, cell.column);
         String strCell = getColumnName(cell.column) + cell.row;
         if (value == null) {
             return Result.failure(String.format("Cell %s is uninitialized", strCell));
         }
         if (value instanceof ExprWrapper) {
-            return ((ExprWrapper) value).eval(this);
+            return ((ExprWrapper) value).getResult();
         } else if (value instanceof Number) {
             return Result.success(((Number) value).doubleValue());
         }
@@ -240,6 +199,125 @@ public class JSheetTableModel extends AbstractTableModel {
                     .toArray(String[]::new);
                 writer.writeNext(strRow);
             }
+        }
+    }
+
+    private enum ComputationStage {
+        NOT_COMPUTED, IN_PROGRESS, COMPUTED
+    }
+
+    private class DependencyManager {
+        // Dependency graph
+        private final Map<JSheetCell, Collection<JSheetCell>> references = new HashMap<>();
+        private final Map<JSheetCell, Collection<JSheetCell>> referencedBy = new HashMap<>();
+
+        // Computation state
+        private final Map<JSheetCell, ComputationStage> computationStage = new HashMap<>();
+
+        void addFormula(JSheetCell cell, ExprWrapper formula) {
+            Map<String, JSheetCell> refToCell = formula.getRefToCell();
+            for (var c : refToCell.values()) {
+                addLink(cell, c);
+            }
+        }
+
+        void removeFormula(JSheetCell cell, ExprWrapper formula) {
+            for (var c : formula.getRefToCell().values()) {
+                removeLink(cell, c);
+            }
+        }
+
+        void addLink(JSheetCell from, JSheetCell to) {
+            references
+                .computeIfAbsent(from, k -> new ArrayList<>())
+                .add(to);
+            referencedBy
+                .computeIfAbsent(to, k -> new ArrayList<>())
+                .add(from);
+        }
+
+        void removeLink(JSheetCell from, JSheetCell to) {
+            references.get(from).remove(to);
+            referencedBy.get(to).remove(from);
+        }
+
+        /**
+         * @return a set of cells that are which transitively depend on {@code cell}.
+         */
+        Collection<JSheetCell> getDependentOn(JSheetCell cell) {
+            Set<JSheetCell> dependent = new HashSet<>();
+            if (getValueAt(cell.row, cell.column) instanceof ExprWrapper)
+                dependent.add(cell);
+            Queue<JSheetCell> queue = new ArrayDeque<>();
+            queue.add(cell);
+            while (!queue.isEmpty()) {
+                JSheetCell v = queue.remove();
+                Collection<JSheetCell> us = referencedBy.get(v);
+                if (us == null)
+                    continue;
+                for (var u : us) {
+                    if (!dependent.contains(u)) {
+                        queue.add(u);
+                        dependent.add(u);
+                    }
+                }
+            }
+            return dependent;
+        }
+
+        void recomputeAll(JSheetCell changed) {
+            // Find all cells that need re-computation and invalidate them
+            Collection<JSheetCell> invalid = getDependentOn(changed);
+            computationStage.clear();
+            for (var cell : invalid) {
+                computationStage.put(cell, ComputationStage.NOT_COMPUTED);
+            }
+
+            // Recompute all at once in a single DFS traversal
+            for (var cell : invalid) {
+                if (computationStage.get(cell) == ComputationStage.NOT_COMPUTED)
+                    dfs(cell);
+            }
+
+            // Fire table changed events
+            for (var cell : invalid) {
+                fireTableCellUpdated(cell.row, cell.column);
+            }
+        }
+
+        void dfs(JSheetCell u) {
+            computationStage.put(u, ComputationStage.IN_PROGRESS);
+            boolean circular = false;
+            if (references.containsKey(u)) {
+                for (var v : references.get(u)) {
+                    if (!computationStage.containsKey(v)) {
+                        // v is a plain value or doesn't need re-computation
+                        continue;
+                    }
+                    ComputationStage stage = computationStage.get(v);
+                    if (stage == ComputationStage.COMPUTED) {
+                        // If v is computed, we can safely get its value
+                        // If v is on a cycle, the error will propagate to u
+                        continue;
+                    }
+                    if (stage == ComputationStage.IN_PROGRESS) {
+                        // Found a loop
+                        circular = true;
+                        continue;
+                    }
+                    if (stage == ComputationStage.NOT_COMPUTED) {
+                        dfs(v);
+                    }
+                }
+            }
+            ExprWrapper current = (ExprWrapper) getValueAt(u.row, u.column);
+            if (circular) {
+                current.setResult(Result.failure("Circular dependency"));
+            } else {
+                // All of the cells u references are evaluated
+                current.eval(JSheetTableModel.this);
+            }
+            computationStage.put(u, ComputationStage.COMPUTED);
         }
     }
 }

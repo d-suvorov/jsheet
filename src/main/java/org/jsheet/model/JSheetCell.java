@@ -23,4 +23,9 @@ public class JSheetCell {
     public int hashCode() {
         return Objects.hash(row, column);
     }
+
+    @Override
+    public String toString() {
+        return String.format("(%d, %d)", row, column);
+    }
 }
