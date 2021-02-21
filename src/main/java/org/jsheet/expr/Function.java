@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import static org.jsheet.model.Result.failure;
 import static org.jsheet.model.Value.Type.DOUBLE;
+import static org.jsheet.model.Value.Type.STRING;
 
 public class Function extends Expr {
     private final String name;
@@ -34,6 +35,9 @@ public class Function extends Expr {
 
         if (name.equals("pow")) {
             return evalPow(argsResults);
+        }
+        if (name.equals("length")) {
+            return evalLength(argsResults);
         }
         return failure("Unknown function: " + name);
     }
@@ -62,6 +66,24 @@ public class Function extends Expr {
         }
 
         double result = Math.pow(baseValue.getAsDouble(), expValue.getAsDouble());
+        return Result.success(Value.of(result));
+    }
+
+    private Result evalLength(List<Result> args) {
+        if (args.size() != 1)
+            return failure("Wrong number of arguments for function: length");
+
+        // TODO refactor and generalize this mess
+        Result strResult = args.get(0);
+        Value strValue = strResult.get();
+        if (strValue.getTag() != STRING) {
+            String msg = String.format(
+                "Expected %s and got %s",
+                STRING.name(), strValue.getTag().name());
+            return Result.failure(msg);
+        }
+
+        double result = strValue.getAsString().length();
         return Result.success(Value.of(result));
     }
 
