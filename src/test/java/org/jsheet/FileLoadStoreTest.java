@@ -32,7 +32,7 @@ public class FileLoadStoreTest {
     }
 
     @Test
-    void testFileLoadStore() throws IOException, CsvValidationException {
+    void fileLoadStore() throws IOException, CsvValidationException {
         File file = File.createTempFile("test", ".csv");
         file.deleteOnExit();
 
