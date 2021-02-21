@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ExprWrapper {
-    public final String definition;
+    public final String originalDefinition;
     public final Expr expression;
 
     private Result result;
@@ -16,8 +16,8 @@ public class ExprWrapper {
     private final List<String> refs;
     private Map<String, JSheetCell> refToCell;
 
-    public ExprWrapper(String definition, Expr expression, List<String> refs) {
-        this.definition = definition;
+    public ExprWrapper(String originalDefinition, Expr expression, List<String> refs) {
+        this.originalDefinition = originalDefinition;
         this.expression = expression;
         this.refs = refs;
     }
@@ -54,6 +54,6 @@ public class ExprWrapper {
 
     @Override
     public String toString() {
-        return definition;
+        return originalDefinition;
     }
 }

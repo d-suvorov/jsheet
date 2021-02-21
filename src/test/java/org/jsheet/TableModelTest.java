@@ -1,12 +1,13 @@
 package org.jsheet;
 
-import org.jsheet.model.ExprWrapper;
 import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.Result;
+import org.jsheet.model.Value;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 // TODO write more clear tests?
 @SuppressWarnings("SameParameterValue")
@@ -24,8 +25,8 @@ public class TableModelTest {
         String strVal = "abc";
         model.setValueAt(dVal, 0, 0);
         model.setValueAt(strVal, 0, 1);
-        assertEquals(Double.parseDouble(dVal), model.getValueAt(0, 0));
-        assertEquals(strVal, model.getValueAt(0, 1));
+        assertEquals(Double.parseDouble(dVal), model.getValueAt(0, 0).getAsDouble());
+        assertEquals(strVal, model.getValueAt(0, 1).getAsString());
     }
 
     @Test
@@ -99,20 +100,22 @@ public class TableModelTest {
     }
 
     private void checkPlainDouble(double expected, int row, int column) {
-        Object o = model.getValueAt(row, column);
-        assertTrue(o instanceof Double);
-        assertEquals(expected, ((Double) o), 0);
+        Value val = model.getValueAt(row, column);
+        assertSame(val.getTag(), Value.Type.DOUBLE);
+        assertEquals(expected, val.getAsDouble(), 0);
     }
 
     private void checkSuccessResult(double expected, int row, int column) {
-        Object o = model.getValueAt(row, column);
-        assertTrue(o instanceof ExprWrapper);
-        assertEquals(expected, ((ExprWrapper) o).getResult().get(), 0);
+        Value val = model.getValueAt(row, column);
+        assertSame(val.getTag(), Value.Type.EXPR);
+        Result result = val.getAsExpr().getResult();
+        assertEquals(expected, result.get().getAsDouble(), 0);
     }
 
     private void checkErrorResult(String expected, int row, int column) {
-        Object o = model.getValueAt(row, column);
-        assertTrue(o instanceof ExprWrapper);
-        assertEquals(expected, ((ExprWrapper) o).getResult().message());
+        Value val = model.getValueAt(row, column);
+        assertSame(val.getTag(), Value.Type.EXPR);
+        Result result = val.getAsExpr().getResult();
+        assertEquals(expected, result.message());
     }
 }

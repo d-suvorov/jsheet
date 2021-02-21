@@ -1,8 +1,8 @@
 package org.jsheet;
 
 import com.opencsv.exceptions.CsvValidationException;
-import org.jsheet.model.ExprWrapper;
 import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.Value;
 
 import javax.swing.*;
 import java.awt.*;
@@ -179,7 +179,7 @@ public class JSheet extends JFrame {
             JScrollPane scrollPane = new JScrollPane(table);
             add(scrollPane);
 
-            table.setDefaultRenderer(ExprWrapper.class, new ExpressionRenderer());
+            table.setDefaultRenderer(Value.class, new ExpressionRenderer());
         }
     }
 

@@ -18,7 +18,7 @@ public class JSheetTableModel extends AbstractTableModel {
     private static final int DEFAULT_ROW_COUNT = 50;
     private static final int DEFAULT_COLUMN_COUNT = 26;
 
-    private final List<Object[]> data;
+    private final List<Value[]> data;
     private final DependencyManager dependencies = new DependencyManager();
     private boolean modified = false;
 
@@ -31,14 +31,14 @@ public class JSheetTableModel extends AbstractTableModel {
             throw new IllegalArgumentException();
         data = new ArrayList<>(rowCount);
         for (int i = 0; i < rowCount; i++) {
-            data.add(new Object[columnCount]);
+            data.add(new Value[columnCount]);
         }
     }
 
     /**
      * Takes a raw {@code data} of strings and tries to reinsert them as model values.
      */
-    private JSheetTableModel(List<Object[]> data) {
+    private JSheetTableModel(List<Value[]> data) {
         this.data = data;
         for (int row = 0; row < getRowCount(); row++) {
             for (int column = 0; column < getColumnCount(); column++) {
@@ -60,7 +60,7 @@ public class JSheetTableModel extends AbstractTableModel {
     }
 
     @Override
-    public Object getValueAt(int rowIndex, int columnIndex) {
+    public Value getValueAt(int rowIndex, int columnIndex) {
         return data.get(rowIndex)[columnIndex];
     }
 
@@ -78,16 +78,16 @@ public class JSheetTableModel extends AbstractTableModel {
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
         setModified(true);
         JSheetCell current = new JSheetCell(rowIndex, columnIndex);
-        Object prev = getValueAt(rowIndex, columnIndex);
-        if (prev instanceof ExprWrapper) {
-            ExprWrapper wrapper = (ExprWrapper) prev;
+        Value prev = getValueAt(rowIndex, columnIndex);
+        if (prev != null && prev.getTag() == Value.Type.EXPR) {
+            ExprWrapper wrapper = prev.getAsExpr();
             dependencies.removeFormula(current, wrapper);
         }
         data.get(rowIndex)[columnIndex] = getModelValue(value, current);
         dependencies.recomputeAll(current);
     }
 
-    private Object getModelValue(Object value, JSheetCell current) {
+    private Value getModelValue(Object value, JSheetCell current) {
         if (value == null)
             return null;
         if (value instanceof String) {
@@ -96,20 +96,28 @@ public class JSheetTableModel extends AbstractTableModel {
                 ExprWrapper wrapper = ParserUtils.parse(strValue);
                 wrapper.resolveRefs(this);
                 dependencies.addFormula(current, wrapper);
-                return wrapper;
+                return Value.of(wrapper);
             } else {
                 return getLiteral(strValue);
             }
         }
+        // Only gets string values typed by user
         throw new AssertionError();
     }
 
-    private Object getLiteral(String value) {
+    private Value getLiteral(String value) {
+        // Boolean
+        if (value.equals("false")) return Value.of(false);
+        if (value.equals("true")) return Value.of(true);
+
+        // Number
         try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException e) {
-            return value;
+            return Value.of(Double.parseDouble(value));
+        } catch (NumberFormatException ignored) {
         }
+
+        // String
+        return Value.of(value);
     }
 
     public JSheetCell resolveRef(String name) {
@@ -135,17 +143,16 @@ public class JSheetTableModel extends AbstractTableModel {
      * If {@code cell} contains a formula than its result is already computed
      */
     public Result getResultAt(JSheetCell cell) {
-        Object value = getValueAt(cell.row, cell.column);
+        Value value = getValueAt(cell.row, cell.column);
         String strCell = getColumnName(cell.column) + cell.row;
         if (value == null) {
             return Result.failure(String.format("Cell %s is uninitialized", strCell));
         }
-        if (value instanceof ExprWrapper) {
-            return ((ExprWrapper) value).getResult();
-        } else if (value instanceof Number) {
-            return Result.success(((Number) value).doubleValue());
+        if (value.getTag() == Value.Type.EXPR) {
+            return value.getAsExpr().getResult();
+        } else { // Plain value
+            return Result.success(value);
         }
-        return Result.failure(String.format("Wrong value type in the cell %s", strCell));
     }
 
     public boolean isModified() {
@@ -173,14 +180,14 @@ public class JSheetTableModel extends AbstractTableModel {
      * Deserializes a model from a CSV {@code file}.
      */
     public static JSheetTableModel read(File file) throws IOException, CsvValidationException {
-        List<Object[]> data = new ArrayList<>();
+        List<Value[]> data = new ArrayList<>();
         try (var reader = new CSVReader(new FileReader(file))) {
             String[] line;
             while ((line = reader.readNext()) != null) {
-                Object[] row = new Object[line.length];
+                Value[] row = new Value[line.length];
                 for (int i = 0; i < line.length; i++) {
-                    String value = line[i];
-                    row[i] = value.isEmpty() ? null : value;
+                    String strValue = line[i];
+                    row[i] = strValue.isEmpty() ? null : Value.of(strValue);
                 }
                 data.add(row);
             }
@@ -246,7 +253,7 @@ public class JSheetTableModel extends AbstractTableModel {
          */
         Collection<JSheetCell> getDependentOn(JSheetCell cell) {
             Set<JSheetCell> dependent = new HashSet<>();
-            if (getValueAt(cell.row, cell.column) instanceof ExprWrapper)
+            if (getValueAt(cell.row, cell.column).getTag() == Value.Type.EXPR)
                 dependent.add(cell);
             Queue<JSheetCell> queue = new ArrayDeque<>();
             queue.add(cell);
@@ -310,7 +317,7 @@ public class JSheetTableModel extends AbstractTableModel {
                     }
                 }
             }
-            ExprWrapper current = (ExprWrapper) getValueAt(u.row, u.column);
+            ExprWrapper current = getValueAt(u.row, u.column).getAsExpr();
             if (circular) {
                 current.setResult(Result.failure("Circular dependency"));
             } else {

@@ -3,6 +3,7 @@ package org.jsheet.expr;
 import org.jsheet.model.JSheetCell;
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
+import org.jsheet.model.Value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.jsheet.model.Result.failure;
-import static org.jsheet.model.Result.success;
+import static org.jsheet.model.Value.Type.DOUBLE;
 
 public class Function extends Expr {
     private final String name;
@@ -23,26 +24,45 @@ public class Function extends Expr {
 
     @Override
     public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
-        List<Double> argsResults = new ArrayList<>();
+        List<Result> argsResults = new ArrayList<>();
         for (var e : args) {
             Result res = e.eval(model, refToCell);
             if (!res.isPresent())
                 return res;
-            argsResults.add(res.get());
+            argsResults.add(res);
         }
+
         if (name.equals("pow")) {
-            if (argsResults.size() != 2)
-                return failure("Wrong number of arguments for function: pow");
-            else
-                return success(evalPow(argsResults));
+            return evalPow(argsResults);
         }
         return failure("Unknown function: " + name);
     }
 
-    private double evalPow(List<Double> args) {
-        double base = args.get(0);
-        double exp = args.get(1);
-        return Math.pow(base, exp);
+    private Result evalPow(List<Result> args) {
+        if (args.size() != 2)
+            return failure("Wrong number of arguments for function: pow");
+
+        // TODO refactor and generalize this mess
+        Result baseResult = args.get(0);
+        Value baseValue = baseResult.get();
+        if (baseValue.getTag() != DOUBLE) {
+            String msg = String.format(
+                "Expected %s and got %s",
+                DOUBLE.name(), baseValue.getTag().name());
+            return Result.failure(msg);
+        }
+
+        Result expResult = args.get(1);
+        Value expValue = expResult.get();
+        if (expValue.getTag() != DOUBLE) {
+            String msg = String.format(
+                "Expected %s and got %s",
+                DOUBLE.name(), expValue.getTag().name());
+            return Result.failure(msg);
+        }
+
+        double result = Math.pow(baseValue.getAsDouble(), expValue.getAsDouble());
+        return Result.success(Value.of(result));
     }
 
     @Override

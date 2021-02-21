@@ -3,6 +3,7 @@ package org.jsheet.parser;
 import org.jsheet.ExpressionBaseVisitor;
 import org.jsheet.ExpressionParser;
 import org.jsheet.expr.*;
+import org.jsheet.model.Value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,20 +17,37 @@ public class AbstractTreeBuilder extends ExpressionBaseVisitor<Expr> {
     }
 
     @Override
-    public Ref visitRef(ExpressionParser.RefContext ctx) {
+    public Literal visitBoolean(ExpressionParser.BooleanContext ctx) {
+        boolean b = ctx.BOOL().getText().equals("true");
+        return new Literal(Value.of(b));
+    }
+
+    @Override
+    public Literal visitNumber(ExpressionParser.NumberContext ctx) {
+        Double d = Double.parseDouble(ctx.NUM().getText());
+        return new Literal(Value.of(d));
+    }
+
+    @Override
+    public Literal visitString(ExpressionParser.StringContext ctx) {
+        String s = ctx.STR().getText();
+        return new Literal(Value.of(s));
+    }
+
+    @Override
+    public Expr visitLiteralExpr(ExpressionParser.LiteralExprContext ctx) {
+        return visit(ctx.literal());
+    }
+
+    @Override
+    public Ref visitReferenceExpr(ExpressionParser.ReferenceExprContext ctx) {
         String id = ctx.ID().getText();
         refs.add(id);
         return new Ref(id);
     }
 
     @Override
-    public Const visitConst(ExpressionParser.ConstContext ctx) {
-        double value = Double.parseDouble(ctx.NUM().getText());
-        return new Const(value);
-    }
-
-    @Override
-    public Binop visitInfix(ExpressionParser.InfixContext ctx) {
+    public Binop visitInfixExpr(ExpressionParser.InfixExprContext ctx) {
         String op = ctx.op.getText();
         Expr lhs = visit(ctx.left);
         Expr rhs = visit(ctx.right);
@@ -37,12 +55,12 @@ public class AbstractTreeBuilder extends ExpressionBaseVisitor<Expr> {
     }
 
     @Override
-    public Expr visitParenthesis(ExpressionParser.ParenthesisContext ctx) {
+    public Expr visitParenthesisExpr(ExpressionParser.ParenthesisExprContext ctx) {
         return visit(ctx.getChild(1));
     }
 
     @Override
-    public Expr visitFunction(ExpressionParser.FunctionContext ctx) {
+    public Expr visitFunctionExpr(ExpressionParser.FunctionExprContext ctx) {
         List<Expr> args = ctx.args().expr().stream()
             .map(this::visit)
             .collect(Collectors.toList());

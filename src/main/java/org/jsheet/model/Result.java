@@ -1,19 +1,17 @@
 package org.jsheet.model;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
 
 /**
  * Represent a computation result which is either
  * a result {@code value} or an error message {@code message}.
  */
 public class Result {
-    // TODO consider rewriting this on generics
-    private final double value;
+    private final Value value;
     private final String message;
     private final boolean isPresent;
 
-    private Result(double value, String message, boolean isPresent) {
+    private Result(Value value, String message, boolean isPresent) {
         this.value = value;
         this.message = message;
         this.isPresent = isPresent;
@@ -23,7 +21,7 @@ public class Result {
         return isPresent;
     }
 
-    public double get() {
+    public Value get() {
         if (isPresent())
             return value;
         throw new IllegalStateException();
@@ -35,20 +33,12 @@ public class Result {
         throw new IllegalStateException();
     }
 
-    public static Result success(double value) {
+    public static Result success(Value value) {
         return new Result(value, null, true);
     }
 
     public static Result failure(String message) {
-        return new Result(Double.NaN, message, false);
-    }
-
-    public static Result compose(Result a, Result b,
-        BiFunction<Double, Double, Double> f)
-    {
-        if (!a.isPresent()) return a;
-        if (!b.isPresent()) return b;
-        return Result.success(f.apply(a.get(), b.get()));
+        return new Result(null, message, false);
     }
 
     @Override
@@ -58,17 +48,14 @@ public class Result {
 
         Result result = (Result) o;
 
-        if (Double.compare(result.value, value) != 0) return false;
         if (isPresent != result.isPresent) return false;
+        if (!Objects.equals(value, result.value)) return false;
         return Objects.equals(message, result.message);
     }
 
     @Override
     public int hashCode() {
-        int result;
-        long temp;
-        temp = Double.doubleToLongBits(value);
-        result = (int) (temp ^ (temp >>> 32));
+        int result = value != null ? value.hashCode() : 0;
         result = 31 * result + (message != null ? message.hashCode() : 0);
         result = 31 * result + (isPresent ? 1 : 0);
         return result;

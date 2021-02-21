@@ -3,14 +3,19 @@ package org.jsheet.expr;
 import org.jsheet.model.JSheetCell;
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
+import org.jsheet.model.Value;
 
 import java.util.Map;
 
-public class Const extends Expr {
-    private final double value;
+public class Literal extends Expr {
+    private final Value value;
 
-    public Const(double value) {
+    public Literal(Value value) {
         this.value = value;
+    }
+
+    public Value getValue() {
+        return value;
     }
 
     @Override
