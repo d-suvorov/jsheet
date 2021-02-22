@@ -8,8 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 
 // TODO write more clear tests?
 @SuppressWarnings("SameParameterValue")
@@ -41,11 +40,49 @@ public class TableModelTest {
         }
     }
 
-    @Nested
-    class Arithmetic {}
+    private void testDoubleValuedFormula(String formula, double expectedResult) {
+        model.setValueAt(formula, 0, 0);
+        Value value = model.getValueAt(0, 0);
+        assertSame(Value.Type.EXPR, value.getTag());
+        Result result = value.getAsExpr().getResult();
+        assertEquals(expectedResult, result.get().getAsDouble(), 0);
+    }
 
     @Nested
-    class Functions {}
+    class Arithmetic {
+        @Test
+        public void simpleExpression1() {
+            testDoubleValuedFormula("= 1 + 2 * 3", 1 + 2 * 3);
+        }
+
+        @Test
+        public void simpleExpression2() {
+            testDoubleValuedFormula("= (1 + 2) * 3", (1 + 2) * 3);
+        }
+    }
+
+    @Nested
+    class Functions {
+        @Test
+        public void pow() {
+            testDoubleValuedFormula("= pow(2, 4)", Math.pow(2, 4));
+        }
+
+        @Test
+        public void length() {
+            testDoubleValuedFormula("= length(\"abracadabra\")", "abracadabra".length());
+        }
+
+        @Test
+        public void undefined() {
+            model.setValueAt("= abracadabra(2, 4)", 0, 0);
+            Value value = model.getValueAt(0, 0);
+            assertSame(Value.Type.EXPR, value.getTag());
+            Result result = value.getAsExpr().getResult();
+            assertFalse(result.isPresent());
+            assertEquals("Unknown function: abracadabra", result.message());
+        }
+    }
 
     @Nested
     class EvaluationWithReferences {
