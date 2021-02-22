@@ -5,10 +5,7 @@ import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
 import org.jsheet.model.Value;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.jsheet.model.Result.failure;
@@ -26,64 +23,50 @@ public class Function extends Expr {
 
     @Override
     public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
-        List<Result> argsResults = new ArrayList<>();
-        for (var e : args) {
-            Result res = e.eval(model, refToCell);
-            if (!res.isPresent())
-                return res;
-            argsResults.add(res);
-        }
-
         if (name.equals("pow")) {
-            return evalPow(argsResults);
+            return evalPow(args, model, refToCell);
         }
         if (name.equals("length")) {
-            return evalLength(argsResults);
+            return evalLength(args, model, refToCell);
         }
         return failure("Unknown function: " + name);
     }
 
-    private Result evalPow(List<Result> args) {
+    private Result evalPow(List<Expr> args,
+        JSheetTableModel model, Map<String, JSheetCell> refToCell)
+    {
         if (args.size() != 2)
             return failure("Wrong number of arguments for function: pow");
 
-        // TODO refactor and generalize this mess
-        Result baseResult = args.get(0);
-        Value baseValue = baseResult.get();
-        if (baseValue.getTag() != DOUBLE) {
-            String msg = String.format(
-                "Expected %s and got %s",
-                DOUBLE.name(), baseValue.getTag().name());
-            return Result.failure(msg);
-        }
+        List<Value> values = evaluate(args, model, refToCell);
+        if (values == null)
+            return evaluationError;
 
-        Result expResult = args.get(1);
-        Value expValue = expResult.get();
-        if (expValue.getTag() != DOUBLE) {
-            String msg = String.format(
-                "Expected %s and got %s",
-                DOUBLE.name(), expValue.getTag().name());
-            return Result.failure(msg);
-        }
+        List<Value.Type> types = Arrays.asList(DOUBLE, DOUBLE);
+        if (!typecheck(values, types))
+            return typecheckError;
 
+        Value baseValue = values.get(0);
+        Value expValue = values.get(1);
         double result = Math.pow(baseValue.getAsDouble(), expValue.getAsDouble());
         return Result.success(Value.of(result));
     }
 
-    private Result evalLength(List<Result> args) {
+    private Result evalLength(List<Expr> args,
+        JSheetTableModel model, Map<String, JSheetCell> refToCell)
+    {
         if (args.size() != 1)
             return failure("Wrong number of arguments for function: length");
 
-        // TODO refactor and generalize this mess
-        Result strResult = args.get(0);
-        Value strValue = strResult.get();
-        if (strValue.getTag() != STRING) {
-            String msg = String.format(
-                "Expected %s and got %s",
-                STRING.name(), strValue.getTag().name());
-            return Result.failure(msg);
-        }
+        List<Value> values = evaluate(args, model, refToCell);
+        if (values == null)
+            return evaluationError;
 
+        List<Value.Type> types = Collections.singletonList(STRING);
+        if (!typecheck(values, types))
+            return typecheckError;
+
+        Value strValue = values.get(0);
         double result = strValue.getAsString().length();
         return Result.success(Value.of(result));
     }

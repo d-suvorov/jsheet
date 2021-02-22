@@ -5,6 +5,8 @@ import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
 import org.jsheet.model.Value;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -25,28 +27,14 @@ public class Binop extends Expr {
     @SuppressWarnings("Convert2MethodRef")
     @Override
     public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
-        // TODO refactor and generalize this mess
-        Result lhsResult = lhs.eval(model, refToCell);
-        if (!lhsResult.isPresent())
-            return lhsResult;
-        Value lhsValue = lhsResult.get();
-        if (lhsValue.getTag() != DOUBLE) {
-            String msg = String.format(
-                "Expected %s and got %s",
-                DOUBLE.name(), lhsValue.getTag().name());
-            return Result.failure(msg);
-        }
+        List<Expr> params = Arrays.asList(lhs, rhs);
+        List<Value> values = evaluate(params, model, refToCell);
+        if (values == null)
+            return evaluationError;
 
-        Result rhsResult = rhs.eval(model, refToCell);
-        if (!rhsResult.isPresent())
-            return rhsResult;
-        Value rhsValue = rhsResult.get();
-        if (lhsValue.getTag() != DOUBLE) {
-            String msg = String.format(
-                "Expected %s and got %s",
-                DOUBLE.name(), lhsValue.getTag().name());
-            return Result.failure(msg);
-        }
+        List<Value.Type> types = Arrays.asList(DOUBLE, DOUBLE);
+        if (!typecheck(values, types))
+            return typecheckError;
 
         BiFunction<Double, Double, Double> binary;
         switch (op) {
@@ -56,6 +44,9 @@ public class Binop extends Expr {
             case "/": binary = (a, b) -> a / b; break;
             default: throw new AssertionError();
         }
+
+        Value lhsValue = values.get(0);
+        Value rhsValue = values.get(1);
         Double result = binary.apply(lhsValue.getAsDouble(), rhsValue.getAsDouble());
         return Result.success(Value.of(result));
     }
