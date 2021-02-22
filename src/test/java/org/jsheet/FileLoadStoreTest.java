@@ -1,8 +1,8 @@
 package org.jsheet;
 
 import com.opencsv.exceptions.CsvValidationException;
-import org.jsheet.model.ExprWrapper;
 import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.Value;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -44,13 +44,14 @@ public class FileLoadStoreTest {
         assertEquals(3, read.getRowCount());
         for (int row = 0; row < read.getRowCount(); row++) {
             for (int column = 0; column < read.getColumnCount(); column++) {
-                Object expected = model.getValueAt(row, column);
-                Object actual = read.getValueAt(row, column);
-                if (expected instanceof ExprWrapper) {
-                    assertTrue(actual instanceof ExprWrapper);
+                Value expected = model.getValueAt(row, column);
+                Value actual = read.getValueAt(row, column);
+                if (expected != null && expected.getTag() == Value.Type.EXPR) {
+                    assertNotNull(actual);
+                    assertSame(Value.Type.EXPR, actual.getTag());
                     assertEquals(
-                        ((ExprWrapper) expected).eval(model),
-                        ((ExprWrapper) actual).eval(read)
+                        expected.getAsExpr().eval(model),
+                        actual.getAsExpr().eval(read)
                     );
                 } else {
                     assertEquals(expected, actual);

@@ -36,15 +36,15 @@ public class JSheetTableModel extends AbstractTableModel {
     }
 
     /**
-     * Takes a raw {@code data} of strings and tries to reinsert them as model values.
+     * Takes a raw {@code data} of string values and tries to reinsert them as model values.
      */
     private JSheetTableModel(List<Value[]> data) {
         this.data = data;
         for (int row = 0; row < getRowCount(); row++) {
             for (int column = 0; column < getColumnCount(); column++) {
-                Object value = getValueAt(row, column);
+                Value value = getValueAt(row, column);
                 // tries to parse functions and numbers from strings
-                setValueAt(value, row, column);
+                setValueAt(value == null ? null : value.getAsString(), row, column);
             }
         }
     }
