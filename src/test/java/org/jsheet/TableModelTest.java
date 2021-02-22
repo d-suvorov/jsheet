@@ -87,11 +87,11 @@ public class TableModelTest {
         checkErrorResult("Circular dependency", 4, 3);
         checkErrorResult("Circular dependency", 4, 4);
         // Break the cycle
-        model.setValueAt("", 4, 2);
-        checkErrorResult("Wrong value type in the cell C4", 4, 0);
-        checkErrorResult("Wrong value type in the cell C4", 4, 1);
-        checkErrorResult("Wrong value type in the cell C4", 4, 3);
-        checkErrorResult("Wrong value type in the cell C4", 4, 4);
+        model.setValueAt(null, 4, 2);
+        checkErrorResult("Cell C4 is uninitialized", 4, 0);
+        checkErrorResult("Cell C4 is uninitialized", 4, 1);
+        checkErrorResult("Cell C4 is uninitialized", 4, 3);
+        checkErrorResult("Cell C4 is uninitialized", 4, 4);
         model.setValueAt(Double.toString(42), 4, 2);
         checkSuccessResult(val, 4, 0);
         checkSuccessResult(val, 4, 1);
