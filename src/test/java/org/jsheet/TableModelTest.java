@@ -74,6 +74,16 @@ public class TableModelTest {
         }
 
         @Test
+        public void lengthRef() {
+            model.setValueAt("abracadabra", 0, 0);
+            model.setValueAt("= length(A0)", 0, 1);
+            Value value = model.getValueAt(0, 1);
+            assertSame(Value.Type.EXPR, value.getTag());
+            Result result = value.getAsExpr().getResult();
+            assertEquals("abracadabra".length(), result.get().getAsDouble(), 0);
+        }
+
+        @Test
         public void undefined() {
             model.setValueAt("= abracadabra(2, 4)", 0, 0);
             Value value = model.getValueAt(0, 0);

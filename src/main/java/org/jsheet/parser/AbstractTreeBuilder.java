@@ -31,7 +31,7 @@ public class AbstractTreeBuilder extends ExpressionBaseVisitor<Expr> {
     @Override
     public Literal visitString(ExpressionParser.StringContext ctx) {
         String s = ctx.STR().getText();
-        return new Literal(Value.of(s));
+        return new Literal(Value.of(s.substring(1, s.length() - 1)));
     }
 
     @Override
