@@ -41,6 +41,6 @@ public class Literal extends Expr {
 
     @Override
     public String toString() {
-        return String.valueOf(value);
+        return value.toString();
     }
 }
