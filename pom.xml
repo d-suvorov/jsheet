@@ -26,7 +26,7 @@
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
-            <version>5.3</version>
+            <version>${opencsv.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
