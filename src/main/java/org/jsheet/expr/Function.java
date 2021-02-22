@@ -8,6 +8,7 @@ import org.jsheet.model.Value;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.jsheet.model.Result.failure;
@@ -85,6 +86,24 @@ public class Function extends Expr {
 
         double result = strValue.getAsString().length();
         return Result.success(Value.of(result));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Function function = (Function) o;
+
+        if (!Objects.equals(name, function.name)) return false;
+        return Objects.equals(args, function.args);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (args != null ? args.hashCode() : 0);
+        return result;
     }
 
     @Override

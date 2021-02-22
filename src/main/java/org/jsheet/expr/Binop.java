@@ -6,6 +6,7 @@ import org.jsheet.model.Result;
 import org.jsheet.model.Value;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiFunction;
 
 import static org.jsheet.model.Value.Type.DOUBLE;
@@ -57,6 +58,26 @@ public class Binop extends Expr {
         }
         Double result = binary.apply(lhsValue.getAsDouble(), rhsValue.getAsDouble());
         return Result.success(Value.of(result));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Binop binop = (Binop) o;
+
+        if (!Objects.equals(op, binop.op)) return false;
+        if (!Objects.equals(lhs, binop.lhs)) return false;
+        return Objects.equals(rhs, binop.rhs);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = op != null ? op.hashCode() : 0;
+        result = 31 * result + (lhs != null ? lhs.hashCode() : 0);
+        result = 31 * result + (rhs != null ? rhs.hashCode() : 0);
+        return result;
     }
 
     @Override
