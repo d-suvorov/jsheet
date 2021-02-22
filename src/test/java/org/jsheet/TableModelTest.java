@@ -4,6 +4,8 @@ import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
 import org.jsheet.model.Value;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,103 +21,122 @@ public class TableModelTest {
         model = new JSheetTableModel();
     }
 
-    @Test
-    void simpleReadWrite() {
-        String dVal = "42";
-        String strVal = "abc";
-        model.setValueAt(dVal, 0, 0);
-        model.setValueAt(strVal, 0, 1);
-        assertEquals(Double.parseDouble(dVal), model.getValueAt(0, 0).getAsDouble());
-        assertEquals(strVal, model.getValueAt(0, 1).getAsString());
+    @BeforeEach
+    void clearRowZero() {
+        for (int column = 0; column < model.getColumnCount(); column++) {
+            model.setValueAt(null, 0, column);
+        }
     }
 
-    @Test
-    void simpleReferences() {
-        double val = 42;
-        model.setValueAt(Double.toString(val), 1, 0);
-        model.setValueAt("= A1 + 1", 1, 1);
-        model.setValueAt("= B1 - 1", 1, 2);
-        checkSuccessResult(val + 1, 1, 1);
-        checkSuccessResult(val, 1, 2);
-        val += 0.5;
-        model.setValueAt(Double.toString(val), 1, 0);
-        checkSuccessResult(val + 1, 1, 1);
-        checkSuccessResult(val, 1, 2);
+    @Nested
+    class ReadWrite {
+        @Test
+        void simpleReadWrite() {
+            String dVal = "42";
+            String strVal = "abc";
+            model.setValueAt(dVal, 0, 0);
+            model.setValueAt(strVal, 0, 1);
+            assertEquals(Double.parseDouble(dVal), model.getValueAt(0, 0).getAsDouble());
+            assertEquals(strVal, model.getValueAt(0, 1).getAsString());
+        }
     }
 
-    @Test
-    void dependenciesSimpleCycle() {
-        double val = 42;
-        // A2:C2 is a cycle
-        model.setValueAt("= C2", 2, 0);
-        model.setValueAt("= A2", 2, 1);
-        model.setValueAt("= B2", 2, 2);
-        // D2 -> C2
-        model.setValueAt("= C2", 2, 3);
-        checkErrorResult("Circular dependency", 2, 0);
-        checkErrorResult("Circular dependency", 2, 1);
-        checkErrorResult("Circular dependency", 2, 2);
-        checkErrorResult("Circular dependency", 2, 3);
-        // Break the cycle
-        model.setValueAt(Double.toString(val), 2, 2);
-        checkSuccessResult(val, 2, 0);
-        checkSuccessResult(val, 2, 1);
-        checkPlainDouble(val, 2, 2);
-        checkSuccessResult(val, 2, 3);
-    }
+    @Nested
+    class Arithmetic {}
 
-    @Test
-    void dependenciesLoop() {
-        model.setValueAt("=A3", 3, 0);
-        checkErrorResult("Circular dependency", 3, 0);
-    }
+    @Nested
+    class Functions {}
 
-    @Test
-    void dependenciesTwoCycles() {
-        double val = 42;
-        // A4:C4 is a cycle
-        model.setValueAt("= C4", 4, 0);
-        model.setValueAt("= A4", 4, 1);
-        model.setValueAt("= B4", 4, 2);
-        // E4:C4 is a cycle
-        model.setValueAt("= D4", 4, 2);
-        model.setValueAt("= E4", 4, 3);
-        model.setValueAt("= C4", 4, 4);
-        checkErrorResult("Circular dependency", 4, 0);
-        checkErrorResult("Circular dependency", 4, 1);
-        checkErrorResult("Circular dependency", 4, 2);
-        checkErrorResult("Circular dependency", 4, 3);
-        checkErrorResult("Circular dependency", 4, 4);
-        // Break the cycle
-        model.setValueAt(null, 4, 2);
-        checkErrorResult("Cell C4 is uninitialized", 4, 0);
-        checkErrorResult("Cell C4 is uninitialized", 4, 1);
-        checkErrorResult("Cell C4 is uninitialized", 4, 3);
-        checkErrorResult("Cell C4 is uninitialized", 4, 4);
-        model.setValueAt(Double.toString(42), 4, 2);
-        checkSuccessResult(val, 4, 0);
-        checkSuccessResult(val, 4, 1);
-        checkSuccessResult(val, 4, 3);
-        checkSuccessResult(val, 4, 4);
-    }
+    @Nested
+    class EvaluationWithReferences {
+        @Test
+        void simpleReferences() {
+            double val = 42;
+            model.setValueAt(Double.toString(val), 0, 0);
+            model.setValueAt("= A0 + 1", 0, 1);
+            model.setValueAt("= B0 - 1", 0, 2);
+            checkSuccessResult(val + 1, 0, 1);
+            checkSuccessResult(val, 0, 2);
+            val += 0.5;
+            model.setValueAt(Double.toString(val), 0, 0);
+            checkSuccessResult(val + 1, 0, 1);
+            checkSuccessResult(val, 0, 2);
+        }
 
-    private void checkPlainDouble(double expected, int row, int column) {
-        Value val = model.getValueAt(row, column);
-        assertSame(val.getTag(), Value.Type.DOUBLE);
-        assertEquals(expected, val.getAsDouble(), 0);
-    }
+        @Test
+        void dependenciesSimpleCycle() {
+            double val = 42;
+            // A0:C0 is a cycle
+            model.setValueAt("= C0", 0, 0);
+            model.setValueAt("= A0", 0, 1);
+            model.setValueAt("= B0", 0, 2);
+            // D0 -> C0
+            model.setValueAt("= C0", 0, 3);
+            checkErrorResult("Circular dependency", 0, 0);
+            checkErrorResult("Circular dependency", 0, 1);
+            checkErrorResult("Circular dependency", 0, 2);
+            checkErrorResult("Circular dependency", 0, 3);
+            // Break the cycle
+            model.setValueAt(Double.toString(val), 0, 2);
+            checkSuccessResult(val, 0, 0);
+            checkSuccessResult(val, 0, 1);
+            checkPlainDouble(val, 0, 2);
+            checkSuccessResult(val, 0, 3);
+        }
 
-    private void checkSuccessResult(double expected, int row, int column) {
-        Value val = model.getValueAt(row, column);
-        assertSame(val.getTag(), Value.Type.EXPR);
-        Result result = val.getAsExpr().getResult();
-        assertEquals(expected, result.get().getAsDouble(), 0);
-    }
+        @Test
+        void dependenciesLoop() {
+            model.setValueAt("=A0", 0, 0);
+            checkErrorResult("Circular dependency", 0, 0);
+        }
 
-    private void checkErrorResult(String expected, int row, int column) {
-        Value val = model.getValueAt(row, column);
-        assertSame(val.getTag(), Value.Type.EXPR);
-        Result result = val.getAsExpr().getResult();
-        assertEquals(expected, result.message());
+        @Test
+        void dependenciesTwoCycles() {
+            double val = 42;
+            // A0:C0 is a cycle
+            model.setValueAt("= C0", 0, 0);
+            model.setValueAt("= A0", 0, 1);
+            model.setValueAt("= B0", 0, 2);
+            // E0:C0 is a cycle
+            model.setValueAt("= D0", 0, 2);
+            model.setValueAt("= E0", 0, 3);
+            model.setValueAt("= C0", 0, 4);
+            checkErrorResult("Circular dependency", 0, 0);
+            checkErrorResult("Circular dependency", 0, 1);
+            checkErrorResult("Circular dependency", 0, 2);
+            checkErrorResult("Circular dependency", 0, 3);
+            checkErrorResult("Circular dependency", 0, 4);
+            // Break the cycle
+            model.setValueAt(null, 0, 2);
+            checkErrorResult("Cell C0 is uninitialized", 0, 0);
+            checkErrorResult("Cell C0 is uninitialized", 0, 1);
+            checkErrorResult("Cell C0 is uninitialized", 0, 3);
+            checkErrorResult("Cell C0 is uninitialized", 0, 4);
+            model.setValueAt(Double.toString(42), 0, 2);
+            checkSuccessResult(val, 0, 0);
+            checkSuccessResult(val, 0, 1);
+            checkSuccessResult(val, 0, 3);
+            checkSuccessResult(val, 0, 4);
+        }
+
+        private void checkPlainDouble(double expected, int row, int column) {
+            Value val = model.getValueAt(row, column);
+            assertSame(val.getTag(), Value.Type.DOUBLE);
+            assertEquals(expected, val.getAsDouble(), 0);
+        }
+
+        private void checkSuccessResult(double expected, int row, int column) {
+            Value val = model.getValueAt(row, column);
+            assertSame(val.getTag(), Value.Type.EXPR);
+            Result result = val.getAsExpr().getResult();
+            assertEquals(expected, result.get().getAsDouble(), 0);
+        }
+
+        private void checkErrorResult(String expected, int row, int column) {
+            Value val = model.getValueAt(row, column);
+            assertSame(val.getTag(), Value.Type.EXPR);
+            Result result = val.getAsExpr().getResult();
+            assertEquals(expected, result.message());
+        }
     }
 }
