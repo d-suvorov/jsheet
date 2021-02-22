@@ -41,11 +41,20 @@ public class TableModelTest {
     }
 
     private void testDoubleValuedFormula(String formula, double expectedResult) {
+        Result result = testFormulaImpl(formula);
+        assertEquals(expectedResult, result.get().getAsDouble(), 0);
+    }
+
+    private void testBooleanValuedFormula(String formula, boolean expectedResult) {
+        Result result = testFormulaImpl(formula);
+        assertEquals(expectedResult, result.get().getAsBoolean());
+    }
+
+    private Result testFormulaImpl(String formula) {
         model.setValueAt(formula, 0, 0);
         Value value = model.getValueAt(0, 0);
         assertSame(Value.Type.EXPR, value.getTag());
-        Result result = value.getAsExpr().getResult();
-        assertEquals(expectedResult, result.get().getAsDouble(), 0);
+        return value.getAsExpr().getResult();
     }
 
     @Nested
@@ -63,6 +72,47 @@ public class TableModelTest {
         @Test
         public void divisionByZero() {
             testDoubleValuedFormula("= 42 / 0", Double.POSITIVE_INFINITY);
+        }
+    }
+
+    @Nested
+    class Comparison {
+        @Test
+        public void less() {
+            testBooleanValuedFormula("= 1 < 2", true);
+        }
+
+        @Test
+        public void lessOrEqual() {
+            testBooleanValuedFormula("= 1 <= 2", true);
+        }
+
+        @Test
+        public void greater() {
+            testBooleanValuedFormula("= 1 > 2", false);
+        }
+
+        @Test
+        public void greaterOrEqual() {
+            testBooleanValuedFormula("= 1 >= 2", false);
+        }
+    }
+
+    @Nested
+    class Logical {
+        @Test
+        public void and() {
+            testBooleanValuedFormula("= false && true", false);
+        }
+
+        @Test
+        public void or() {
+            testBooleanValuedFormula("= false || true", true);
+        }
+
+        @Test
+        public void simple() {
+            testBooleanValuedFormula("= 1 > 2 || 1 != 42", true);
         }
     }
 

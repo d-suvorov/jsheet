@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
+import static org.jsheet.model.Value.Type.BOOLEAN;
 import static org.jsheet.model.Value.Type.DOUBLE;
 
 public class Binop extends Expr {
@@ -24,31 +25,120 @@ public class Binop extends Expr {
         this.rhs = rhs;
     }
 
-    @SuppressWarnings("Convert2MethodRef")
     @Override
     public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
         List<Expr> params = Arrays.asList(lhs, rhs);
         List<Value> values = evaluate(params, model, refToCell);
         if (values == null)
             return evaluationError;
+        if (isArithmetic())
+            return evalArithmetic(values);
+        if (isLogical())
+            return evalLogical(values);
+        if (isComparison())
+            return evalComparison(values);
+        throw new AssertionError();
+    }
 
+    @SuppressWarnings("Convert2MethodRef")
+    private Result evalArithmetic(List<Value> values) {
         List<Value.Type> types = Arrays.asList(DOUBLE, DOUBLE);
         if (!typecheck(values, types))
             return typecheckError;
 
         BiFunction<Double, Double, Double> binary;
         switch (op) {
-            case "+": binary = (a, b) -> a + b; break;
-            case "-": binary = (a, b) -> a - b; break;
-            case "*": binary = (a, b) -> a * b; break;
-            case "/": binary = (a, b) -> a / b; break;
-            default: throw new AssertionError();
+            case "+":
+                binary = (a, b) -> a + b;
+                break;
+            case "-":
+                binary = (a, b) -> a - b;
+                break;
+            case "*":
+                binary = (a, b) -> a * b;
+                break;
+            case "/":
+                binary = (a, b) -> a / b;
+                break;
+            default:
+                throw new AssertionError();
         }
 
         Value lhsValue = values.get(0);
         Value rhsValue = values.get(1);
         Double result = binary.apply(lhsValue.getAsDouble(), rhsValue.getAsDouble());
         return Result.success(Value.of(result));
+    }
+
+    private Result evalLogical(List<Value> values) {
+        List<Value.Type> types = Arrays.asList(BOOLEAN, BOOLEAN);
+        if (!typecheck(values, types))
+            return typecheckError;
+
+        BiFunction<Boolean, Boolean, Boolean> binary;
+        switch (op) {
+            case "&&":
+                binary = Boolean::logicalAnd;
+                break;
+            case "||":
+                binary = Boolean::logicalOr;
+                break;
+            default:
+                throw new AssertionError();
+        }
+
+        Value lhsValue = values.get(0);
+        Value rhsValue = values.get(1);
+        Boolean result = binary.apply(lhsValue.getAsBoolean(), rhsValue.getAsBoolean());
+        return Result.success(Value.of(result));
+    }
+
+    @SuppressWarnings("Convert2MethodRef")
+    private Result evalComparison(List<Value> values) {
+        List<Value.Type> types = Arrays.asList(DOUBLE, DOUBLE);
+        if (!typecheck(values, types))
+            return typecheckError;
+
+        BiFunction<Double, Double, Boolean> binary;
+        switch (op) {
+            case "<":
+                binary = (a, b) -> a < b;
+                break;
+            case "<=":
+                binary = (a, b) -> a <= b;
+                break;
+            case ">":
+                binary = (a, b) -> a > b;
+                break;
+            case ">=":
+                binary = (a, b) -> a >= b;
+                break;
+            case "==":
+                binary = (a, b) -> a.equals(b);
+                break;
+            case "!=":
+                binary = (a, b) -> !a.equals(b);
+                break;
+            default:
+                throw new AssertionError();
+        }
+
+        Value lhsValue = values.get(0);
+        Value rhsValue = values.get(1);
+        Boolean result = binary.apply(lhsValue.getAsDouble(), rhsValue.getAsDouble());
+        return Result.success(Value.of(result));
+    }
+
+    private boolean isArithmetic() {
+        return List.of("+", "-", "*", "/").contains(op);
+    }
+
+    private boolean isLogical() {
+        return List.of("&&", "||").contains(op);
+    }
+
+    private boolean isComparison() {
+        return List.of("<", "<=", ">", ">=", "==", "!=").contains(op);
     }
 
     @Override
