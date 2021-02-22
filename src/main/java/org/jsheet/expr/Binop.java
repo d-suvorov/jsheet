@@ -55,7 +55,6 @@ public class Binop extends Expr {
             case "/": binary = (a, b) -> a / b; break;
             default: throw new AssertionError();
         }
-        // FIXME: division by 0
         Double result = binary.apply(lhsValue.getAsDouble(), rhsValue.getAsDouble());
         return Result.success(Value.of(result));
     }

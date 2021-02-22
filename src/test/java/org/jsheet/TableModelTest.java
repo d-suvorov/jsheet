@@ -59,6 +59,11 @@ public class TableModelTest {
         public void simpleExpression2() {
             testDoubleValuedFormula("= (1 + 2) * 3", (1 + 2) * 3);
         }
+
+        @Test
+        public void divisionByZero() {
+            testDoubleValuedFormula("= 42 / 0", Double.POSITIVE_INFINITY);
+        }
     }
 
     @Nested
