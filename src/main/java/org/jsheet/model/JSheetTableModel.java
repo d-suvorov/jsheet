@@ -113,8 +113,7 @@ public class JSheetTableModel extends AbstractTableModel {
         // Number
         try {
             return Value.of(Double.parseDouble(value));
-        } catch (NumberFormatException ignored) {
-        }
+        } catch (NumberFormatException ignored) {}
 
         // String
         return Value.of(value);
@@ -253,7 +252,8 @@ public class JSheetTableModel extends AbstractTableModel {
          */
         Collection<JSheetCell> getDependentOn(JSheetCell cell) {
             Set<JSheetCell> dependent = new HashSet<>();
-            if (getValueAt(cell.row, cell.column).getTag() == Value.Type.EXPR)
+            Value cellValue = getValueAt(cell.row, cell.column);
+            if (cellValue != null && cellValue.getTag() == Value.Type.EXPR)
                 dependent.add(cell);
             Queue<JSheetCell> queue = new ArrayDeque<>();
             queue.add(cell);
