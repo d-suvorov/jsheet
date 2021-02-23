@@ -1,4 +1,4 @@
-package org.jsheet.expr;
+package org.jsheet.model.expr;
 
 import org.jsheet.model.JSheetCell;
 import org.jsheet.model.JSheetTableModel;

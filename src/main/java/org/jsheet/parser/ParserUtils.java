@@ -4,7 +4,7 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.jsheet.ExpressionLexer;
 import org.jsheet.ExpressionParser;
-import org.jsheet.expr.Expr;
+import org.jsheet.model.expr.Expr;
 import org.jsheet.model.ExprWrapper;
 
 public class ParserUtils {

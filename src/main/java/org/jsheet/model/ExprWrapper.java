@@ -1,6 +1,6 @@
 package org.jsheet.model;
 
-import org.jsheet.expr.Expr;
+import org.jsheet.model.expr.Expr;
 
 import java.util.Collections;
 import java.util.HashMap;

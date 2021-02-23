@@ -1,9 +1,9 @@
 package org.jsheet;
 
-import org.jsheet.expr.Binop;
-import org.jsheet.expr.Expr;
-import org.jsheet.expr.Function;
-import org.jsheet.expr.Literal;
+import org.jsheet.model.expr.Binop;
+import org.jsheet.model.expr.Expr;
+import org.jsheet.model.expr.Function;
+import org.jsheet.model.expr.Literal;
 import org.jsheet.model.ExprWrapper;
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Value;
