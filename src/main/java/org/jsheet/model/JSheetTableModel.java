@@ -18,6 +18,8 @@ public class JSheetTableModel extends AbstractTableModel {
     private static final int DEFAULT_ROW_COUNT = 100;
     private static final int DEFAULT_COLUMN_COUNT = 26;
 
+    private static final Pattern REF_PATTERN = Pattern.compile("([a-zA-Z]+)(\\d+)");
+
     private final List<Value[]> data;
     private final DependencyManager dependencies = new DependencyManager();
     private boolean modified = false;
@@ -59,8 +61,15 @@ public class JSheetTableModel extends AbstractTableModel {
         return data.get(0).length;
     }
 
+    private boolean containsCell(int rowIndex, int columnIndex) {
+        return rowIndex >= 0 && rowIndex < getRowCount()
+            && columnIndex >= 0 && columnIndex < getColumnCount();
+    }
+
     @Override
     public Value getValueAt(int rowIndex, int columnIndex) {
+        if (!containsCell(rowIndex, columnIndex))
+            throw new IllegalArgumentException("out of bounds");
         return data.get(rowIndex)[columnIndex];
     }
 
@@ -120,8 +129,7 @@ public class JSheetTableModel extends AbstractTableModel {
     }
 
     public JSheetCell resolveRef(String name) {
-        Pattern pattern = Pattern.compile("([a-zA-Z]+)(\\d+)");
-        Matcher matcher = pattern.matcher(name);
+        Matcher matcher = REF_PATTERN.matcher(name);
         if (!matcher.matches())
             return null;
 
@@ -208,15 +216,14 @@ public class JSheetTableModel extends AbstractTableModel {
         private final Map<JSheetCell, ComputationStage> computationStage = new HashMap<>();
 
         void addFormula(JSheetCell cell, ExprWrapper formula) {
-            Map<String, JSheetCell> refToCell = formula.getRefToCell();
-            for (var c : refToCell.values()) {
-                addLink(cell, c);
+            for (var r : formula.getRefs()) {
+                addLink(cell, r.getCell());
             }
         }
 
         void removeFormula(JSheetCell cell, ExprWrapper formula) {
-            for (var c : formula.getRefToCell().values()) {
-                removeLink(cell, c);
+            for (var r : formula.getRefs()) {
+                removeLink(cell, r.getCell());
             }
         }
 

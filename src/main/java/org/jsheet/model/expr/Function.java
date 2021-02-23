@@ -19,23 +19,21 @@ public class Function extends Expr {
     }
 
     @Override
-    public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
+    public Result eval(JSheetTableModel model) {
         if (name.equals("pow")) {
-            return evalPow(args, model, refToCell);
+            return evalPow(args, model);
         }
         if (name.equals("length")) {
-            return evalLength(args, model, refToCell);
+            return evalLength(args, model);
         }
         return failure("Unknown function: " + name);
     }
 
-    private Result evalPow(List<Expr> args,
-        JSheetTableModel model, Map<String, JSheetCell> refToCell)
-    {
+    private Result evalPow(List<Expr> args, JSheetTableModel model) {
         if (args.size() != 2)
             return failure("Wrong number of arguments for function: pow");
 
-        List<Value> values = evaluate(args, model, refToCell);
+        List<Value> values = evaluate(args, model);
         if (values == null)
             return evaluationError;
 
@@ -49,13 +47,11 @@ public class Function extends Expr {
         return Result.success(Value.of(result));
     }
 
-    private Result evalLength(List<Expr> args,
-        JSheetTableModel model, Map<String, JSheetCell> refToCell)
-    {
+    private Result evalLength(List<Expr> args, JSheetTableModel model) {
         if (args.size() != 1)
             return failure("Wrong number of arguments for function: length");
 
-        List<Value> values = evaluate(args, model, refToCell);
+        List<Value> values = evaluate(args, model);
         if (values == null)
             return evaluationError;
 

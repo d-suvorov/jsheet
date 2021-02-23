@@ -1,10 +1,12 @@
 package org.jsheet.model.expr;
 
-import org.jsheet.model.*;
+import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.Result;
+import org.jsheet.model.Type;
+import org.jsheet.model.Value;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
@@ -23,9 +25,9 @@ public class Binop extends Expr {
     }
 
     @Override
-    public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
+    public Result eval(JSheetTableModel model) {
         List<Expr> params = Arrays.asList(lhs, rhs);
-        List<Value> values = evaluate(params, model, refToCell);
+        List<Value> values = evaluate(params, model);
         if (values == null)
             return evaluationError;
         if (isArithmetic())

@@ -1,16 +1,18 @@
 package org.jsheet.model.expr;
 
-import org.jsheet.model.*;
+import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.Result;
+import org.jsheet.model.Type;
+import org.jsheet.model.Value;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public abstract class Expr {
-    public abstract Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell);
-
     protected Result evaluationError;
     protected Result typecheckError;
+
+    public abstract Result eval(JSheetTableModel model);
 
     /**
      * Evaluates a list of expressions.
@@ -18,12 +20,10 @@ public abstract class Expr {
      *
      * @return a list of values or {@code null} if an error occurs.
      */
-    protected List<Value> evaluate(List<Expr> params,
-        JSheetTableModel model, Map<String, JSheetCell> refToCell)
-    {
+    protected List<Value> evaluate(List<Expr> params, JSheetTableModel model) {
         List<Value> values = new ArrayList<>(params.size());
         for (var p : params) {
-            Result res = p.eval(model, refToCell);
+            Result res = p.eval(model);
             if (!res.isPresent()) {
                 evaluationError = res;
                 return null;
@@ -34,12 +34,10 @@ public abstract class Expr {
     }
 
     /**
-     * Same as {@link Expr#evaluate(List, JSheetTableModel, Map) but for a single value}.
+     * Same as {@link Expr#evaluate(List, JSheetTableModel) but for a single value}.
      */
-    protected Value evaluate(Expr param,
-        JSheetTableModel model, Map<String, JSheetCell> refToCell)
-    {
-        Result res = param.eval(model, refToCell);
+    protected Value evaluate(Expr param, JSheetTableModel model) {
+        Result res = param.eval(model);
         if (!res.isPresent()) {
             evaluationError = res;
             return null;

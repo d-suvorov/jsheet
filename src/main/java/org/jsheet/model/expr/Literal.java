@@ -1,11 +1,9 @@
 package org.jsheet.model.expr;
 
-import org.jsheet.model.JSheetCell;
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
 import org.jsheet.model.Value;
 
-import java.util.Map;
 import java.util.Objects;
 
 public class Literal extends Expr {
@@ -20,7 +18,7 @@ public class Literal extends Expr {
     }
 
     @Override
-    public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
+    public Result eval(JSheetTableModel model) {
         return Result.success(value);
     }
 

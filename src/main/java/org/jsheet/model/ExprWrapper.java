@@ -1,11 +1,10 @@
 package org.jsheet.model;
 
 import org.jsheet.model.expr.Expr;
+import org.jsheet.model.expr.Ref;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ExprWrapper {
     public final String originalDefinition;
@@ -13,23 +12,20 @@ public class ExprWrapper {
 
     private Result result;
 
-    private final List<String> refs;
-    private Map<String, JSheetCell> refToCell;
+    private final List<Ref> refs;
 
-    public ExprWrapper(String originalDefinition, Expr expression, List<String> refs) {
+    public ExprWrapper(String originalDefinition, Expr expression, List<Ref> refs) {
         this.originalDefinition = originalDefinition;
         this.expression = expression;
         this.refs = refs;
     }
 
-    public Map<String, JSheetCell> getRefToCell() {
-        return Collections.unmodifiableMap(refToCell);
+    public List<Ref> getRefs() {
+        return Collections.unmodifiableList(refs);
     }
 
     public Result eval(JSheetTableModel model) {
-        if (refToCell == null)
-            resolveRefs(model);
-        result = expression.eval(model, refToCell);
+        result = expression.eval(model);
         return result;
     }
 
@@ -42,14 +38,7 @@ public class ExprWrapper {
     }
 
     void resolveRefs(JSheetTableModel model) {
-        if (refToCell == null) {
-            refToCell = new HashMap<>();
-        }
-        for (String ref : refs) {
-            JSheetCell cell = model.resolveRef(ref);
-            if (cell != null)
-                refToCell.put(ref, cell);
-        }
+        refs.forEach(r -> r.resolve(model));
     }
 
     @Override

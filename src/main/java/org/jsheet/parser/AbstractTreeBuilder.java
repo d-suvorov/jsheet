@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AbstractTreeBuilder extends ExpressionBaseVisitor<Expr> {
-    private final List<String> refs = new ArrayList<>();
+    private final List<Ref> refs = new ArrayList<>();
 
-    public List<String> getRefs() {
+    public List<Ref> getRefs() {
         return refs;
     }
 
@@ -42,8 +42,9 @@ public class AbstractTreeBuilder extends ExpressionBaseVisitor<Expr> {
     @Override
     public Ref visitReferenceExpr(ExpressionParser.ReferenceExprContext ctx) {
         String id = ctx.ID().getText();
-        refs.add(id);
-        return new Ref(id);
+        Ref ref = new Ref(id);
+        refs.add(ref);
+        return ref;
     }
 
     @Override

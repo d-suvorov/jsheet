@@ -1,8 +1,10 @@
 package org.jsheet.model.expr;
 
-import org.jsheet.model.*;
+import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.Result;
+import org.jsheet.model.Type;
+import org.jsheet.model.Value;
 
-import java.util.Map;
 import java.util.Objects;
 
 public class Conditional extends Expr {
@@ -17,8 +19,8 @@ public class Conditional extends Expr {
     }
 
     @Override
-    public Result eval(JSheetTableModel model, Map<String, JSheetCell> refToCell) {
-        Value condValue = evaluate(condition, model, refToCell);
+    public Result eval(JSheetTableModel model) {
+        Value condValue = evaluate(condition, model);
         if (condValue == null)
             return evaluationError;
         if (condValue.getTag() != Type.BOOLEAN) {
@@ -26,7 +28,7 @@ public class Conditional extends Expr {
             return Result.failure(msg);
         }
         Expr chosen = condValue.getAsBoolean() ? thenClause : elseClause;
-        Value resultValue = evaluate(chosen, model, refToCell);
+        Value resultValue = evaluate(chosen, model);
         if (resultValue == null)
             return evaluationError;
         return Result.success(resultValue);
