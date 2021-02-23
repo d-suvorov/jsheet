@@ -5,6 +5,8 @@ import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Value;
 
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -173,13 +175,48 @@ public class JSheet extends JFrame {
 
             model = new JSheetTableModel();
             table = new JSheetTable(model);
+            table.setDefaultRenderer(Value.class, new ExpressionRenderer());
             table.setPreferredScrollableViewportSize(new Dimension(1500, 800));
             table.setFillsViewportHeight(true);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-            JScrollPane scrollPane = new JScrollPane(table);
+            JTable rowHeader = new JTable(new AbstractTableModel() {
+                @Override
+                public int getRowCount() {
+                    return model.getRowCount();
+                }
+
+                @Override
+                public int getColumnCount() {
+                    return 1;
+                }
+
+                @Override
+                public Object getValueAt(int rowIndex, int columnIndex) {
+                    return rowIndex;
+                }
+            });
+            DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+                public Component getTableCellRendererComponent(
+                    JTable t, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column)
+                {
+                    setBackground(table.getTableHeader().getBackground());
+                    setFont(table.getTableHeader().getFont());
+                    setHorizontalAlignment(CENTER);
+                    setText(value.toString());
+                    return this;
+                }
+            };
+            rowHeader.getColumnModel().getColumn(0).setCellRenderer(renderer);
+            rowHeader.getColumnModel().getColumn(0).setPreferredWidth(30);
+            rowHeader.setPreferredScrollableViewportSize(rowHeader.getPreferredSize());
+
+            JScrollPane scrollPane = new JScrollPane();
+            scrollPane.setViewportView(table);
+            scrollPane.setRowHeaderView(rowHeader);
+
             add(scrollPane);
-
-            table.setDefaultRenderer(Value.class, new ExpressionRenderer());
         }
     }
 
