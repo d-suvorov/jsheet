@@ -285,8 +285,7 @@ public class JSheet extends JFrame {
         String[] names,
         int[] mnemonics,
         KeyStroke[] accelerators,
-        ActionListener[] listeners
-    )
+        ActionListener[] listeners)
     {
         if (names.length != mnemonics.length || mnemonics.length != accelerators.length) {
             throw new IllegalArgumentException();
