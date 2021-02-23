@@ -2,6 +2,7 @@ package org.jsheet;
 
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
+import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +54,7 @@ public class TableModelTest {
     private Result testFormulaImpl(String formula) {
         model.setValueAt(formula, 0, 0);
         Value value = model.getValueAt(0, 0);
-        assertSame(Value.Type.EXPR, value.getTag());
+        assertSame(Type.EXPR, value.getTag());
         return value.getAsExpr().getResult();
     }
 
@@ -142,7 +143,7 @@ public class TableModelTest {
             model.setValueAt("abracadabra", 0, 0);
             model.setValueAt("= length(A0)", 0, 1);
             Value value = model.getValueAt(0, 1);
-            assertSame(Value.Type.EXPR, value.getTag());
+            assertSame(Type.EXPR, value.getTag());
             Result result = value.getAsExpr().getResult();
             assertEquals("abracadabra".length(), result.get().getAsDouble(), 0);
         }
@@ -151,7 +152,7 @@ public class TableModelTest {
         public void undefined() {
             model.setValueAt("= abracadabra(2, 4)", 0, 0);
             Value value = model.getValueAt(0, 0);
-            assertSame(Value.Type.EXPR, value.getTag());
+            assertSame(Type.EXPR, value.getTag());
             Result result = value.getAsExpr().getResult();
             assertFalse(result.isPresent());
             assertEquals("Unknown function: abracadabra", result.message());
@@ -232,20 +233,20 @@ public class TableModelTest {
 
         private void checkPlainDouble(double expected, int row, int column) {
             Value val = model.getValueAt(row, column);
-            assertSame(val.getTag(), Value.Type.DOUBLE);
+            assertSame(val.getTag(), Type.DOUBLE);
             assertEquals(expected, val.getAsDouble(), 0);
         }
 
         private void checkSuccessResult(double expected, int row, int column) {
             Value val = model.getValueAt(row, column);
-            assertSame(val.getTag(), Value.Type.EXPR);
+            assertSame(val.getTag(), Type.EXPR);
             Result result = val.getAsExpr().getResult();
             assertEquals(expected, result.get().getAsDouble(), 0);
         }
 
         private void checkErrorResult(String expected, int row, int column) {
             Value val = model.getValueAt(row, column);
-            assertSame(val.getTag(), Value.Type.EXPR);
+            assertSame(val.getTag(), Type.EXPR);
             Result result = val.getAsExpr().getResult();
             assertEquals(expected, result.message());
         }

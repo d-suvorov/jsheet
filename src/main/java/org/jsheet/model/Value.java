@@ -3,10 +3,6 @@ package org.jsheet.model;
 import java.util.Objects;
 
 public class Value {
-    public enum Type {
-        BOOLEAN, DOUBLE, STRING, EXPR
-    }
-
     private final Type tag;
     private final Object value;
 

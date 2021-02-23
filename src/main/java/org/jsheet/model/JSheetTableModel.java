@@ -79,7 +79,7 @@ public class JSheetTableModel extends AbstractTableModel {
         setModified(true);
         JSheetCell current = new JSheetCell(rowIndex, columnIndex);
         Value prev = getValueAt(rowIndex, columnIndex);
-        if (prev != null && prev.getTag() == Value.Type.EXPR) {
+        if (prev != null && prev.getTag() == Type.EXPR) {
             ExprWrapper wrapper = prev.getAsExpr();
             dependencies.removeFormula(current, wrapper);
         }
@@ -147,7 +147,7 @@ public class JSheetTableModel extends AbstractTableModel {
         if (value == null) {
             return Result.failure(String.format("Cell %s is uninitialized", strCell));
         }
-        if (value.getTag() == Value.Type.EXPR) {
+        if (value.getTag() == Type.EXPR) {
             return value.getAsExpr().getResult();
         } else { // Plain value
             return Result.success(value);
@@ -253,7 +253,7 @@ public class JSheetTableModel extends AbstractTableModel {
         Collection<JSheetCell> getDependentOn(JSheetCell cell) {
             Set<JSheetCell> dependent = new HashSet<>();
             Value cellValue = getValueAt(cell.row, cell.column);
-            if (cellValue != null && cellValue.getTag() == Value.Type.EXPR)
+            if (cellValue != null && cellValue.getTag() == Type.EXPR)
                 dependent.add(cell);
             Queue<JSheetCell> queue = new ArrayDeque<>();
             queue.add(cell);

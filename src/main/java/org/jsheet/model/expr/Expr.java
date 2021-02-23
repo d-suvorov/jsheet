@@ -1,9 +1,6 @@
 package org.jsheet.model.expr;
 
-import org.jsheet.model.JSheetCell;
-import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
-import org.jsheet.model.Value;
+import org.jsheet.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,10 +54,10 @@ public abstract class Expr {
      * @return {@code true} iff all the values have correct type.
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    protected boolean typecheck(List<Value> values, List<Value.Type> types) {
+    protected boolean typecheck(List<Value> values, List<Type> types) {
         for (int i = 0; i < values.size(); i++) {
-            Value.Type expected = types.get(i);
-            Value.Type actual = values.get(i).getTag();
+            Type expected = types.get(i);
+            Type actual = values.get(i).getTag();
             if (actual != expected) {
                 String msg = typeMismatchMessage(expected, actual);
                 typecheckError = Result.failure(msg);
@@ -70,7 +67,7 @@ public abstract class Expr {
         return true;
     }
 
-    protected String typeMismatchMessage(Value.Type expected, Value.Type actual) {
+    protected String typeMismatchMessage(Type expected, Type actual) {
         return String.format("Expected %s and got %s", expected.name(), actual.name());
     }
 }

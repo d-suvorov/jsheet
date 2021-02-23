@@ -1,9 +1,6 @@
 package org.jsheet.model.expr;
 
-import org.jsheet.model.JSheetCell;
-import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
-import org.jsheet.model.Value;
+import org.jsheet.model.*;
 
 import java.util.Map;
 import java.util.Objects;
@@ -24,8 +21,8 @@ public class Conditional extends Expr {
         Value condValue = evaluate(condition, model, refToCell);
         if (condValue == null)
             return evaluationError;
-        if (condValue.getTag() != Value.Type.BOOLEAN) {
-            String msg = typeMismatchMessage(Value.Type.BOOLEAN, condValue.getTag());
+        if (condValue.getTag() != Type.BOOLEAN) {
+            String msg = typeMismatchMessage(Type.BOOLEAN, condValue.getTag());
             return Result.failure(msg);
         }
         Expr chosen = condValue.getAsBoolean() ? thenClause : elseClause;

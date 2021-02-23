@@ -1,16 +1,13 @@
 package org.jsheet.model.expr;
 
-import org.jsheet.model.JSheetCell;
-import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
-import org.jsheet.model.Value;
+import org.jsheet.model.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.jsheet.model.Result.failure;
-import static org.jsheet.model.Value.Type.DOUBLE;
-import static org.jsheet.model.Value.Type.STRING;
+import static org.jsheet.model.Type.DOUBLE;
+import static org.jsheet.model.Type.STRING;
 
 public class Function extends Expr {
     private final String name;
@@ -42,7 +39,7 @@ public class Function extends Expr {
         if (values == null)
             return evaluationError;
 
-        List<Value.Type> types = Arrays.asList(DOUBLE, DOUBLE);
+        List<Type> types = Arrays.asList(DOUBLE, DOUBLE);
         if (!typecheck(values, types))
             return typecheckError;
 
@@ -62,7 +59,7 @@ public class Function extends Expr {
         if (values == null)
             return evaluationError;
 
-        List<Value.Type> types = Collections.singletonList(STRING);
+        List<Type> types = Collections.singletonList(STRING);
         if (!typecheck(values, types))
             return typecheckError;
 

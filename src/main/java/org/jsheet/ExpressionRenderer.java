@@ -1,6 +1,7 @@
 package org.jsheet;
 
 import org.jsheet.model.Result;
+import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 
 import javax.swing.table.DefaultTableCellRenderer;
@@ -9,7 +10,7 @@ public class ExpressionRenderer extends DefaultTableCellRenderer {
     @Override
     protected void setValue(Object o) {
         Value value = (Value) o;
-        if (value.getTag() == Value.Type.EXPR) {
+        if (value.getTag() == Type.EXPR) {
             Result result = value.getAsExpr().getResult();
             if (!result.isPresent()) {
                 setText("!ERROR");

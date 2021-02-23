@@ -1,9 +1,6 @@
 package org.jsheet.model.expr;
 
-import org.jsheet.model.JSheetCell;
-import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
-import org.jsheet.model.Value;
+import org.jsheet.model.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,8 +8,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
-import static org.jsheet.model.Value.Type.BOOLEAN;
-import static org.jsheet.model.Value.Type.DOUBLE;
+import static org.jsheet.model.Type.BOOLEAN;
+import static org.jsheet.model.Type.DOUBLE;
 
 public class Binop extends Expr {
     private final String op;
@@ -42,7 +39,7 @@ public class Binop extends Expr {
 
     @SuppressWarnings("Convert2MethodRef")
     private Result evalArithmetic(List<Value> values) {
-        List<Value.Type> types = Arrays.asList(DOUBLE, DOUBLE);
+        List<Type> types = Arrays.asList(DOUBLE, DOUBLE);
         if (!typecheck(values, types))
             return typecheckError;
 
@@ -71,7 +68,7 @@ public class Binop extends Expr {
     }
 
     private Result evalLogical(List<Value> values) {
-        List<Value.Type> types = Arrays.asList(BOOLEAN, BOOLEAN);
+        List<Type> types = Arrays.asList(BOOLEAN, BOOLEAN);
         if (!typecheck(values, types))
             return typecheckError;
 
@@ -95,7 +92,7 @@ public class Binop extends Expr {
 
     @SuppressWarnings("Convert2MethodRef")
     private Result evalComparison(List<Value> values) {
-        List<Value.Type> types = Arrays.asList(DOUBLE, DOUBLE);
+        List<Type> types = Arrays.asList(DOUBLE, DOUBLE);
         if (!typecheck(values, types))
             return typecheckError;
 

@@ -2,6 +2,7 @@ package org.jsheet;
 
 import com.opencsv.exceptions.CsvValidationException;
 import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -46,9 +47,9 @@ public class FileLoadStoreTest {
             for (int column = 0; column < read.getColumnCount(); column++) {
                 Value expected = model.getValueAt(row, column);
                 Value actual = read.getValueAt(row, column);
-                if (expected != null && expected.getTag() == Value.Type.EXPR) {
+                if (expected != null && expected.getTag() == Type.EXPR) {
                     assertNotNull(actual);
-                    assertSame(Value.Type.EXPR, actual.getTag());
+                    assertSame(Type.EXPR, actual.getTag());
                     assertEquals(
                         expected.getAsExpr().eval(model),
                         actual.getAsExpr().eval(read)
