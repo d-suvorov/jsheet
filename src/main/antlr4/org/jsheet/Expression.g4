@@ -1,16 +1,19 @@
 grammar Expression;
 
 expr
-    : '(' expr ')'                                      # parenthesisExpr
-    | left=expr op=('*' | '/')               right=expr # infixExpr
-    | left=expr op=('+' | '-')               right=expr # infixExpr
-    | left=expr op=('<' | '<=' | '>' | '>=') right=expr # infixExpr
-    | left=expr op=('==' | '!=')             right=expr # infixExpr
-    | left=expr op='&&'                      right=expr # infixExpr
-    | left=expr op='||'                      right=expr # infixExpr
-    | ID '(' args ')'                                   # functionExpr
-    | reference=ID                                      # referenceExpr
-    | literal                                           # literalExpr
+    : '(' expr ')'                                       # parenthesisExpr
+    | left=expr op=('*' | '/')               right=expr  # infixExpr
+    | left=expr op=('+' | '-')               right=expr  # infixExpr
+    | left=expr op=('<' | '<=' | '>' | '>=') right=expr  # infixExpr
+    | left=expr op=('==' | '!=')             right=expr  # infixExpr
+    | left=expr op='&&'                      right=expr  # infixExpr
+    | left=expr op='||'                      right=expr  # infixExpr
+    | ID '(' args ')'                                    # functionExpr
+    | reference=ID                                       # referenceExpr
+    | literal                                            # literalExpr
+    | 'if' cond=expr
+      'then' thenClause=expr
+      'else' elseClause=expr                             # conditionalExpr
     ;
 
 args

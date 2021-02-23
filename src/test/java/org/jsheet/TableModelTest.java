@@ -117,6 +117,15 @@ public class TableModelTest {
     }
 
     @Nested
+    class Conditional {
+        @Test
+        public void conditional() {
+            testDoubleValuedFormula("= if true then 42 else 0", 42);
+            testDoubleValuedFormula("= if false then 42 else 0", 0);
+        }
+    }
+
+    @Nested
     class Functions {
         @Test
         public void pow() {

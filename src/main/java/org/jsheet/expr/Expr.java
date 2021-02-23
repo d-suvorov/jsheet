@@ -25,8 +25,8 @@ public abstract class Expr {
         JSheetTableModel model, Map<String, JSheetCell> refToCell)
     {
         List<Value> values = new ArrayList<>(params.size());
-        for (var e : params) {
-            Result res = e.eval(model, refToCell);
+        for (var p : params) {
+            Result res = p.eval(model, refToCell);
             if (!res.isPresent()) {
                 evaluationError = res;
                 return null;
@@ -34,6 +34,20 @@ public abstract class Expr {
             values.add(res.get());
         }
         return values;
+    }
+
+    /**
+     * Same as {@link Expr#evaluate(List, JSheetTableModel, Map) but for a single value}.
+     */
+    protected Value evaluate(Expr param,
+        JSheetTableModel model, Map<String, JSheetCell> refToCell)
+    {
+        Result res = param.eval(model, refToCell);
+        if (!res.isPresent()) {
+            evaluationError = res;
+            return null;
+        }
+        return res.get();
     }
 
     /**
@@ -48,13 +62,15 @@ public abstract class Expr {
             Value.Type expected = types.get(i);
             Value.Type actual = values.get(i).getTag();
             if (actual != expected) {
-                String msg = String.format(
-                    "Expected %s and got %s",
-                    expected.name(), actual.name());
+                String msg = typeMismatchMessage(expected, actual);
                 typecheckError = Result.failure(msg);
                 return false;
             }
         }
         return true;
+    }
+
+    protected String typeMismatchMessage(Value.Type expected, Value.Type actual) {
+        return String.format("Expected %s and got %s", expected.name(), actual.name());
     }
 }

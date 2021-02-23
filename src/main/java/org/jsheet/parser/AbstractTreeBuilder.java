@@ -67,4 +67,12 @@ public class AbstractTreeBuilder extends ExpressionBaseVisitor<Expr> {
         String name = ctx.ID().getText();
         return new Function(name, args);
     }
+
+    @Override
+    public Expr visitConditionalExpr(ExpressionParser.ConditionalExprContext ctx) {
+        Expr condition = visit(ctx.cond);
+        Expr thenClause = visit(ctx.thenClause);
+        Expr elseClause = visit(ctx.elseClause);
+        return new Conditional(condition, thenClause, elseClause);
+    }
 }
