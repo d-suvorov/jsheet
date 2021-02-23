@@ -21,8 +21,8 @@ public class FileLoadStoreTest {
         Object[][] data = {
             { "1", "2", "3", "4", "5" },
             { null, null, null, null, null },
-            { "a,bc", "=A0+BO", "ab\nc", null, "42" },
-            { null, null, null, null, null },
+            { "a,bc", "=A0+BX", "ab\nc", null, "42" },
+            { null, null, "=A0+B0", null, null },
             { null, null, null, null, null }
         };
         for (int row = 0; row < data.length; row++) {
