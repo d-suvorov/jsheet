@@ -42,7 +42,7 @@ public class FileLoadStoreTest {
 
         assertNotNull(read);
         assertEquals(model.getColumnCount(), read.getColumnCount());
-        assertEquals(3, read.getRowCount());
+        assertEquals(model.getRowCount(), read.getRowCount());
         for (int row = 0; row < read.getRowCount(); row++) {
             for (int column = 0; column < read.getColumnCount(); column++) {
                 Value expected = model.getValueAt(row, column);

@@ -162,19 +162,6 @@ public class JSheetTableModel extends AbstractTableModel {
         this.modified = modified;
     }
 
-    private int nonEmptyRowsCount() {
-        int lastNonEmpty = -1;
-        for (int i = getRowCount() - 1; i >= 0; i--) {
-            boolean nonEmpty = Arrays.stream(data.get(i))
-                .anyMatch(Objects::nonNull);
-            if (nonEmpty) {
-                lastNonEmpty = i;
-                break;
-            }
-        }
-        return lastNonEmpty + 1;
-    }
-
     /**
      * Deserializes a model from a CSV {@code file}.
      */
@@ -199,7 +186,7 @@ public class JSheetTableModel extends AbstractTableModel {
      */
     public static void write(File file, JSheetTableModel model) throws IOException {
         try (var writer = new CSVWriter(new FileWriter(file))) {
-            for (int row = 0; row < model.nonEmptyRowsCount(); row++) {
+            for (int row = 0; row < model.getRowCount(); row++) {
                 String[] strRow = Arrays.stream(model.data.get(row))
                     .map(o -> o == null ? "" : o.toString())
                     .toArray(String[]::new);
