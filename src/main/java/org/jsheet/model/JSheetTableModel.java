@@ -216,14 +216,30 @@ public class JSheetTableModel extends AbstractTableModel {
         private final Map<JSheetCell, ComputationStage> computationStage = new HashMap<>();
 
         void addFormula(JSheetCell cell, ExprWrapper formula) {
-            for (var r : formula.getRefs()) {
-                addLink(cell, r.getCell());
+            for (var ref : formula.getRefs()) {
+                if (ref.isResolved())
+                    addLink(cell, ref.getCell());
+            }
+            for (var range : formula.getRanges()) {
+                if (range.isResolved()) {
+                    for (var c : range) {
+                        addLink(cell, c);
+                    }
+                }
             }
         }
 
         void removeFormula(JSheetCell cell, ExprWrapper formula) {
-            for (var r : formula.getRefs()) {
-                removeLink(cell, r.getCell());
+            for (var ref : formula.getRefs()) {
+                if (ref.isResolved())
+                    removeLink(cell, ref.getCell());
+            }
+            for (var range : formula.getRanges()) {
+                if (range.isResolved()) {
+                    for (var c : range) {
+                        removeLink(cell, c);
+                    }
+                }
             }
         }
 

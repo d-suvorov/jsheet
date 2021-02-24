@@ -26,8 +26,10 @@ public class ExpressionRenderer extends DefaultTableCellRenderer {
             case BOOLEAN: return String.valueOf(value.getAsBoolean());
             case DOUBLE: return String.format("%.2f", value.getAsDouble());
             case STRING: return value.getAsString();
-            case EXPR: throw new IllegalArgumentException();
+            case EXPR:
+            case RANGE:
+                throw new AssertionError("should not be rendered");
+            default: throw new AssertionError();
         }
-        throw new AssertionError();
     }
 }

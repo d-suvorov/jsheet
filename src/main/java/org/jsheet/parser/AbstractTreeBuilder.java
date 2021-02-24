@@ -2,18 +2,24 @@ package org.jsheet.parser;
 
 import org.jsheet.ExpressionBaseVisitor;
 import org.jsheet.ExpressionParser;
-import org.jsheet.model.expr.*;
 import org.jsheet.model.Value;
+import org.jsheet.model.expr.*;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AbstractTreeBuilder extends ExpressionBaseVisitor<Expr> {
-    private final List<Ref> refs = new ArrayList<>();
+    private final Set<Ref> refs = new HashSet<>();
+    private final Set<Range> ranges = new HashSet<>();
 
-    public List<Ref> getRefs() {
+    public Set<Ref> getRefs() {
         return refs;
+    }
+
+    public Set<Range> getRanges() {
+        return ranges;
     }
 
     @Override
@@ -41,6 +47,20 @@ public class AbstractTreeBuilder extends ExpressionBaseVisitor<Expr> {
 
     @Override
     public Ref visitReferenceExpr(ExpressionParser.ReferenceExprContext ctx) {
+        return visitReference(ctx.reference());
+    }
+
+    @Override
+    public Expr visitRangeExpr(ExpressionParser.RangeExprContext ctx) {
+        Ref first = visitReference(ctx.first);
+        Ref last = visitReference(ctx.last);
+        Range range = new Range(first, last);
+        ranges.add(range);
+        return range;
+    }
+
+    @Override
+    public Ref visitReference(ExpressionParser.ReferenceContext ctx) {
         String id = ctx.ID().getText();
         Ref ref = new Ref(id);
         refs.add(ref);

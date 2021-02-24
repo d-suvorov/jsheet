@@ -17,9 +17,17 @@ public class Ref extends Expr {
     @Override
     public Result eval(JSheetTableModel model) {
         resolve(model);
-        if (cell == null)
-            return Result.failure(String.format("Reference %s unresolved", name));
+        if (!isResolved())
+            return Result.failure(unresolvedMessage());
         return model.getResultAt(cell);
+    }
+
+    public boolean isResolved() {
+        return cell != null;
+    }
+
+    public String unresolvedMessage() {
+        return String.format("Reference %s unresolved", name);
     }
 
     public JSheetCell getCell() {
@@ -27,7 +35,7 @@ public class Ref extends Expr {
     }
 
     public void resolve(JSheetTableModel model) {
-        if (cell == null)
+        if (!isResolved())
             cell = model.resolveRef(name);
     }
 

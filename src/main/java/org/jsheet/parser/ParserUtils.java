@@ -17,6 +17,6 @@ public class ParserUtils {
         ExpressionParser.ExprContext tree = parser.expr();
         AbstractTreeBuilder treeBuilder = new AbstractTreeBuilder();
         Expr expr = treeBuilder.visit(tree);
-        return new ExprWrapper(definition, expr, treeBuilder.getRefs());
+        return new ExprWrapper(definition, expr, treeBuilder.getRefs(), treeBuilder.getRanges());
     }
 }

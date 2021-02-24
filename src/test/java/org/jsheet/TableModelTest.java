@@ -4,10 +4,7 @@ import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
 import org.jsheet.model.Type;
 import org.jsheet.model.Value;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,8 +20,12 @@ public class TableModelTest {
 
     @BeforeEach
     void clearRowZero() {
+        clearRow(0);
+    }
+
+    private void clearRow(int rowIndex) {
         for (int column = 0; column < model.getColumnCount(); column++) {
-            model.setValueAt(null, 0, column);
+            model.setValueAt(null, rowIndex, column);
         }
     }
 
@@ -160,6 +161,32 @@ public class TableModelTest {
     }
 
     @Nested
+    class Ranges {
+        @AfterEach
+        public void clear() {
+            clearRow(0);
+            clearRow(1);
+            clearRow(2);
+        }
+
+        @Test
+        public void sum() {
+            model.setValueAt("1", 0, 0);
+            model.setValueAt("2", 0, 1);
+            model.setValueAt("3", 0, 2);
+            model.setValueAt("1", 1, 0);
+            model.setValueAt("2", 1, 1);
+            model.setValueAt("3", 1, 2);
+            model.setValueAt("=sum(A0:C0)", 2, 0);
+            model.setValueAt("=sum(A1:C1)", 2, 1);
+            model.setValueAt("=sum(A0:C1)", 2, 2);
+            checkSuccessDoubleResult(6, 2, 0);
+            checkSuccessDoubleResult(6, 2, 1);
+            checkSuccessDoubleResult(12, 2, 2);
+        }
+    }
+
+    @Nested
     class EvaluationWithReferences {
         @Test
         void simpleReferences() {
@@ -167,12 +194,12 @@ public class TableModelTest {
             model.setValueAt(Double.toString(val), 0, 0);
             model.setValueAt("= A0 + 1", 0, 1);
             model.setValueAt("= B0 - 1", 0, 2);
-            checkSuccessResult(val + 1, 0, 1);
-            checkSuccessResult(val, 0, 2);
+            checkSuccessDoubleResult(val + 1, 0, 1);
+            checkSuccessDoubleResult(val, 0, 2);
             val += 0.5;
             model.setValueAt(Double.toString(val), 0, 0);
-            checkSuccessResult(val + 1, 0, 1);
-            checkSuccessResult(val, 0, 2);
+            checkSuccessDoubleResult(val + 1, 0, 1);
+            checkSuccessDoubleResult(val, 0, 2);
         }
 
         @Test
@@ -190,10 +217,10 @@ public class TableModelTest {
             checkErrorResult("Circular dependency", 0, 3);
             // Break the cycle
             model.setValueAt(Double.toString(val), 0, 2);
-            checkSuccessResult(val, 0, 0);
-            checkSuccessResult(val, 0, 1);
+            checkSuccessDoubleResult(val, 0, 0);
+            checkSuccessDoubleResult(val, 0, 1);
             checkPlainDouble(val, 0, 2);
-            checkSuccessResult(val, 0, 3);
+            checkSuccessDoubleResult(val, 0, 3);
         }
 
         @Test
@@ -225,30 +252,30 @@ public class TableModelTest {
             checkErrorResult("Cell C0 is uninitialized", 0, 3);
             checkErrorResult("Cell C0 is uninitialized", 0, 4);
             model.setValueAt(Double.toString(42), 0, 2);
-            checkSuccessResult(val, 0, 0);
-            checkSuccessResult(val, 0, 1);
-            checkSuccessResult(val, 0, 3);
-            checkSuccessResult(val, 0, 4);
+            checkSuccessDoubleResult(val, 0, 0);
+            checkSuccessDoubleResult(val, 0, 1);
+            checkSuccessDoubleResult(val, 0, 3);
+            checkSuccessDoubleResult(val, 0, 4);
         }
+    }
 
-        private void checkPlainDouble(double expected, int row, int column) {
-            Value val = model.getValueAt(row, column);
-            assertSame(val.getTag(), Type.DOUBLE);
-            assertEquals(expected, val.getAsDouble(), 0);
-        }
+    private void checkPlainDouble(double expected, int row, int column) {
+        Value val = model.getValueAt(row, column);
+        assertSame(val.getTag(), Type.DOUBLE);
+        assertEquals(expected, val.getAsDouble(), 0);
+    }
 
-        private void checkSuccessResult(double expected, int row, int column) {
-            Value val = model.getValueAt(row, column);
-            assertSame(val.getTag(), Type.EXPR);
-            Result result = val.getAsExpr().getResult();
-            assertEquals(expected, result.get().getAsDouble(), 0);
-        }
+    private void checkSuccessDoubleResult(double expected, int row, int column) {
+        Value val = model.getValueAt(row, column);
+        assertSame(val.getTag(), Type.EXPR);
+        Result result = val.getAsExpr().getResult();
+        assertEquals(expected, result.get().getAsDouble(), 0);
+    }
 
-        private void checkErrorResult(String expected, int row, int column) {
-            Value val = model.getValueAt(row, column);
-            assertSame(val.getTag(), Type.EXPR);
-            Result result = val.getAsExpr().getResult();
-            assertEquals(expected, result.message());
-        }
+    private void checkErrorResult(String expected, int row, int column) {
+        Value val = model.getValueAt(row, column);
+        assertSame(val.getTag(), Type.EXPR);
+        Result result = val.getAsExpr().getResult();
+        assertEquals(expected, result.message());
     }
 }

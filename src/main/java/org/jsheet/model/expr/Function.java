@@ -26,12 +26,15 @@ public class Function extends Expr {
         if (name.equals("length")) {
             return evalLength(args, model);
         }
+        if (name.equals("sum")) {
+            return evalSum(args, model);
+        }
         return failure("Unknown function: " + name);
     }
 
     private Result evalPow(List<Expr> args, JSheetTableModel model) {
         if (args.size() != 2)
-            return failure("Wrong number of arguments for function: pow");
+            return failure(wrongNumberOfArgsMessage("pow"));
 
         List<Value> values = evaluate(args, model);
         if (values == null)
@@ -49,7 +52,7 @@ public class Function extends Expr {
 
     private Result evalLength(List<Expr> args, JSheetTableModel model) {
         if (args.size() != 1)
-            return failure("Wrong number of arguments for function: length");
+            return failure(wrongNumberOfArgsMessage("length"));
 
         List<Value> values = evaluate(args, model);
         if (values == null)
@@ -62,6 +65,38 @@ public class Function extends Expr {
         Value strValue = values.get(0);
         double result = strValue.getAsString().length();
         return Result.success(Value.of(result));
+    }
+
+    private Result evalSum(List<Expr> args, JSheetTableModel model) {
+        if (args.size() != 1)
+            return failure(wrongNumberOfArgsMessage("sum"));
+
+        Value range = evaluate(args.get(0), model);
+        if (range == null)
+            return evaluationError;
+
+        if (range.getTag() != Type.RANGE) {
+            String msg = typeMismatchMessage(Type.RANGE, range.getTag());
+            return Result.failure(msg);
+        }
+
+        double sum = 0;
+        for (var c : range.getAsRange()) {
+            Result res = model.getResultAt(c);
+            if (!res.isPresent())
+                return res;
+            Value addend = res.get();
+            if (addend.getTag() != DOUBLE) {
+                String msg = typeMismatchMessage(Type.DOUBLE, addend.getTag());
+                return Result.failure(msg);
+            }
+            sum += addend.getAsDouble();
+        }
+        return Result.success(Value.of(sum));
+    }
+
+    private String wrongNumberOfArgsMessage(String name) {
+        return "Wrong number of arguments for function: " + name;
     }
 
     @Override

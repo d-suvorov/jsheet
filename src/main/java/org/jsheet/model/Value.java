@@ -31,6 +31,10 @@ public class Value {
         return (ExprWrapper) value;
     }
 
+    public RangeValue getAsRange() {
+        return (RangeValue) value;
+    }
+
     public static Value of(Boolean b) {
         return new Value(Type.BOOLEAN, b);
     }
@@ -45,6 +49,10 @@ public class Value {
 
     public static Value of(ExprWrapper e) {
         return new Value(Type.EXPR, e);
+    }
+
+    public static Value of(RangeValue r) {
+        return new Value(Type.RANGE, r);
     }
 
     @Override
@@ -74,6 +82,9 @@ public class Value {
             case DOUBLE: return String.valueOf(getAsDouble());
             case STRING: return getAsString();
             case EXPR: return getAsExpr().originalDefinition;
+            /* Range value is never shown in the editor
+               since ranges only occur inside formulae */
+            case RANGE: return "RANGE";
         }
         throw new AssertionError();
     }

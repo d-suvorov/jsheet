@@ -9,12 +9,15 @@ expr
     | left=expr op='&&'                      right=expr  # infixExpr
     | left=expr op='||'                      right=expr  # infixExpr
     | ID '(' args ')'                                    # functionExpr
-    | reference=ID                                       # referenceExpr
+    | reference                                          # referenceExpr
+    | first=reference ':' last=reference                 # rangeExpr
     | literal                                            # literalExpr
     | 'if' cond=expr
       'then' thenClause=expr
       'else' elseClause=expr                             # conditionalExpr
     ;
+
+reference : ID;
 
 args
     : expr (',' expr)*
