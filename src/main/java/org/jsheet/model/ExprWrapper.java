@@ -33,6 +33,12 @@ public class ExprWrapper {
         return ranges;
     }
 
+    /**
+     * Evaluates this expression and returns the result.
+     * The user must call {@link ExprWrapper#resolveRefs(JSheetTableModel)}
+     * before calling this method to resolve all references that occur in
+     * the current expression.
+     */
     public Result eval(JSheetTableModel model) {
         result = expression.eval(model);
         return result;
@@ -46,6 +52,9 @@ public class ExprWrapper {
         this.result = result;
     }
 
+    /**
+     * Tries to resolve all references that occur in the current expression.
+     */
     void resolveRefs(JSheetTableModel model) {
         refs.forEach(r -> r.resolve(model));
     }

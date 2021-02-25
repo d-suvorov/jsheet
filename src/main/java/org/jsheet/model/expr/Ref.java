@@ -16,7 +16,6 @@ public class Ref extends Expr {
 
     @Override
     public Result eval(JSheetTableModel model) {
-        resolve(model);
         if (!isResolved())
             return Result.failure(unresolvedMessage());
         return model.getResultAt(cell);
