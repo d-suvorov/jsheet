@@ -153,7 +153,7 @@ public class TableModelTest {
         }
 
         @Test
-        public void sum() {
+        public void simpleSum() {
             model.setValueAt("1", 0, 0);
             model.setValueAt("2", 0, 1);
             model.setValueAt("3", 0, 2);
@@ -166,6 +166,14 @@ public class TableModelTest {
             checkSuccessDoubleResult(6, 2, 0);
             checkSuccessDoubleResult(6, 2, 1);
             checkSuccessDoubleResult(12, 2, 2);
+        }
+
+        @Test
+        public void singletonRange() {
+            double val = 42;
+            model.setValueAt(Double.toString(val), 0, 0);
+            model.setValueAt("=sum(A0:A0)", 0, 1);
+            checkSuccessDoubleResult(val, 0, 1);
         }
     }
 
@@ -239,6 +247,20 @@ public class TableModelTest {
             checkSuccessDoubleResult(val, 0, 1);
             checkSuccessDoubleResult(val, 0, 3);
             checkSuccessDoubleResult(val, 0, 4);
+        }
+
+        @Test
+        void sameReferences() {
+            double val = 42;
+            model.setValueAt(Double.toString(val), 0, 0);
+            model.setValueAt("=A0 + A0", 0, 1);
+            checkSuccessDoubleResult(val + val, 0, 1);
+        }
+
+        @Test
+        void sameReferencesLoop() {
+            model.setValueAt("=A0 + A0", 0, 0);
+            checkErrorResult("Circular dependency", 0, 0);
         }
     }
 
