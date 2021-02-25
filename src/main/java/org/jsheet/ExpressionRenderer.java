@@ -14,11 +14,13 @@ public class ExpressionRenderer extends DefaultTableCellRenderer {
             Result result = value.getAsExpr().getResult();
             if (!result.isPresent()) {
                 setText("!ERROR");
+                setToolTipText(result.message());
                 return;
             }
             value = result.get();
         }
         setText(renderPlainValue(value));
+        setToolTipText(null);
     }
 
     private String renderPlainValue(Value value) {
