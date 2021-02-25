@@ -153,7 +153,7 @@ public class TableModelTest {
         }
 
         @Test
-        public void simpleSum() {
+        public void simpleRangeSum() {
             model.setValueAt("1", 0, 0);
             model.setValueAt("2", 0, 1);
             model.setValueAt("3", 0, 2);
@@ -174,6 +174,18 @@ public class TableModelTest {
             model.setValueAt(Double.toString(val), 0, 0);
             model.setValueAt("=sum(A0:A0)", 0, 1);
             checkSuccessDoubleResult(val, 0, 1);
+        }
+
+        @Test
+        public void negativeRangeSum() {
+            model.setValueAt("1", 0, 0);
+            model.setValueAt("2", 0, 1);
+            model.setValueAt("3", 0, 2);
+            model.setValueAt("1", 1, 0);
+            model.setValueAt("2", 1, 1);
+            model.setValueAt("3", 1, 2);
+            model.setValueAt("=sum(C1:A0)", 2, 0);
+            checkErrorResult("Incorrect range: C1:A0", 2, 0);
         }
     }
 

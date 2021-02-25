@@ -19,7 +19,14 @@ public class Range extends Expr implements Iterable<JSheetCell> {
             return Result.failure(first.unresolvedMessage());
         if (!last.isResolved())
             return Result.failure(last.unresolvedMessage());
-        RangeValue range = new RangeValue(first.getCell(), last.getCell());
+        JSheetCell firstCell = first.getCell();
+        JSheetCell lastCell = last.getCell();
+        if (firstCell.getRow() > lastCell.getRow()
+            || firstCell.getColumn() > lastCell.getColumn())
+        {
+            return Result.failure("Incorrect range: " + this);
+        }
+        RangeValue range = new RangeValue(firstCell, lastCell);
         return Result.success(Value.of(range));
     }
 
