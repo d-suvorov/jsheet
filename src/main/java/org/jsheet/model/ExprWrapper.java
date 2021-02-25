@@ -5,7 +5,7 @@ import org.jsheet.model.expr.Range;
 import org.jsheet.model.expr.Ref;
 
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 
 public class ExprWrapper {
     public final String originalDefinition;
@@ -13,11 +13,11 @@ public class ExprWrapper {
 
     private Result result;
 
-    private final Set<Ref> refs;
-    private final Set<Range> ranges;
+    private final List<Ref> refs;
+    private final List<Range> ranges;
 
     public ExprWrapper(String originalDefinition, Expr expression,
-        Set<Ref> refs, Set<Range> ranges)
+        List<Ref> refs, List<Range> ranges)
     {
         this.originalDefinition = originalDefinition;
         this.expression = expression;
@@ -25,12 +25,19 @@ public class ExprWrapper {
         this.ranges = ranges;
     }
 
-    public Set<Ref> getRefs() {
-        return Collections.unmodifiableSet(refs);
+    /**
+     * @return a list of all references in this formula, including the first
+     * and the last references for each range (e.g. A1 and A10 for A1:A10)
+     */
+    public List<Ref> getRefs() {
+        return Collections.unmodifiableList(refs);
     }
 
-    public Set<Range> getRanges() {
-        return ranges;
+    /**
+     * @return a list of all ranges in this formula.
+     */
+    public List<Range> getRanges() {
+        return Collections.unmodifiableList(ranges);
     }
 
     /**

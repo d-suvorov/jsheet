@@ -5,20 +5,19 @@ import org.jsheet.ExpressionParser;
 import org.jsheet.model.Value;
 import org.jsheet.model.expr.*;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AbstractTreeBuilder extends ExpressionBaseVisitor<Expr> {
-    private final Set<Ref> refs = new HashSet<>();
-    private final Set<Range> ranges = new HashSet<>();
+    private final List<Ref> refs = new ArrayList<>();
+    private final List<Range> ranges = new ArrayList<>();
 
-    public Set<Ref> getRefs() {
+    public List<Ref> getRefs() {
         return refs;
     }
 
-    public Set<Range> getRanges() {
+    public List<Range> getRanges() {
         return ranges;
     }
 
