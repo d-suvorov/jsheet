@@ -42,23 +42,6 @@ public class TableModelTest {
         }
     }
 
-    private void testDoubleValuedFormula(String formula, double expectedResult) {
-        Result result = testFormulaImpl(formula);
-        assertEquals(expectedResult, result.get().getAsDouble(), 0);
-    }
-
-    private void testBooleanValuedFormula(String formula, boolean expectedResult) {
-        Result result = testFormulaImpl(formula);
-        assertEquals(expectedResult, result.get().getAsBoolean());
-    }
-
-    private Result testFormulaImpl(String formula) {
-        model.setValueAt(formula, 0, 0);
-        Value value = model.getValueAt(0, 0);
-        assertSame(Type.EXPR, value.getTag());
-        return value.getAsExpr().getResult();
-    }
-
     @Nested
     class Arithmetic {
         @Test
@@ -265,6 +248,13 @@ public class TableModelTest {
         assertEquals(expected, val.getAsDouble(), 0);
     }
 
+    private void checkSuccessBooleanResult(boolean expected, int row, int column) {
+        Value val = model.getValueAt(row, column);
+        assertSame(val.getTag(), Type.EXPR);
+        Result result = val.getAsExpr().getResult();
+        assertEquals(expected, result.get().getAsBoolean());
+    }
+
     private void checkSuccessDoubleResult(double expected, int row, int column) {
         Value val = model.getValueAt(row, column);
         assertSame(val.getTag(), Type.EXPR);
@@ -277,5 +267,15 @@ public class TableModelTest {
         assertSame(val.getTag(), Type.EXPR);
         Result result = val.getAsExpr().getResult();
         assertEquals(expected, result.message());
+    }
+
+    private void testDoubleValuedFormula(String formula, double expectedResult) {
+        model.setValueAt(formula, 0, 0);
+        checkSuccessDoubleResult(expectedResult, 0, 0);
+    }
+
+    private void testBooleanValuedFormula(String formula, boolean expectedResult) {
+        model.setValueAt(formula, 0, 0);
+        checkSuccessBooleanResult(expectedResult, 0, 0);
     }
 }
