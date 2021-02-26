@@ -1,9 +1,6 @@
 package org.jsheet;
 
-import org.jsheet.model.expr.Binop;
-import org.jsheet.model.expr.Expr;
-import org.jsheet.model.expr.Function;
-import org.jsheet.model.expr.Literal;
+import org.jsheet.model.expr.*;
 import org.jsheet.model.ExprWrapper;
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Value;
@@ -12,6 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -32,6 +30,10 @@ public class ParserTest {
         return new Literal(Value.of(v));
     }
 
+    private Literal lit(boolean b) {
+        return new Literal(Value.of(b));
+    }
+
     @Test
     public void booleanLiteral() {
         testParserImpl("= false", new Literal(Value.of(false)));
@@ -47,8 +49,12 @@ public class ParserTest {
 
     @Test
     public void stringLiteral() {
-        String s = "abra\\\"cadabra";
+        String s = "";
         testParserImpl("= \"" + s + "\"", new Literal(Value.of(s)));
+        s = "abacaba";
+        testParserImpl("= \"" + s + "\"", new Literal(Value.of(s)));
+        s = "abra\\\"cadabra";
+        testParserImpl("= \"" + s + "\"", new Literal(Value.of("abra\"cadabra")));
     }
 
     @Test
@@ -72,11 +78,37 @@ public class ParserTest {
     }
 
     @Test
-    public void simpleExpression3() {
+    public void functionWithNoArgs() {
+        Expr expected = new Function("rand", Collections.emptyList());
+        testParserImpl("= rand()", expected);
+    }
+
+    @Test
+    public void functionWithOneArgs() {
+        Expr expected = new Function("sqrt", Collections.singletonList(lit(4)));
+        testParserImpl("= sqrt(4)", expected);
+    }
+
+    @Test
+    public void functionWithTwoArgs() {
         Expr expected = new Function(
-            "pow",
-            Arrays.asList(lit(2), lit(4))
+            "pow", Arrays.asList(lit(2), lit(4))
         );
         testParserImpl("= pow(2, 4)", expected);
+    }
+
+    @Test
+    public void range() {
+        Expr expected = new Function(
+            "sum",
+            Collections.singletonList(new Range(new Ref("A1"), new Ref("A10")))
+        );
+        testParserImpl("= sum(A1:A10)", expected);
+    }
+
+    @Test
+    public void conditional() {
+        Expr expected = new Conditional(lit(true), lit(42), lit(43));
+        testParserImpl("= if true then 42 else 43", expected);
     }
 }

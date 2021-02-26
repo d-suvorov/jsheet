@@ -12,9 +12,9 @@ public class Conditional extends Expr {
     private final Expr thenClause;
     private final Expr elseClause;
 
-    public Conditional(Expr condition, Expr ifClause, Expr elseClause) {
+    public Conditional(Expr condition, Expr thenClause, Expr elseClause) {
         this.condition = condition;
-        this.thenClause = ifClause;
+        this.thenClause = thenClause;
         this.elseClause = elseClause;
     }
 

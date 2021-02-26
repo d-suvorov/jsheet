@@ -162,6 +162,6 @@ public class Binop extends Expr {
 
     @Override
     public String toString() {
-        return String.format("%s %s %s", lhs, op, rhs);
+        return String.format("(%s %s %s)", lhs, op, rhs);
     }
 }

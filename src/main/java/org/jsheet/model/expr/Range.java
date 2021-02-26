@@ -3,6 +3,7 @@ package org.jsheet.model.expr;
 import org.jsheet.model.*;
 
 import java.util.Iterator;
+import java.util.Objects;
 
 public class Range extends Expr implements Iterable<JSheetCell> {
     private final Ref first;
@@ -32,6 +33,24 @@ public class Range extends Expr implements Iterable<JSheetCell> {
 
     public boolean isResolved() {
         return first.isResolved() && last.isResolved();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Range that = (Range) o;
+
+        if (!Objects.equals(first, that.first)) return false;
+        return Objects.equals(last, that.last);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = first != null ? first.hashCode() : 0;
+        result = 31 * result + (last != null ? last.hashCode() : 0);
+        return result;
     }
 
     @Override
