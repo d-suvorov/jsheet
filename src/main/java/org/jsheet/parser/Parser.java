@@ -32,27 +32,59 @@ public class Parser {
         readNextToken();
         if (current == END)
             throw new ParseException();
-        return expr(true);
+        return or(true);
     }
 
-    private Expr expr(boolean read) throws ParseException {
-        Expr expr = term(read);
-        while (current == PLUS || current == MINUS) {
-            String op = current == PLUS ? "+" : "-";
-            Expr term = term(false);
+    private Expr or(boolean read) throws ParseException {
+        Expr expr = and(read);
+        while (current == OR) {
+            String op = current.binop();
+            Expr term = and(false);
             expr = new Binop(op, expr, term);
         }
         return expr;
     }
 
-    private Expr term(boolean read) throws ParseException  {
-        Expr term = factor(read);
-        while (current == MUL || current == DIV) {
-            String op = current == MUL ? "*" : "/";
-            Expr factor = factor(false);
-            term = new Binop(op, term, factor);
+    private Expr and(boolean read) throws ParseException {
+        Expr expr = comparison(read);
+        while (current == AND) {
+            String op = current.binop();
+            Expr term = comparison(false);
+            expr = new Binop(op, expr, term);
         }
-        return term;
+        return expr;
+    }
+
+    private Expr comparison(boolean read) throws ParseException {
+        Expr expr = sum(read);
+        while (current == EQ || current == NE || current == LT
+            || current == LE || current == GT || current == GE)
+        {
+            String op = current.binop();
+            Expr term = sum(false);
+            expr = new Binop(op, expr, term);
+        }
+        return expr;
+    }
+
+    private Expr sum(boolean read) throws ParseException {
+        Expr expr = product(read);
+        while (current == PLUS || current == MINUS) {
+            String op = current.binop();
+            Expr term = product(false);
+            expr = new Binop(op, expr, term);
+        }
+        return expr;
+    }
+
+    private Expr product(boolean read) throws ParseException  {
+        Expr expr = factor(read);
+        while (current == MUL || current == DIV) {
+            String op = current.binop();
+            Expr term = factor(false);
+            expr = new Binop(op, expr, term);
+        }
+        return expr;
     }
 
     private Expr factor(boolean read) throws ParseException {
@@ -75,7 +107,7 @@ public class Parser {
             }
             case IF: return conditional();
             case LPAREN: {
-                Expr expr = expr(false);
+                Expr expr = or(false);
                 if (current != RPAREN)
                     throw new ParseException();
                 readNextToken();
@@ -112,7 +144,7 @@ public class Parser {
         }
         List<Expr> args = new ArrayList<>();
         while (true) {
-            args.add(expr(true));
+            args.add(or(true));
             if (current != COMMA)
                 break;
             readNextToken();
@@ -123,20 +155,20 @@ public class Parser {
         return new Function(name, args);
     }
 
-    private Expr reference(String name) throws ParseException {
+    private Expr reference(String name) {
         Ref ref = new Ref(name);
         refs.add(ref);
         return ref;
     }
 
     private Conditional conditional() throws ParseException {
-        Expr condition = expr(false);
+        Expr condition = or(false);
         if (current != THEN)
             throw new ParseException();
-        Expr thenClause = expr(false);
+        Expr thenClause = or(false);
         if (current != ELSE)
             throw new ParseException();
-        Expr elseClause = expr(false);
+        Expr elseClause = or(false);
         return new Conditional(condition, thenClause, elseClause);
     }
 

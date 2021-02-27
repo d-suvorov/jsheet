@@ -9,7 +9,25 @@ public class Lexer {
         LT, LE, GT, GE, EQ, NE,
         AND, OR, LPAREN, RPAREN,
         COMMA, COLON, IF, THEN, ELSE,
-        ID, BOOL, NUM, STR, END
+        ID, BOOL, NUM, STR, END;
+
+        public String binop() {
+            switch (this) {
+                case MUL:   return "*";
+                case DIV:   return "/";
+                case PLUS:  return "+";
+                case MINUS: return "-";
+                case LT:    return "<";
+                case LE:    return "<=";
+                case GT:    return ">";
+                case GE:    return ">=";
+                case EQ:    return "==";
+                case NE:    return "!=";
+                case AND:   return "&&";
+                case OR:    return "||";
+                default:    throw new IllegalStateException("not a binop");
+            }
+        }
     }
 
     private final Map<String, Token> keywords = new HashMap<>();

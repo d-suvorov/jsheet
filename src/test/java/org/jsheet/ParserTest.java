@@ -34,6 +34,10 @@ public class ParserTest {
         return new Literal(Value.of(b));
     }
 
+    private Binop bin(Expr lhs, String op, Expr rhs) {
+        return new Binop(op, lhs, rhs);
+    }
+
     @Test
     public void booleanLiteral() {
         testParserImpl("= false", new Literal(Value.of(false)));
@@ -59,22 +63,36 @@ public class ParserTest {
 
     @Test
     public void simpleExpression1() {
-        Expr expected = new Binop(
+        Expr expected = bin(
+            lit(1),
             "+",
-            lit(1.),
-            new Binop("*", lit(2.), lit(3.))
+            bin(lit(2), "*", lit(3))
         );
         testParserImpl("= 1 + 2 * 3", expected);
     }
 
     @Test
     public void simpleExpression2() {
-        Expr expected = new Binop(
+        Expr expected = bin(
+            bin(lit(1), "+", lit(2)),
             "*",
-            new Binop("+", lit(1.), lit(2.)),
-            lit(3.)
+            lit(3)
         );
         testParserImpl("= (1 + 2) * 3", expected);
+    }
+
+    @Test
+    public void priority() {
+        Expr expected = bin(
+            bin(lit(1), "==", lit(2)),
+            "||",
+            bin(
+                bin(bin(lit(1), "+", lit(1)), "==", bin(lit(1), "+", lit(1))),
+                "&&",
+                bin(bin(lit(42), "/", lit(2)), ">", lit(20))
+            )
+        );
+        testParserImpl("= 1 == 2 || 1 + 1 == 1 + 1 && 42 / 2 > 20", expected);
     }
 
     @Test
