@@ -253,11 +253,7 @@ public class JSheet extends JFrame {
             "Edit", KeyEvent.VK_E,
             new String[] { "Cut", "Copy", "Paste" },
             new int[] { VK_T, VK_C, VK_P },
-            new KeyStroke[] {
-                getKeyStroke(VK_X, CTRL_MASK),
-                getKeyStroke(VK_C, CTRL_MASK),
-                getKeyStroke(VK_V, CTRL_MASK)
-            },
+            new KeyStroke[] { null, null, null },
             new ActionListener[] {
                 cutActionListener,
                 copyActionListener,
