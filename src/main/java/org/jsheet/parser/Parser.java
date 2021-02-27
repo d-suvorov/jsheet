@@ -28,10 +28,6 @@ public class Parser {
         return ranges;
     }
 
-    private void readNextToken() throws ParseException {
-        current = lexer.next();
-    }
-
     public Expr parse() throws ParseException {
         readNextToken();
         if (current == END)
@@ -63,69 +59,21 @@ public class Parser {
         if (!read)
             readNextToken();
         switch (current) {
-            case BOOL: {
-                Value value = Value.of(lexer.currentBool());
-                readNextToken();
-                return new Literal(value);
-            }
-            case NUM: {
-                Value value = Value.of(lexer.currentNum());
-                readNextToken();
-                return new Literal(value);
-            }
-            case STR: {
-                Value value = Value.of(lexer.currentString());
-                readNextToken();
-                return new Literal(value);
-            }
+            case BOOL: return literal(Value.of(lexer.currentBool()));
+            case NUM: return literal(Value.of(lexer.currentNum()));
+            case STR: return literal(Value.of(lexer.currentString()));
             case ID: {
                 String name = lexer.currentId();
                 readNextToken();
-                if (current == COLON) { // Range
-                    readNextToken();
-                    if (current != ID)
-                        throw new ParseException();
-                    Ref first = new Ref(name);
-                    Ref last = new Ref(lexer.currentId());
-                    Range range = new Range(first, last);
-                    refs.add(first);
-                    refs.add(last);
-                    ranges.add(range);
-                    readNextToken();
-                    return range;
-                } else if (current == LPAREN) { // Function
-                    readNextToken();
-                    if (current == RPAREN) {
-                        readNextToken();
-                        return new Function(name, Collections.emptyList());
-                    }
-                    List<Expr> args = new ArrayList<>();
-                    while (true) {
-                        args.add(expr(true));
-                        if (current != COMMA)
-                            break;
-                        readNextToken();
-                    }
-                    if (current != RPAREN)
-                        throw new ParseException();
-                    readNextToken();
-                    return new Function(name, args);
-                } else { // Reference
-                    Ref ref = new Ref(name);
-                    refs.add(ref);
-                    return ref;
+                if (current == COLON) {
+                    return range(name);
+                } else if (current == LPAREN) {
+                    return function(name);
+                } else {
+                    return reference(name);
                 }
             }
-            case IF: {
-                Expr condition = expr(false);
-                if (current != THEN)
-                    throw new ParseException();
-                Expr thenClause = expr(false);
-                if (current != ELSE)
-                    throw new ParseException();
-                Expr elseClause = expr(false);
-                return new Conditional(condition, thenClause, elseClause);
-            }
+            case IF: return conditional();
             case LPAREN: {
                 Expr expr = expr(false);
                 if (current != RPAREN)
@@ -135,5 +83,64 @@ public class Parser {
             }
         }
         throw new ParseException();
+    }
+
+    private Expr literal(Value value) throws ParseException {
+        readNextToken();
+        return new Literal(value);
+    }
+
+    private Expr range(String firstName) throws ParseException {
+        readNextToken();
+        if (current != ID)
+            throw new ParseException();
+        Ref first = new Ref(firstName);
+        Ref last = new Ref(lexer.currentId());
+        Range range = new Range(first, last);
+        refs.add(first);
+        refs.add(last);
+        ranges.add(range);
+        readNextToken();
+        return range;
+    }
+
+    private Expr function(String name) throws ParseException {
+        readNextToken();
+        if (current == RPAREN) {
+            readNextToken();
+            return new Function(name, Collections.emptyList());
+        }
+        List<Expr> args = new ArrayList<>();
+        while (true) {
+            args.add(expr(true));
+            if (current != COMMA)
+                break;
+            readNextToken();
+        }
+        if (current != RPAREN)
+            throw new ParseException();
+        readNextToken();
+        return new Function(name, args);
+    }
+
+    private Expr reference(String name) throws ParseException {
+        Ref ref = new Ref(name);
+        refs.add(ref);
+        return ref;
+    }
+
+    private Conditional conditional() throws ParseException {
+        Expr condition = expr(false);
+        if (current != THEN)
+            throw new ParseException();
+        Expr thenClause = expr(false);
+        if (current != ELSE)
+            throw new ParseException();
+        Expr elseClause = expr(false);
+        return new Conditional(condition, thenClause, elseClause);
+    }
+
+    private void readNextToken() throws ParseException {
+        current = lexer.next();
     }
 }
