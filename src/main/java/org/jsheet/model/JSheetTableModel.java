@@ -94,11 +94,14 @@ public class JSheetTableModel extends AbstractTableModel {
         }
         data.get(rowIndex)[columnIndex] = getModelValue(value, current);
         dependencies.recomputeAll(current);
+        fireTableCellUpdated(rowIndex, columnIndex);
     }
 
     private Value getModelValue(Object value, JSheetCell current) {
         if (value == null)
             return null;
+        if (value instanceof Value)
+            return (Value) value;
         if (value instanceof String) {
             String strValue = (String) value;
             if (strValue.startsWith("=")) {
@@ -110,7 +113,7 @@ public class JSheetTableModel extends AbstractTableModel {
                 return getLiteral(strValue);
             }
         }
-        // Only gets string values typed by user
+        // Only gets string values typed by user or model values pasted from other cells
         throw new AssertionError();
     }
 
