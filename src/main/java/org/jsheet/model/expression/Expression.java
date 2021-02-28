@@ -34,12 +34,10 @@ public abstract class Expression {
     protected List<Value> evaluate(List<Expression> params, JSheetTableModel model) {
         List<Value> values = new ArrayList<>(params.size());
         for (var p : params) {
-            Result res = p.eval(model);
-            if (!res.isPresent()) {
-                evaluationError = res;
+            Value value = evaluate(p, model);
+            if (value == null)
                 return null;
-            }
-            values.add(res.get());
+            values.add(value);
         }
         return values;
     }
@@ -65,15 +63,19 @@ public abstract class Expression {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     protected boolean typecheck(List<Value> values, List<Type> types) {
         for (int i = 0; i < values.size(); i++) {
-            Type expected = types.get(i);
-            Type actual = values.get(i).getTag();
-            if (actual != expected) {
-                String message = typeMismatchMessage(expected, actual);
-                typecheckError = Result.failure(message);
+            if (!typecheck(values.get(i), types.get(i)))
                 return false;
-            }
         }
         return true;
+    }
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    protected boolean typecheck(Value value, Type type) {
+        if (value.getTag() == type)
+            return true;
+        String message = typeMismatchMessage(type, value.getTag());
+        typecheckError = Result.failure(message);
+        return false;
     }
 
     protected String typeMismatchMessage(Type expected, Type actual) {

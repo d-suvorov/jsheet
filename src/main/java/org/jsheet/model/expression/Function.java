@@ -7,8 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.jsheet.model.Result.failure;
-import static org.jsheet.model.Type.DOUBLE;
-import static org.jsheet.model.Type.STRING;
+import static org.jsheet.model.Type.*;
 
 public class Function extends Expression {
     private final String name;
@@ -71,15 +70,11 @@ public class Function extends Expression {
     private Result evalSum(List<Expression> args, JSheetTableModel model) {
         if (args.size() != 1)
             return failure(wrongNumberOfArgsMessage("sum"));
-
         Value range = evaluate(args.get(0), model);
         if (range == null)
             return evaluationError;
-
-        if (range.getTag() != Type.RANGE) {
-            String message = typeMismatchMessage(Type.RANGE, range.getTag());
-            return Result.failure(message);
-        }
+        if (!typecheck(range, RANGE))
+            return typecheckError;
 
         double sum = 0;
         for (var c : range.getAsRange()) {
@@ -87,10 +82,8 @@ public class Function extends Expression {
             if (!res.isPresent())
                 return res;
             Value addend = res.get();
-            if (addend.getTag() != DOUBLE) {
-                String message = typeMismatchMessage(Type.DOUBLE, addend.getTag());
-                return Result.failure(message);
-            }
+            if (!typecheck(addend, DOUBLE))
+                return typecheckError;
             sum += addend.getAsDouble();
         }
         return Result.success(Value.of(sum));

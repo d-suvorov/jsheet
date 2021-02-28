@@ -24,10 +24,8 @@ public class Conditional extends Expression {
         Value condValue = evaluate(condition, model);
         if (condValue == null)
             return evaluationError;
-        if (condValue.getTag() != Type.BOOLEAN) {
-            String message = typeMismatchMessage(Type.BOOLEAN, condValue.getTag());
-            return Result.failure(message);
-        }
+        if (!typecheck(condValue, Type.BOOLEAN))
+            return typecheckError;
         Expression chosen = condValue.getAsBoolean() ? thenClause : elseClause;
         Value resultValue = evaluate(chosen, model);
         if (resultValue == null)
