@@ -49,6 +49,8 @@ public class JSheetTableModel extends AbstractTableModel {
                 setValueAt(value == null ? null : value.getAsString(), row, column);
             }
         }
+        // Hack: Reset modified flag mutated in the previous loop
+        setModified(false);
     }
 
     @Override
