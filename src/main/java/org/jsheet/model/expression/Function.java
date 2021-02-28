@@ -109,8 +109,8 @@ public class Function extends Expression {
     }
 
     @Override
-    public Stream<Reference> getRefs() {
-        return args.stream().flatMap(Expression::getRefs);
+    public Stream<Reference> getReferences() {
+        return args.stream().flatMap(Expression::getReferences);
     }
 
     @Override

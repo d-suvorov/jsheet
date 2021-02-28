@@ -32,7 +32,7 @@ public class Literal extends Expression {
     }
 
     @Override
-    public Stream<Reference> getRefs() {
+    public Stream<Reference> getReferences() {
         return Stream.empty();
     }
 

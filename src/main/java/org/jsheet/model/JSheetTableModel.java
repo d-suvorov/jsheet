@@ -18,7 +18,7 @@ public class JSheetTableModel extends AbstractTableModel {
     private static final int DEFAULT_ROW_COUNT = 100;
     private static final int DEFAULT_COLUMN_COUNT = 26;
 
-    private static final Pattern REF_PATTERN = Pattern.compile("([a-zA-Z]+)(\\d+)");
+    private static final Pattern REFERENCE_PATTERN = Pattern.compile("([a-zA-Z]+)(\\d+)");
 
     private final List<Value[]> data;
     private final DependencyManager dependencies = new DependencyManager();
@@ -112,7 +112,7 @@ public class JSheetTableModel extends AbstractTableModel {
             if (strValue.startsWith("=")) {
                 Formula formula = ParserUtils.parse(strValue);
                 if (formula.isParsed())
-                    formula.resolveRefs(this);
+                    formula.resolveReferences(this);
                 dependencies.addFormula(current, formula);
                 return Value.of(formula);
             } else {
@@ -137,8 +137,8 @@ public class JSheetTableModel extends AbstractTableModel {
         return Value.of(strValue);
     }
 
-    public Cell resolveRef(String name) {
-        Matcher matcher = REF_PATTERN.matcher(name);
+    public Cell resolveReference(String name) {
+        Matcher matcher = REFERENCE_PATTERN.matcher(name);
         if (!matcher.matches())
             return null;
 
@@ -227,7 +227,7 @@ public class JSheetTableModel extends AbstractTableModel {
         void addFormula(Cell cell, Formula formula) {
             if (!formula.isParsed())
                 return;
-            for (var ref : formula.getRefs()) {
+            for (var ref : formula.getReferences()) {
                 if (ref.isResolved())
                     addLink(cell, ref.getCell());
             }
@@ -243,7 +243,7 @@ public class JSheetTableModel extends AbstractTableModel {
         void removeFormula(Cell cell, Formula formula) {
             if (!formula.isParsed())
                 return;
-            for (var ref : formula.getRefs()) {
+            for (var ref : formula.getReferences()) {
                 if (ref.isResolved())
                     removeLink(cell, ref.getCell());
             }

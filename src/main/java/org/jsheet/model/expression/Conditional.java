@@ -45,9 +45,9 @@ public class Conditional extends Expression {
     }
 
     @Override
-    public Stream<Reference> getRefs() {
+    public Stream<Reference> getReferences() {
         return Stream.of(condition, thenClause, elseClause)
-            .flatMap(Expression::getRefs);
+            .flatMap(Expression::getReferences);
     }
 
     @Override

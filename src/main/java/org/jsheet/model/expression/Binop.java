@@ -151,8 +151,8 @@ public class Binop extends Expression {
     }
 
     @Override
-    public Stream<Reference> getRefs() {
-        return Stream.concat(left.getRefs(), right.getRefs());
+    public Stream<Reference> getReferences() {
+        return Stream.concat(left.getReferences(), right.getReferences());
     }
 
     @Override

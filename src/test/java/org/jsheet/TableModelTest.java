@@ -123,7 +123,7 @@ public class TableModelTest {
         }
 
         @Test
-        public void lengthRef() {
+        public void lengthByReference() {
             model.setValueAt("abracadabra", 0, 0);
             model.setValueAt("= length(A0)", 0, 1);
             Value value = model.getValueAt(0, 1);

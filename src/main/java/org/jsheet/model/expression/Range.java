@@ -44,8 +44,8 @@ public class Range extends Expression implements Iterable<Cell> {
     }
 
     @Override
-    public Stream<Reference> getRefs() {
-        return Stream.concat(first.getRefs(), last.getRefs());
+    public Stream<Reference> getReferences() {
+        return Stream.concat(first.getReferences(), last.getReferences());
     }
 
     @Override

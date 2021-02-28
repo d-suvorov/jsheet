@@ -36,7 +36,7 @@ public class Reference extends Expression {
 
     public void resolve(JSheetTableModel model) {
         if (!isResolved())
-            cell = model.resolveRef(name);
+            cell = model.resolveReference(name);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class Reference extends Expression {
     }
 
     @Override
-    public Stream<Reference> getRefs() {
+    public Stream<Reference> getReferences() {
         return Stream.of(this);
     }
 

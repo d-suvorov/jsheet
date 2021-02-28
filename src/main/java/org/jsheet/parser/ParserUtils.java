@@ -10,7 +10,7 @@ public class ParserUtils {
         Parser parser = new Parser(lexer);
         try {
             Expression expr = parser.parse();
-            return new Formula(definition, expr, parser.getRefs(), parser.getRanges());
+            return new Formula(definition, expr, parser.getReferences(), parser.getRanges());
         } catch (ParseException e) {
             return new Formula(definition, "Parsing error");
         }

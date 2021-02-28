@@ -21,7 +21,7 @@ public abstract class Expression {
      */
     public abstract Expression shift(JSheetTableModel model, int rowShift, int columnShift);
 
-    public abstract Stream<Reference> getRefs();
+    public abstract Stream<Reference> getReferences();
 
     public abstract Stream<Range> getRanges();
 

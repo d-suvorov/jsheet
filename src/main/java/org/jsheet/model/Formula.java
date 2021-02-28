@@ -17,7 +17,7 @@ public class Formula {
     private final String parsingError;
 
     public final Expression expression;
-    private final List<Reference> refs;
+    private final List<Reference> references;
     private final List<Range> ranges;
 
     private Result result;
@@ -26,13 +26,13 @@ public class Formula {
      * For successfully parsed expression.
      */
     public Formula(String originalDefinition, Expression expression,
-        List<Reference> refs, List<Range> ranges)
+        List<Reference> references, List<Range> ranges)
     {
         this.originalDefinition = originalDefinition;
         this.isParsed = true;
         this.parsingError = null;
         this.expression = expression;
-        this.refs = refs;
+        this.references = references;
         this.ranges = ranges;
     }
 
@@ -44,7 +44,7 @@ public class Formula {
         this.isParsed = false;
         this.parsingError = parsingError;
         this.expression = null;
-        this.refs = null;
+        this.references = null;
         this.ranges = null;
     }
 
@@ -56,9 +56,9 @@ public class Formula {
      * @return a list of all references in this formula, including the first
      * and the last references for each range (e.g. A1 and A10 for A1:A10)
      */
-    public List<Reference> getRefs() {
-        Objects.requireNonNull(refs, () -> "getting refs of an incorrect formula");
-        return Collections.unmodifiableList(refs);
+    public List<Reference> getReferences() {
+        Objects.requireNonNull(references, () -> "getting references of an incorrect formula");
+        return Collections.unmodifiableList(references);
     }
 
     /**
@@ -71,7 +71,7 @@ public class Formula {
 
     /**
      * Evaluates this expression and returns the result.
-     * The user must call {@link Formula#resolveRefs(JSheetTableModel)}
+     * The user must call {@link Formula#resolveReferences(JSheetTableModel)}
      * before calling this method to resolve all references that occur in
      * the current expression.
      */
@@ -96,9 +96,9 @@ public class Formula {
     /**
      * Tries to resolve all references that occur in the current expression.
      */
-    void resolveRefs(JSheetTableModel model) {
-        Objects.requireNonNull(refs, () -> "getting refs of an incorrect formula");
-        refs.forEach(r -> r.resolve(model));
+    void resolveReferences(JSheetTableModel model) {
+        Objects.requireNonNull(references, () -> "getting references of an incorrect formula");
+        references.forEach(r -> r.resolve(model));
     }
 
     public Formula shift(JSheetTableModel model, int rowShift, int columnShift) {
@@ -108,9 +108,14 @@ public class Formula {
         }
         Objects.requireNonNull(expression);
         Expression shiftedExpr = expression.shift(model, rowShift, columnShift);
-        List<Reference> refs = shiftedExpr.getRefs().collect(Collectors.toList());
-        List<Range> ranges = shiftedExpr.getRanges().collect(Collectors.toList());
-        return new Formula("= " + shiftedExpr.toString(), shiftedExpr, refs, ranges);
+        List<Reference> references = shiftedExpr
+            .getReferences()
+            .collect(Collectors.toList());
+        List<Range> ranges = shiftedExpr
+            .getRanges()
+            .collect(Collectors.toList());
+        String newDefinition = "= " + shiftedExpr.toString();
+        return new Formula(newDefinition, shiftedExpr, references, ranges);
     }
 
     @Override
