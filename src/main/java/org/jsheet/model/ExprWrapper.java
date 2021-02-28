@@ -1,8 +1,8 @@
 package org.jsheet.model;
 
-import org.jsheet.model.expr.Expr;
-import org.jsheet.model.expr.Range;
-import org.jsheet.model.expr.Ref;
+import org.jsheet.model.expression.Expression;
+import org.jsheet.model.expression.Range;
+import org.jsheet.model.expression.Reference;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,8 +16,8 @@ public class ExprWrapper {
     private final boolean isParsed;
     private final String parsingError;
 
-    public final Expr expression;
-    private final List<Ref> refs;
+    public final Expression expression;
+    private final List<Reference> refs;
     private final List<Range> ranges;
 
     private Result result;
@@ -25,8 +25,8 @@ public class ExprWrapper {
     /**
      * Creates a wrapper for successfully parsed formula.
      */
-    public ExprWrapper(String originalDefinition, Expr expression,
-        List<Ref> refs, List<Range> ranges)
+    public ExprWrapper(String originalDefinition, Expression expression,
+        List<Reference> refs, List<Range> ranges)
     {
         this.originalDefinition = originalDefinition;
         this.isParsed = true;
@@ -56,7 +56,7 @@ public class ExprWrapper {
      * @return a list of all references in this formula, including the first
      * and the last references for each range (e.g. A1 and A10 for A1:A10)
      */
-    public List<Ref> getRefs() {
+    public List<Reference> getRefs() {
         Objects.requireNonNull(refs, () -> "getting refs of an incorrect formula");
         return Collections.unmodifiableList(refs);
     }
@@ -107,8 +107,8 @@ public class ExprWrapper {
             return new ExprWrapper(originalDefinition, parsingError);
         }
         Objects.requireNonNull(expression);
-        Expr shiftedExpr = expression.shift(model, rowShift, columnShift);
-        List<Ref> refs = shiftedExpr.getRefs().collect(Collectors.toList());
+        Expression shiftedExpr = expression.shift(model, rowShift, columnShift);
+        List<Reference> refs = shiftedExpr.getRefs().collect(Collectors.toList());
         List<Range> ranges = shiftedExpr.getRanges().collect(Collectors.toList());
         return new ExprWrapper("= " + shiftedExpr.toString(), shiftedExpr, refs, ranges);
     }

@@ -88,8 +88,8 @@ public class JSheetTableModel extends AbstractTableModel {
         setModified(true);
         JSheetCell current = new JSheetCell(rowIndex, columnIndex);
         Value prev = getValueAt(rowIndex, columnIndex);
-        if (prev != null && prev.getTag() == Type.EXPR) {
-            ExprWrapper wrapper = prev.getAsExpr();
+        if (prev != null && prev.getTag() == Type.EXPRESSION) {
+            ExprWrapper wrapper = prev.getAsExpression();
             dependencies.removeFormula(current, wrapper);
         }
         data.get(rowIndex)[columnIndex] = getModelValue(value, current);
@@ -102,8 +102,8 @@ public class JSheetTableModel extends AbstractTableModel {
             return null;
         if (object instanceof Value) {
             Value value = (Value) object;
-            if (value.getTag() == Type.EXPR) {
-                dependencies.addFormula(current, value.getAsExpr());
+            if (value.getTag() == Type.EXPRESSION) {
+                dependencies.addFormula(current, value.getAsExpression());
             }
             return value;
         }
@@ -164,8 +164,8 @@ public class JSheetTableModel extends AbstractTableModel {
         if (value == null) {
             return Result.failure(String.format("Cell %s is uninitialized", strCell));
         }
-        if (value.getTag() == Type.EXPR) {
-            return value.getAsExpr().getResult();
+        if (value.getTag() == Type.EXPRESSION) {
+            return value.getAsExpression().getResult();
         } else { // Plain value
             return Result.success(value);
         }
@@ -276,7 +276,7 @@ public class JSheetTableModel extends AbstractTableModel {
         Collection<JSheetCell> getDependentOn(JSheetCell cell) {
             Set<JSheetCell> dependent = new HashSet<>();
             Value cellValue = getValueAt(cell.row, cell.column);
-            if (cellValue != null && cellValue.getTag() == Type.EXPR)
+            if (cellValue != null && cellValue.getTag() == Type.EXPRESSION)
                 dependent.add(cell);
             Queue<JSheetCell> queue = new ArrayDeque<>();
             queue.add(cell);
@@ -340,7 +340,7 @@ public class JSheetTableModel extends AbstractTableModel {
                     }
                 }
             }
-            ExprWrapper current = getValueAt(u.row, u.column).getAsExpr();
+            ExprWrapper current = getValueAt(u.row, u.column).getAsExpression();
             if (circular) {
                 current.setResult(Result.failure("Circular dependency"));
             } else {

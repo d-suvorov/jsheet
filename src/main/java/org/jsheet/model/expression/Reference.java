@@ -1,4 +1,4 @@
-package org.jsheet.model.expr;
+package org.jsheet.model.expression;
 
 import org.jsheet.model.JSheetCell;
 import org.jsheet.model.JSheetTableModel;
@@ -7,11 +7,11 @@ import org.jsheet.model.Result;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class Ref extends Expr {
+public class Reference extends Expression {
     private final String name;
     private JSheetCell cell;
 
-    public Ref(String name) {
+    public Reference(String name) {
         this.name = name;
     }
 
@@ -40,20 +40,20 @@ public class Ref extends Expr {
     }
 
     @Override
-    public Ref shift(JSheetTableModel model, int rowShift, int columnShift) {
+    public Reference shift(JSheetTableModel model, int rowShift, int columnShift) {
         if (!isResolved())
             throw new IllegalStateException();
         JSheetCell shiftedCell = new JSheetCell(cell.row + rowShift, cell.column + columnShift);
         if (shiftedCell.row >= model.getRowCount() || shiftedCell.column >= model.getColumnCount())
             throw new IllegalStateException();
         String shiftedName = model.getColumnName(shiftedCell.column) + shiftedCell.row;
-        Ref shifted = new Ref(shiftedName);
+        Reference shifted = new Reference(shiftedName);
         shifted.cell = shiftedCell;
         return shifted;
     }
 
     @Override
-    public Stream<Ref> getRefs() {
+    public Stream<Reference> getRefs() {
         return Stream.of(this);
     }
 
@@ -67,7 +67,7 @@ public class Ref extends Expr {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Ref ref = (Ref) o;
+        Reference ref = (Reference) o;
 
         return Objects.equals(name, ref.name);
     }

@@ -1,4 +1,4 @@
-package org.jsheet.model.expr;
+package org.jsheet.model.expression;
 
 import org.jsheet.model.*;
 
@@ -10,11 +10,11 @@ import static org.jsheet.model.Result.failure;
 import static org.jsheet.model.Type.DOUBLE;
 import static org.jsheet.model.Type.STRING;
 
-public class Function extends Expr {
+public class Function extends Expression {
     private final String name;
-    private final List<Expr> args;
+    private final List<Expression> args;
 
-    public Function(String name, List<Expr> args) {
+    public Function(String name, List<Expression> args) {
         this.name = name;
         this.args = args;
     }
@@ -33,7 +33,7 @@ public class Function extends Expr {
         return failure("Unknown function: " + name);
     }
 
-    private Result evalPow(List<Expr> args, JSheetTableModel model) {
+    private Result evalPow(List<Expression> args, JSheetTableModel model) {
         if (args.size() != 2)
             return failure(wrongNumberOfArgsMessage("pow"));
 
@@ -51,7 +51,7 @@ public class Function extends Expr {
         return Result.success(Value.of(result));
     }
 
-    private Result evalLength(List<Expr> args, JSheetTableModel model) {
+    private Result evalLength(List<Expression> args, JSheetTableModel model) {
         if (args.size() != 1)
             return failure(wrongNumberOfArgsMessage("length"));
 
@@ -68,7 +68,7 @@ public class Function extends Expr {
         return Result.success(Value.of(result));
     }
 
-    private Result evalSum(List<Expr> args, JSheetTableModel model) {
+    private Result evalSum(List<Expression> args, JSheetTableModel model) {
         if (args.size() != 1)
             return failure(wrongNumberOfArgsMessage("sum"));
 
@@ -77,8 +77,8 @@ public class Function extends Expr {
             return evaluationError;
 
         if (range.getTag() != Type.RANGE) {
-            String msg = typeMismatchMessage(Type.RANGE, range.getTag());
-            return Result.failure(msg);
+            String message = typeMismatchMessage(Type.RANGE, range.getTag());
+            return Result.failure(message);
         }
 
         double sum = 0;
@@ -88,8 +88,8 @@ public class Function extends Expr {
                 return res;
             Value addend = res.get();
             if (addend.getTag() != DOUBLE) {
-                String msg = typeMismatchMessage(Type.DOUBLE, addend.getTag());
-                return Result.failure(msg);
+                String message = typeMismatchMessage(Type.DOUBLE, addend.getTag());
+                return Result.failure(message);
             }
             sum += addend.getAsDouble();
         }
@@ -102,20 +102,20 @@ public class Function extends Expr {
 
     @Override
     public Function shift(JSheetTableModel model, int rowShift, int columnShift) {
-        List<Expr> shiftedArgs = args.stream()
+        List<Expression> shiftedArgs = args.stream()
             .map(e -> e.shift(model, rowShift, columnShift))
             .collect(Collectors.toList());
         return new Function(name, shiftedArgs);
     }
 
     @Override
-    public Stream<Ref> getRefs() {
-        return args.stream().flatMap(Expr::getRefs);
+    public Stream<Reference> getRefs() {
+        return args.stream().flatMap(Expression::getRefs);
     }
 
     @Override
     public Stream<Range> getRanges() {
-        return args.stream().flatMap(Expr::getRanges);
+        return args.stream().flatMap(Expression::getRanges);
     }
 
     @Override
@@ -139,7 +139,7 @@ public class Function extends Expr {
     @Override
     public String toString() {
         String argsStr = args.stream()
-            .map(Expr::toString)
+            .map(Expression::toString)
             .collect(Collectors.joining(", "));
         return String.format("%s(%s)", name, argsStr);
     }

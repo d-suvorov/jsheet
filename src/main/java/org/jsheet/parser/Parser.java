@@ -1,7 +1,7 @@
 package org.jsheet.parser;
 
 import org.jsheet.model.Value;
-import org.jsheet.model.expr.*;
+import org.jsheet.model.expression.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,14 +13,14 @@ public class Parser {
     private final Lexer lexer;
     private Lexer.Token current;
 
-    private final List<Ref> refs = new ArrayList<>();
+    private final List<Reference> refs = new ArrayList<>();
     private final List<Range> ranges = new ArrayList<>();
 
     public Parser(Lexer lexer) {
         this.lexer = lexer;
     }
 
-    public List<Ref> getRefs() {
+    public List<Reference> getRefs() {
         return refs;
     }
 
@@ -28,66 +28,66 @@ public class Parser {
         return ranges;
     }
 
-    public Expr parse() throws ParseException {
+    public Expression parse() throws ParseException {
         readNextToken();
         if (current == END)
             throw new ParseException();
         return or(true);
     }
 
-    private Expr or(boolean read) throws ParseException {
-        Expr expr = and(read);
+    private Expression or(boolean read) throws ParseException {
+        Expression expr = and(read);
         while (current == OR) {
             String op = current.binop();
-            Expr term = and(false);
+            Expression term = and(false);
             expr = new Binop(op, expr, term);
         }
         return expr;
     }
 
-    private Expr and(boolean read) throws ParseException {
-        Expr expr = comparison(read);
+    private Expression and(boolean read) throws ParseException {
+        Expression expr = comparison(read);
         while (current == AND) {
             String op = current.binop();
-            Expr term = comparison(false);
+            Expression term = comparison(false);
             expr = new Binop(op, expr, term);
         }
         return expr;
     }
 
-    private Expr comparison(boolean read) throws ParseException {
-        Expr expr = sum(read);
+    private Expression comparison(boolean read) throws ParseException {
+        Expression expr = sum(read);
         while (current == EQ || current == NE || current == LT
             || current == LE || current == GT || current == GE)
         {
             String op = current.binop();
-            Expr term = sum(false);
+            Expression term = sum(false);
             expr = new Binop(op, expr, term);
         }
         return expr;
     }
 
-    private Expr sum(boolean read) throws ParseException {
-        Expr expr = product(read);
+    private Expression sum(boolean read) throws ParseException {
+        Expression expr = product(read);
         while (current == PLUS || current == MINUS) {
             String op = current.binop();
-            Expr term = product(false);
+            Expression term = product(false);
             expr = new Binop(op, expr, term);
         }
         return expr;
     }
 
-    private Expr product(boolean read) throws ParseException  {
-        Expr expr = factor(read);
+    private Expression product(boolean read) throws ParseException  {
+        Expression expr = factor(read);
         while (current == MUL || current == DIV) {
             String op = current.binop();
-            Expr term = factor(false);
+            Expression term = factor(false);
             expr = new Binop(op, expr, term);
         }
         return expr;
     }
 
-    private Expr factor(boolean read) throws ParseException {
+    private Expression factor(boolean read) throws ParseException {
         if (!read)
             readNextToken();
         switch (current) {
@@ -107,7 +107,7 @@ public class Parser {
             }
             case IF: return conditional();
             case LPAREN: {
-                Expr expr = or(false);
+                Expression expr = or(false);
                 if (current != RPAREN)
                     throw new ParseException();
                 readNextToken();
@@ -117,17 +117,17 @@ public class Parser {
         throw new ParseException();
     }
 
-    private Expr literal(Value value) throws ParseException {
+    private Expression literal(Value value) throws ParseException {
         readNextToken();
         return new Literal(value);
     }
 
-    private Expr range(String firstName) throws ParseException {
+    private Expression range(String firstName) throws ParseException {
         readNextToken();
         if (current != ID)
             throw new ParseException();
-        Ref first = new Ref(firstName);
-        Ref last = new Ref(lexer.currentId());
+        Reference first = new Reference(firstName);
+        Reference last = new Reference(lexer.currentId());
         Range range = new Range(first, last);
         refs.add(first);
         refs.add(last);
@@ -136,13 +136,13 @@ public class Parser {
         return range;
     }
 
-    private Expr function(String name) throws ParseException {
+    private Expression function(String name) throws ParseException {
         readNextToken();
         if (current == RPAREN) {
             readNextToken();
             return new Function(name, Collections.emptyList());
         }
-        List<Expr> args = new ArrayList<>();
+        List<Expression> args = new ArrayList<>();
         while (true) {
             args.add(or(true));
             if (current != COMMA)
@@ -155,20 +155,20 @@ public class Parser {
         return new Function(name, args);
     }
 
-    private Expr reference(String name) {
-        Ref ref = new Ref(name);
+    private Expression reference(String name) {
+        Reference ref = new Reference(name);
         refs.add(ref);
         return ref;
     }
 
     private Conditional conditional() throws ParseException {
-        Expr condition = or(false);
+        Expression condition = or(false);
         if (current != THEN)
             throw new ParseException();
-        Expr thenClause = or(false);
+        Expression thenClause = or(false);
         if (current != ELSE)
             throw new ParseException();
-        Expr elseClause = or(false);
+        Expression elseClause = or(false);
         return new Conditional(condition, thenClause, elseClause);
     }
 

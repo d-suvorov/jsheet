@@ -1,6 +1,6 @@
 package org.jsheet;
 
-import org.jsheet.model.expr.*;
+import org.jsheet.model.expression.*;
 import org.jsheet.model.ExprWrapper;
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Value;
@@ -21,7 +21,7 @@ public class ParserTest {
         model = new JSheetTableModel();
     }
 
-    private void testParserImpl(String formula, Expr expected) {
+    private void testParserImpl(String formula, Expression expected) {
         ExprWrapper expr = ParserUtils.parse(formula);
         assertEquals(expected, expr.expression);
     }
@@ -34,8 +34,8 @@ public class ParserTest {
         return new Literal(Value.of(b));
     }
 
-    private Binop bin(Expr lhs, String op, Expr rhs) {
-        return new Binop(op, lhs, rhs);
+    private Binop bin(Expression left, String op, Expression right) {
+        return new Binop(op, left, right);
     }
 
     @Test
@@ -63,7 +63,7 @@ public class ParserTest {
 
     @Test
     public void simpleExpression1() {
-        Expr expected = bin(
+        Expression expected = bin(
             lit(1),
             "+",
             bin(lit(2), "*", lit(3))
@@ -73,7 +73,7 @@ public class ParserTest {
 
     @Test
     public void simpleExpression2() {
-        Expr expected = bin(
+        Expression expected = bin(
             bin(lit(1), "+", lit(2)),
             "*",
             lit(3)
@@ -83,7 +83,7 @@ public class ParserTest {
 
     @Test
     public void priority() {
-        Expr expected = bin(
+        Expression expected = bin(
             bin(lit(1), "==", lit(2)),
             "||",
             bin(
@@ -97,19 +97,19 @@ public class ParserTest {
 
     @Test
     public void functionWithNoArgs() {
-        Expr expected = new Function("rand", Collections.emptyList());
+        Expression expected = new Function("rand", Collections.emptyList());
         testParserImpl("= rand()", expected);
     }
 
     @Test
     public void functionWithOneArgs() {
-        Expr expected = new Function("sqrt", Collections.singletonList(lit(4)));
+        Expression expected = new Function("sqrt", Collections.singletonList(lit(4)));
         testParserImpl("= sqrt(4)", expected);
     }
 
     @Test
     public void functionWithTwoArgs() {
-        Expr expected = new Function(
+        Expression expected = new Function(
             "pow", Arrays.asList(lit(2), lit(4))
         );
         testParserImpl("= pow(2, 4)", expected);
@@ -117,16 +117,16 @@ public class ParserTest {
 
     @Test
     public void range() {
-        Expr expected = new Function(
+        Expression expected = new Function(
             "sum",
-            Collections.singletonList(new Range(new Ref("A1"), new Ref("A10")))
+            Collections.singletonList(new Range(new Reference("A1"), new Reference("A10")))
         );
         testParserImpl("= sum(A1:A10)", expected);
     }
 
     @Test
     public void conditional() {
-        Expr expected = new Conditional(lit(true), lit(42), lit(43));
+        Expression expected = new Conditional(lit(true), lit(42), lit(43));
         testParserImpl("= if true then 42 else 43", expected);
     }
 }

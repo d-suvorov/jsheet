@@ -1,4 +1,4 @@
-package org.jsheet.model.expr;
+package org.jsheet.model.expression;
 
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
@@ -8,11 +8,11 @@ import org.jsheet.model.Value;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class Literal extends Expr {
+public class Literal extends Expression {
     private final Value value;
 
     public Literal(Value value) {
-        if (value.getTag() == Type.EXPR)
+        if (value.getTag() == Type.EXPRESSION)
             throw new IllegalArgumentException();
         this.value = value;
     }
@@ -32,7 +32,7 @@ public class Literal extends Expr {
     }
 
     @Override
-    public Stream<Ref> getRefs() {
+    public Stream<Reference> getRefs() {
         return Stream.empty();
     }
 

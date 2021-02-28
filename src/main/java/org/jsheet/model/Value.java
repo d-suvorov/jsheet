@@ -27,7 +27,7 @@ public class Value {
         return (String) value;
     }
 
-    public ExprWrapper getAsExpr() {
+    public ExprWrapper getAsExpression() {
         return (ExprWrapper) value;
     }
 
@@ -48,7 +48,7 @@ public class Value {
     }
 
     public static Value of(ExprWrapper e) {
-        return new Value(Type.EXPR, e);
+        return new Value(Type.EXPRESSION, e);
     }
 
     public static Value of(RangeValue r) {
@@ -81,7 +81,7 @@ public class Value {
             case BOOLEAN: return String.valueOf(getAsBoolean());
             case DOUBLE: return String.valueOf(getAsDouble());
             case STRING: return getAsString();
-            case EXPR: return getAsExpr().originalDefinition;
+            case EXPRESSION: return getAsExpression().originalDefinition;
             /* Range value is never shown in the editor
                since ranges only occur inside formulae */
             case RANGE: return "RANGE";

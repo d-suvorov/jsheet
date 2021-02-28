@@ -10,8 +10,8 @@ public class ExpressionRenderer extends DefaultTableCellRenderer {
     @Override
     protected void setValue(Object o) {
         Value value = (Value) o;
-        if (value.getTag() == Type.EXPR) {
-            Result result = value.getAsExpr().getResult();
+        if (value.getTag() == Type.EXPRESSION) {
+            Result result = value.getAsExpression().getResult();
             if (!result.isPresent()) {
                 setText("!ERROR");
                 setToolTipText(result.message());
@@ -28,7 +28,7 @@ public class ExpressionRenderer extends DefaultTableCellRenderer {
             case BOOLEAN: return String.valueOf(value.getAsBoolean());
             case DOUBLE: return String.format("%.2f", value.getAsDouble());
             case STRING: return value.getAsString();
-            case EXPR:
+            case EXPRESSION:
             case RANGE:
                 throw new AssertionError("should not be rendered");
             default: throw new AssertionError();

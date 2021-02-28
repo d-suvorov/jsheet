@@ -1,4 +1,4 @@
-package org.jsheet.model.expr;
+package org.jsheet.model.expression;
 
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public abstract class Expr {
+public abstract class Expression {
     protected Result evaluationError;
     protected Result typecheckError;
 
@@ -19,9 +19,9 @@ public abstract class Expr {
      * @return a copy of this expression with cell references
      * shifted by {@code rowShift} and {@code columnShift} respectively.
      */
-    public abstract Expr shift(JSheetTableModel model, int rowShift, int columnShift);
+    public abstract Expression shift(JSheetTableModel model, int rowShift, int columnShift);
 
-    public abstract Stream<Ref> getRefs();
+    public abstract Stream<Reference> getRefs();
 
     public abstract Stream<Range> getRanges();
 
@@ -31,7 +31,7 @@ public abstract class Expr {
      *
      * @return a list of values or {@code null} if an error occurs.
      */
-    protected List<Value> evaluate(List<Expr> params, JSheetTableModel model) {
+    protected List<Value> evaluate(List<Expression> params, JSheetTableModel model) {
         List<Value> values = new ArrayList<>(params.size());
         for (var p : params) {
             Result res = p.eval(model);
@@ -45,9 +45,9 @@ public abstract class Expr {
     }
 
     /**
-     * Same as {@link Expr#evaluate(List, JSheetTableModel) but for a single value}.
+     * Same as {@link Expression#evaluate(List, JSheetTableModel) but for a single value}.
      */
-    protected Value evaluate(Expr param, JSheetTableModel model) {
+    protected Value evaluate(Expression param, JSheetTableModel model) {
         Result res = param.eval(model);
         if (!res.isPresent()) {
             evaluationError = res;
@@ -68,8 +68,8 @@ public abstract class Expr {
             Type expected = types.get(i);
             Type actual = values.get(i).getTag();
             if (actual != expected) {
-                String msg = typeMismatchMessage(expected, actual);
-                typecheckError = Result.failure(msg);
+                String message = typeMismatchMessage(expected, actual);
+                typecheckError = Result.failure(message);
                 return false;
             }
         }

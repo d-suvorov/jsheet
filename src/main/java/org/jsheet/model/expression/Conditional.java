@@ -1,4 +1,4 @@
-package org.jsheet.model.expr;
+package org.jsheet.model.expression;
 
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
@@ -8,12 +8,12 @@ import org.jsheet.model.Value;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class Conditional extends Expr {
-    private final Expr condition;
-    private final Expr thenClause;
-    private final Expr elseClause;
+public class Conditional extends Expression {
+    private final Expression condition;
+    private final Expression thenClause;
+    private final Expression elseClause;
 
-    public Conditional(Expr condition, Expr thenClause, Expr elseClause) {
+    public Conditional(Expression condition, Expression thenClause, Expression elseClause) {
         this.condition = condition;
         this.thenClause = thenClause;
         this.elseClause = elseClause;
@@ -25,10 +25,10 @@ public class Conditional extends Expr {
         if (condValue == null)
             return evaluationError;
         if (condValue.getTag() != Type.BOOLEAN) {
-            String msg = typeMismatchMessage(Type.BOOLEAN, condValue.getTag());
-            return Result.failure(msg);
+            String message = typeMismatchMessage(Type.BOOLEAN, condValue.getTag());
+            return Result.failure(message);
         }
-        Expr chosen = condValue.getAsBoolean() ? thenClause : elseClause;
+        Expression chosen = condValue.getAsBoolean() ? thenClause : elseClause;
         Value resultValue = evaluate(chosen, model);
         if (resultValue == null)
             return evaluationError;
@@ -36,7 +36,7 @@ public class Conditional extends Expr {
     }
 
     @Override
-    public Expr shift(JSheetTableModel model, int rowShift, int columnShift) {
+    public Expression shift(JSheetTableModel model, int rowShift, int columnShift) {
         return new Conditional(
             condition.shift(model, rowShift, columnShift),
             thenClause.shift(model, rowShift, columnShift),
@@ -45,15 +45,15 @@ public class Conditional extends Expr {
     }
 
     @Override
-    public Stream<Ref> getRefs() {
+    public Stream<Reference> getRefs() {
         return Stream.of(condition, thenClause, elseClause)
-            .flatMap(Expr::getRefs);
+            .flatMap(Expression::getRefs);
     }
 
     @Override
     public Stream<Range> getRanges() {
         return Stream.of(condition, thenClause, elseClause)
-            .flatMap(Expr::getRanges);
+            .flatMap(Expression::getRanges);
     }
 
     @Override

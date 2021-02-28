@@ -1,4 +1,4 @@
-package org.jsheet.model.expr;
+package org.jsheet.model.expression;
 
 import org.jsheet.model.*;
 
@@ -6,11 +6,11 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class Range extends Expr implements Iterable<JSheetCell> {
-    private final Ref first;
-    private final Ref last;
+public class Range extends Expression implements Iterable<JSheetCell> {
+    private final Reference first;
+    private final Reference last;
 
-    public Range(Ref first, Ref last) {
+    public Range(Reference first, Reference last) {
         this.first = first;
         this.last = last;
     }
@@ -38,13 +38,13 @@ public class Range extends Expr implements Iterable<JSheetCell> {
 
     @Override
     public Range shift(JSheetTableModel model, int rowShift, int columnShift) {
-        Ref shiftedFirst = first.shift(model, rowShift, columnShift);
-        Ref shiftedLast = last.shift(model, rowShift, columnShift);
+        Reference shiftedFirst = first.shift(model, rowShift, columnShift);
+        Reference shiftedLast = last.shift(model, rowShift, columnShift);
         return new Range(shiftedFirst, shiftedLast);
     }
 
     @Override
-    public Stream<Ref> getRefs() {
+    public Stream<Reference> getRefs() {
         return Stream.concat(first.getRefs(), last.getRefs());
     }
 

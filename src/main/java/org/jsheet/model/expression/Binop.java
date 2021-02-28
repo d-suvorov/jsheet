@@ -1,4 +1,4 @@
-package org.jsheet.model.expr;
+package org.jsheet.model.expression;
 
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
@@ -14,20 +14,20 @@ import java.util.stream.Stream;
 import static org.jsheet.model.Type.BOOLEAN;
 import static org.jsheet.model.Type.DOUBLE;
 
-public class Binop extends Expr {
+public class Binop extends Expression {
     private final String op;
-    private final Expr lhs;
-    private final Expr rhs;
+    private final Expression left;
+    private final Expression right;
 
-    public Binop(String op, Expr lhs, Expr rhs) {
+    public Binop(String op, Expression left, Expression right) {
         this.op = op;
-        this.lhs = lhs;
-        this.rhs = rhs;
+        this.left = left;
+        this.right = right;
     }
 
     @Override
     public Result eval(JSheetTableModel model) {
-        List<Expr> params = Arrays.asList(lhs, rhs);
+        List<Expression> params = Arrays.asList(left, right);
         List<Value> values = evaluate(params, model);
         if (values == null)
             return evaluationError;
@@ -64,9 +64,9 @@ public class Binop extends Expr {
                 throw new AssertionError();
         }
 
-        Value lhsValue = values.get(0);
-        Value rhsValue = values.get(1);
-        Double result = binary.apply(lhsValue.getAsDouble(), rhsValue.getAsDouble());
+        Value leftValue = values.get(0);
+        Value rightValue = values.get(1);
+        Double result = binary.apply(leftValue.getAsDouble(), rightValue.getAsDouble());
         return Result.success(Value.of(result));
     }
 
@@ -87,9 +87,9 @@ public class Binop extends Expr {
                 throw new AssertionError();
         }
 
-        Value lhsValue = values.get(0);
-        Value rhsValue = values.get(1);
-        Boolean result = binary.apply(lhsValue.getAsBoolean(), rhsValue.getAsBoolean());
+        Value leftValue = values.get(0);
+        Value rightValue = values.get(1);
+        Boolean result = binary.apply(leftValue.getAsBoolean(), rightValue.getAsBoolean());
         return Result.success(Value.of(result));
     }
 
@@ -123,9 +123,9 @@ public class Binop extends Expr {
                 throw new AssertionError();
         }
 
-        Value lhsValue = values.get(0);
-        Value rhsValue = values.get(1);
-        Boolean result = binary.apply(lhsValue.getAsDouble(), rhsValue.getAsDouble());
+        Value leftValue = values.get(0);
+        Value rightValue = values.get(1);
+        Boolean result = binary.apply(leftValue.getAsDouble(), rightValue.getAsDouble());
         return Result.success(Value.of(result));
     }
 
@@ -142,22 +142,22 @@ public class Binop extends Expr {
     }
 
     @Override
-    public Expr shift(JSheetTableModel model, int rowShift, int columnShift) {
+    public Expression shift(JSheetTableModel model, int rowShift, int columnShift) {
         return new Binop(
             op,
-            lhs.shift(model, rowShift, columnShift),
-            rhs.shift(model, rowShift, columnShift)
+            left.shift(model, rowShift, columnShift),
+            right.shift(model, rowShift, columnShift)
         );
     }
 
     @Override
-    public Stream<Ref> getRefs() {
-        return Stream.concat(lhs.getRefs(), rhs.getRefs());
+    public Stream<Reference> getRefs() {
+        return Stream.concat(left.getRefs(), right.getRefs());
     }
 
     @Override
     public Stream<Range> getRanges() {
-        return Stream.concat(lhs.getRanges(), rhs.getRanges());
+        return Stream.concat(left.getRanges(), right.getRanges());
     }
 
     @Override
@@ -168,20 +168,20 @@ public class Binop extends Expr {
         Binop binop = (Binop) o;
 
         if (!Objects.equals(op, binop.op)) return false;
-        if (!Objects.equals(lhs, binop.lhs)) return false;
-        return Objects.equals(rhs, binop.rhs);
+        if (!Objects.equals(left, binop.left)) return false;
+        return Objects.equals(right, binop.right);
     }
 
     @Override
     public int hashCode() {
         int result = op != null ? op.hashCode() : 0;
-        result = 31 * result + (lhs != null ? lhs.hashCode() : 0);
-        result = 31 * result + (rhs != null ? rhs.hashCode() : 0);
+        result = 31 * result + (left != null ? left.hashCode() : 0);
+        result = 31 * result + (right != null ? right.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
-        return String.format("(%s %s %s)", lhs, op, rhs);
+        return String.format("(%s %s %s)", left, op, right);
     }
 }
