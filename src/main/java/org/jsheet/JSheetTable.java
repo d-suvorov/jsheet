@@ -89,7 +89,7 @@ public class JSheetTable extends JTable {
         }
 
         void paste(Cell destination) {
-            TableModel model = getModel();
+            JSheetTableModel model = (JSheetTableModel) getModel();
             for (int rowOffset = 0; rowOffset < rowCount; rowOffset++) {
                 int dstRow = destination.row + rowOffset;
                 if (dstRow >= model.getRowCount())
@@ -102,7 +102,7 @@ public class JSheetTable extends JTable {
                     if (value.getTag() == Type.FORMULA) {
                         int rowShift = destination.row - source.row;
                         int columnShift = destination.column - source.column;
-                        Formula shifted = value.getAsFormula().shift((JSheetTableModel) model, rowShift, columnShift);
+                        Formula shifted = value.getAsFormula().shift(model, rowShift, columnShift);
                         setValueAt(Value.of(shifted), dstRow, dstColumn);
                     } else {
                         // Plain values are immutable so it's fine
