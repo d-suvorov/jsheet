@@ -6,6 +6,7 @@ import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class Conditional extends Expr {
     private final Expr condition;
@@ -32,6 +33,27 @@ public class Conditional extends Expr {
         if (resultValue == null)
             return evaluationError;
         return Result.success(resultValue);
+    }
+
+    @Override
+    public Expr shift(JSheetTableModel model, int rowShift, int columnShift) {
+        return new Conditional(
+            condition.shift(model, rowShift, columnShift),
+            thenClause.shift(model, rowShift, columnShift),
+            elseClause.shift(model, rowShift, columnShift)
+        );
+    }
+
+    @Override
+    public Stream<Ref> getRefs() {
+        return Stream.of(condition, thenClause, elseClause)
+            .flatMap(Expr::getRefs);
+    }
+
+    @Override
+    public Stream<Range> getRanges() {
+        return Stream.of(condition, thenClause, elseClause)
+            .flatMap(Expr::getRanges);
     }
 
     @Override

@@ -4,6 +4,7 @@ import org.jsheet.model.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.jsheet.model.Result.failure;
 import static org.jsheet.model.Type.DOUBLE;
@@ -97,6 +98,24 @@ public class Function extends Expr {
 
     private String wrongNumberOfArgsMessage(String name) {
         return "Wrong number of arguments for function: " + name;
+    }
+
+    @Override
+    public Function shift(JSheetTableModel model, int rowShift, int columnShift) {
+        List<Expr> shiftedArgs = args.stream()
+            .map(e -> e.shift(model, rowShift, columnShift))
+            .collect(Collectors.toList());
+        return new Function(name, shiftedArgs);
+    }
+
+    @Override
+    public Stream<Ref> getRefs() {
+        return args.stream().flatMap(Expr::getRefs);
+    }
+
+    @Override
+    public Stream<Range> getRanges() {
+        return args.stream().flatMap(Expr::getRanges);
     }
 
     @Override

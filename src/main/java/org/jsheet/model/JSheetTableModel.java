@@ -94,13 +94,21 @@ public class JSheetTableModel extends AbstractTableModel {
         }
         data.get(rowIndex)[columnIndex] = getModelValue(value, current);
         dependencies.recomputeAll(current);
+        fireTableCellUpdated(rowIndex, columnIndex);
     }
 
-    private Value getModelValue(Object value, JSheetCell current) {
-        if (value == null)
+    private Value getModelValue(Object object, JSheetCell current) {
+        if (object == null)
             return null;
-        if (value instanceof String) {
-            String strValue = (String) value;
+        if (object instanceof Value) {
+            Value value = (Value) object;
+            if (value.getTag() == Type.EXPR) {
+                dependencies.addFormula(current, value.getAsExpr());
+            }
+            return value;
+        }
+        if (object instanceof String) {
+            String strValue = (String) object;
             if (strValue.startsWith("=")) {
                 ExprWrapper formula = ParserUtils.parse(strValue);
                 if (formula.isParsed())
@@ -111,22 +119,22 @@ public class JSheetTableModel extends AbstractTableModel {
                 return getLiteral(strValue);
             }
         }
-        // Only gets string values typed by user
+        // Only gets string values typed by user or model values pasted from other cells
         throw new AssertionError();
     }
 
-    private Value getLiteral(String value) {
+    private Value getLiteral(String strValue) {
         // Boolean
-        if (value.equals("false")) return Value.of(false);
-        if (value.equals("true")) return Value.of(true);
+        if (strValue.equals("false")) return Value.of(false);
+        if (strValue.equals("true")) return Value.of(true);
 
         // Number
         try {
-            return Value.of(Double.parseDouble(value));
+            return Value.of(Double.parseDouble(strValue));
         } catch (NumberFormatException ignored) {}
 
         // String
-        return Value.of(value);
+        return Value.of(strValue);
     }
 
     public JSheetCell resolveRef(String name) {

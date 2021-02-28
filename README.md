@@ -6,7 +6,8 @@ _jsheet_ is a simplistic spreadsheet editor built merely for ~~educational purpo
 Build and Run
 -------------
 
-Prerequisites: install Java Runtime Environment and Maven on your machine. Then run:
+Prerequisites: install Java Runtime Environment (version 11 or higher) and Maven on your machine.
+Then run:
 
 ```
 mvn clean package

@@ -7,12 +7,23 @@ import org.jsheet.model.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public abstract class Expr {
     protected Result evaluationError;
     protected Result typecheckError;
 
     public abstract Result eval(JSheetTableModel model);
+
+    /**
+     * @return a copy of this expression with cell references
+     * shifted by {@code rowShift} and {@code columnShift} respectively.
+     */
+    public abstract Expr shift(JSheetTableModel model, int rowShift, int columnShift);
+
+    public abstract Stream<Ref> getRefs();
+
+    public abstract Stream<Range> getRanges();
 
     /**
      * Evaluates a list of expressions.

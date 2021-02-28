@@ -37,7 +37,7 @@ public class JSheet extends JFrame {
     public static final String ERROR_MESSAGE_TITLE = "Error";
 
     private JSheetTableModel model;
-    private JTable table;
+    private JSheetTable table;
 
     private File currentDirectory = Paths.get("").toFile();
     private File currentFile = null;
@@ -80,17 +80,11 @@ public class JSheet extends JFrame {
 
     // Edit menu
 
-    private final ActionListener cutActionListener = event -> {
-        throw new AssertionError("unimplemented");
-    };
+    private final ActionListener cutActionListener = event -> table.cut();
 
-    private final ActionListener copyActionListener = event -> {
-        throw new AssertionError("unimplemented");
-    };
+    private final ActionListener copyActionListener = event -> table.copy();
 
-    private final ActionListener pasteActionListener = event -> {
-        throw new AssertionError("unimplemented");
-    };
+    private final ActionListener pasteActionListener = event -> table.paste();
 
     // About menu
 
@@ -259,11 +253,7 @@ public class JSheet extends JFrame {
             "Edit", KeyEvent.VK_E,
             new String[] { "Cut", "Copy", "Paste" },
             new int[] { VK_T, VK_C, VK_P },
-            new KeyStroke[] {
-                getKeyStroke(VK_X, CTRL_MASK),
-                getKeyStroke(VK_C, CTRL_MASK),
-                getKeyStroke(VK_P, CTRL_MASK)
-            },
+            new KeyStroke[] { null, null, null },
             new ActionListener[] {
                 cutActionListener,
                 copyActionListener,

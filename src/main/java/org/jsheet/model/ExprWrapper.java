@@ -7,6 +7,7 @@ import org.jsheet.model.expr.Ref;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("ExcessiveLambdaUsage")
 public class ExprWrapper {
@@ -56,7 +57,7 @@ public class ExprWrapper {
      * and the last references for each range (e.g. A1 and A10 for A1:A10)
      */
     public List<Ref> getRefs() {
-        Objects.requireNonNull(refs, () -> "getting refs of a not parsed formula");
+        Objects.requireNonNull(refs, () -> "getting refs of an incorrect formula");
         return Collections.unmodifiableList(refs);
     }
 
@@ -64,7 +65,7 @@ public class ExprWrapper {
      * @return a list of all ranges in this formula.
      */
     public List<Range> getRanges() {
-        Objects.requireNonNull(ranges, () -> "getting ranges of a not parsed formula");
+        Objects.requireNonNull(ranges, () -> "getting ranges of an incorrect formula");
         return Collections.unmodifiableList(ranges);
     }
 
@@ -75,10 +76,10 @@ public class ExprWrapper {
      * the current expression.
      */
     public Result eval(JSheetTableModel model) {
-        if (!isParsed) {
+        if (!isParsed()) {
             result = Result.failure(parsingError);
         } else {
-            Objects.requireNonNull(expression, () -> "evaluating a not parsed formula");
+            Objects.requireNonNull(expression, () -> "evaluating an incorrect formula");
             result = expression.eval(model);
         }
         return result;
@@ -96,8 +97,20 @@ public class ExprWrapper {
      * Tries to resolve all references that occur in the current expression.
      */
     void resolveRefs(JSheetTableModel model) {
-        Objects.requireNonNull(refs, () -> "getting refs of a not parsed formula");
+        Objects.requireNonNull(refs, () -> "getting refs of an incorrect formula");
         refs.forEach(r -> r.resolve(model));
+    }
+
+    public ExprWrapper shift(JSheetTableModel model, int rowShift, int columnShift) {
+        if (!isParsed) {
+            // There's nothing more we can do, treat not parsed formula as a string
+            return new ExprWrapper(originalDefinition, parsingError);
+        }
+        Objects.requireNonNull(expression);
+        Expr shiftedExpr = expression.shift(model, rowShift, columnShift);
+        List<Ref> refs = shiftedExpr.getRefs().collect(Collectors.toList());
+        List<Range> ranges = shiftedExpr.getRanges().collect(Collectors.toList());
+        return new ExprWrapper("= " + shiftedExpr.toString(), shiftedExpr, refs, ranges);
     }
 
     @Override

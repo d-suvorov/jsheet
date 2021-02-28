@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
 import static org.jsheet.model.Type.BOOLEAN;
 import static org.jsheet.model.Type.DOUBLE;
@@ -138,6 +139,25 @@ public class Binop extends Expr {
 
     private boolean isComparison() {
         return List.of("<", "<=", ">", ">=", "==", "!=").contains(op);
+    }
+
+    @Override
+    public Expr shift(JSheetTableModel model, int rowShift, int columnShift) {
+        return new Binop(
+            op,
+            lhs.shift(model, rowShift, columnShift),
+            rhs.shift(model, rowShift, columnShift)
+        );
+    }
+
+    @Override
+    public Stream<Ref> getRefs() {
+        return Stream.concat(lhs.getRefs(), rhs.getRefs());
+    }
+
+    @Override
+    public Stream<Range> getRanges() {
+        return Stream.concat(lhs.getRanges(), rhs.getRanges());
     }
 
     @Override
