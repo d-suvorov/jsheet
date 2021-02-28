@@ -5,8 +5,11 @@ import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 
 import javax.swing.table.DefaultTableCellRenderer;
+import java.text.DecimalFormat;
 
 public class ExpressionRenderer extends DefaultTableCellRenderer {
+    private final DecimalFormat format = new DecimalFormat();
+
     @Override
     protected void setValue(Object o) {
         Value value = (Value) o;
@@ -26,7 +29,7 @@ public class ExpressionRenderer extends DefaultTableCellRenderer {
     private String renderPlainValue(Value value) {
         switch (value.getTag()) {
             case BOOLEAN: return String.valueOf(value.getAsBoolean());
-            case DOUBLE: return String.format("%.2f", value.getAsDouble());
+            case DOUBLE: return format.format(value.getAsDouble());
             case STRING: return value.getAsString();
             case FORMULA:
             case RANGE:
