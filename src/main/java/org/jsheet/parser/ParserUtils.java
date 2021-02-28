@@ -8,10 +8,11 @@ public class ParserUtils {
         String formula = definition.substring(1); // truncate '='
         Lexer lexer = new Lexer(formula);
         Parser parser = new Parser(lexer);
-        Expr expr = null;
         try {
-            expr = parser.parse();
-        } catch (ParseException ignored) {}
-        return new ExprWrapper(definition, expr, parser.getRefs(), parser.getRanges());
+            Expr expr = parser.parse();
+            return new ExprWrapper(definition, expr, parser.getRefs(), parser.getRanges());
+        } catch (ParseException e) {
+            return new ExprWrapper(definition, "Parsing error");
+        }
     }
 }

@@ -102,10 +102,11 @@ public class JSheetTableModel extends AbstractTableModel {
         if (value instanceof String) {
             String strValue = (String) value;
             if (strValue.startsWith("=")) {
-                ExprWrapper wrapper = ParserUtils.parse(strValue);
-                wrapper.resolveRefs(this);
-                dependencies.addFormula(current, wrapper);
-                return Value.of(wrapper);
+                ExprWrapper formula = ParserUtils.parse(strValue);
+                if (formula.isParsed())
+                    formula.resolveRefs(this);
+                dependencies.addFormula(current, formula);
+                return Value.of(formula);
             } else {
                 return getLiteral(strValue);
             }
@@ -216,6 +217,8 @@ public class JSheetTableModel extends AbstractTableModel {
         private final Map<JSheetCell, ComputationStage> computationStage = new HashMap<>();
 
         void addFormula(JSheetCell cell, ExprWrapper formula) {
+            if (!formula.isParsed())
+                return;
             for (var ref : formula.getRefs()) {
                 if (ref.isResolved())
                     addLink(cell, ref.getCell());
@@ -230,6 +233,8 @@ public class JSheetTableModel extends AbstractTableModel {
         }
 
         void removeFormula(JSheetCell cell, ExprWrapper formula) {
+            if (!formula.isParsed())
+                return;
             for (var ref : formula.getRefs()) {
                 if (ref.isResolved())
                     removeLink(cell, ref.getCell());
