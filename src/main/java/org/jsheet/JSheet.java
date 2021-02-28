@@ -64,7 +64,6 @@ public class JSheet extends JFrame {
                 String.format("Cannot read %s: %s", file.getName(), e.getMessage()),
                 ERROR_MESSAGE_TITLE,
                 JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
         }
     };
 
@@ -109,7 +108,6 @@ public class JSheet extends JFrame {
                 String.format("Cannot write %s: %s", file.getName(), e.getMessage()),
                 ERROR_MESSAGE_TITLE,
                 JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
             return true;
         }
         updateCurrentFile(file);
