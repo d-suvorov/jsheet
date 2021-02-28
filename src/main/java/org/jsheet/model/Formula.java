@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("ExcessiveLambdaUsage")
-public class ExprWrapper {
+public class Formula {
     public final String originalDefinition;
 
     private final boolean isParsed;
@@ -23,9 +23,9 @@ public class ExprWrapper {
     private Result result;
 
     /**
-     * Creates a wrapper for successfully parsed formula.
+     * For successfully parsed expression.
      */
-    public ExprWrapper(String originalDefinition, Expression expression,
+    public Formula(String originalDefinition, Expression expression,
         List<Reference> refs, List<Range> ranges)
     {
         this.originalDefinition = originalDefinition;
@@ -37,9 +37,9 @@ public class ExprWrapper {
     }
 
     /**
-     * Creates a wrapper for formula parsed with an error.
+     * For expression parsed with an error.
      */
-    public ExprWrapper(String originalDefinition, String parsingError) {
+    public Formula(String originalDefinition, String parsingError) {
         this.originalDefinition = originalDefinition;
         this.isParsed = false;
         this.parsingError = parsingError;
@@ -71,7 +71,7 @@ public class ExprWrapper {
 
     /**
      * Evaluates this expression and returns the result.
-     * The user must call {@link ExprWrapper#resolveRefs(JSheetTableModel)}
+     * The user must call {@link Formula#resolveRefs(JSheetTableModel)}
      * before calling this method to resolve all references that occur in
      * the current expression.
      */
@@ -101,16 +101,16 @@ public class ExprWrapper {
         refs.forEach(r -> r.resolve(model));
     }
 
-    public ExprWrapper shift(JSheetTableModel model, int rowShift, int columnShift) {
+    public Formula shift(JSheetTableModel model, int rowShift, int columnShift) {
         if (!isParsed) {
             // There's nothing more we can do, treat not parsed formula as a string
-            return new ExprWrapper(originalDefinition, parsingError);
+            return new Formula(originalDefinition, parsingError);
         }
         Objects.requireNonNull(expression);
         Expression shiftedExpr = expression.shift(model, rowShift, columnShift);
         List<Reference> refs = shiftedExpr.getRefs().collect(Collectors.toList());
         List<Range> ranges = shiftedExpr.getRanges().collect(Collectors.toList());
-        return new ExprWrapper("= " + shiftedExpr.toString(), shiftedExpr, refs, ranges);
+        return new Formula("= " + shiftedExpr.toString(), shiftedExpr, refs, ranges);
     }
 
     @Override

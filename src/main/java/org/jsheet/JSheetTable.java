@@ -99,10 +99,10 @@ public class JSheetTable extends JTable {
                     if (dstColumn >= model.getColumnCount())
                         break;
                     Value value = buffer[rowOffset][columnOffset];
-                    if (value.getTag() == Type.EXPRESSION) {
+                    if (value.getTag() == Type.FORMULA) {
                         int rowShift = destination.row - source.row;
                         int columnShift = destination.column - source.column;
-                        ExprWrapper shifted = value.getAsExpression().shift((JSheetTableModel) model, rowShift, columnShift);
+                        Formula shifted = value.getAsFormula().shift((JSheetTableModel) model, rowShift, columnShift);
                         setValueAt(Value.of(shifted), dstRow, dstColumn);
                     } else {
                         // Plain values are immutable so it's fine

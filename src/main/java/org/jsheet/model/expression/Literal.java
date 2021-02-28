@@ -12,7 +12,7 @@ public class Literal extends Expression {
     private final Value value;
 
     public Literal(Value value) {
-        if (value.getTag() == Type.EXPRESSION)
+        if (value.getTag() == Type.FORMULA)
             throw new IllegalArgumentException();
         this.value = value;
     }

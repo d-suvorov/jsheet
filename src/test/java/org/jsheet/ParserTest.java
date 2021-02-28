@@ -1,7 +1,7 @@
 package org.jsheet;
 
 import org.jsheet.model.expression.*;
-import org.jsheet.model.ExprWrapper;
+import org.jsheet.model.Formula;
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Value;
 import org.jsheet.parser.ParserUtils;
@@ -21,9 +21,9 @@ public class ParserTest {
         model = new JSheetTableModel();
     }
 
-    private void testParserImpl(String formula, Expression expected) {
-        ExprWrapper expr = ParserUtils.parse(formula);
-        assertEquals(expected, expr.expression);
+    private void testParserImpl(String input, Expression expected) {
+        Formula formula = ParserUtils.parse(input);
+        assertEquals(expected, formula.expression);
     }
 
     private Literal lit(double v) {

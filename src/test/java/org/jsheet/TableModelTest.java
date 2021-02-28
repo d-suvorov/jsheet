@@ -127,8 +127,8 @@ public class TableModelTest {
             model.setValueAt("abracadabra", 0, 0);
             model.setValueAt("= length(A0)", 0, 1);
             Value value = model.getValueAt(0, 1);
-            assertSame(Type.EXPRESSION, value.getTag());
-            Result result = value.getAsExpression().getResult();
+            assertSame(Type.FORMULA, value.getTag());
+            Result result = value.getAsFormula().getResult();
             assertEquals("abracadabra".length(), result.get().getAsDouble(), 0);
         }
 
@@ -136,8 +136,8 @@ public class TableModelTest {
         public void undefined() {
             model.setValueAt("= abracadabra(2, 4)", 0, 0);
             Value value = model.getValueAt(0, 0);
-            assertSame(Type.EXPRESSION, value.getTag());
-            Result result = value.getAsExpression().getResult();
+            assertSame(Type.FORMULA, value.getTag());
+            Result result = value.getAsFormula().getResult();
             assertFalse(result.isPresent());
             assertEquals("Unknown function: abracadabra", result.message());
         }
@@ -284,22 +284,22 @@ public class TableModelTest {
 
     private void checkSuccessBooleanResult(boolean expected, int row, int column) {
         Value val = model.getValueAt(row, column);
-        assertSame(val.getTag(), Type.EXPRESSION);
-        Result result = val.getAsExpression().getResult();
+        assertSame(val.getTag(), Type.FORMULA);
+        Result result = val.getAsFormula().getResult();
         assertEquals(expected, result.get().getAsBoolean());
     }
 
     private void checkSuccessDoubleResult(double expected, int row, int column) {
         Value val = model.getValueAt(row, column);
-        assertSame(val.getTag(), Type.EXPRESSION);
-        Result result = val.getAsExpression().getResult();
+        assertSame(val.getTag(), Type.FORMULA);
+        Result result = val.getAsFormula().getResult();
         assertEquals(expected, result.get().getAsDouble(), 0);
     }
 
     private void checkErrorResult(String expected, int row, int column) {
         Value val = model.getValueAt(row, column);
-        assertSame(val.getTag(), Type.EXPRESSION);
-        Result result = val.getAsExpression().getResult();
+        assertSame(val.getTag(), Type.FORMULA);
+        Result result = val.getAsFormula().getResult();
         assertEquals(expected, result.message());
     }
 

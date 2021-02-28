@@ -88,9 +88,9 @@ public class JSheetTableModel extends AbstractTableModel {
         setModified(true);
         Cell current = new Cell(rowIndex, columnIndex);
         Value prev = getValueAt(rowIndex, columnIndex);
-        if (prev != null && prev.getTag() == Type.EXPRESSION) {
-            ExprWrapper wrapper = prev.getAsExpression();
-            dependencies.removeFormula(current, wrapper);
+        if (prev != null && prev.getTag() == Type.FORMULA) {
+            Formula formula = prev.getAsFormula();
+            dependencies.removeFormula(current, formula);
         }
         data.get(rowIndex)[columnIndex] = getModelValue(value, current);
         dependencies.recomputeAll(current);
@@ -102,15 +102,15 @@ public class JSheetTableModel extends AbstractTableModel {
             return null;
         if (object instanceof Value) {
             Value value = (Value) object;
-            if (value.getTag() == Type.EXPRESSION) {
-                dependencies.addFormula(current, value.getAsExpression());
+            if (value.getTag() == Type.FORMULA) {
+                dependencies.addFormula(current, value.getAsFormula());
             }
             return value;
         }
         if (object instanceof String) {
             String strValue = (String) object;
             if (strValue.startsWith("=")) {
-                ExprWrapper formula = ParserUtils.parse(strValue);
+                Formula formula = ParserUtils.parse(strValue);
                 if (formula.isParsed())
                     formula.resolveRefs(this);
                 dependencies.addFormula(current, formula);
@@ -164,8 +164,8 @@ public class JSheetTableModel extends AbstractTableModel {
         if (value == null) {
             return Result.failure(String.format("Cell %s is uninitialized", strCell));
         }
-        if (value.getTag() == Type.EXPRESSION) {
-            return value.getAsExpression().getResult();
+        if (value.getTag() == Type.FORMULA) {
+            return value.getAsFormula().getResult();
         } else { // Plain value
             return Result.success(value);
         }
@@ -224,7 +224,7 @@ public class JSheetTableModel extends AbstractTableModel {
         // Computation state
         private final Map<Cell, ComputationStage> computationStage = new HashMap<>();
 
-        void addFormula(Cell cell, ExprWrapper formula) {
+        void addFormula(Cell cell, Formula formula) {
             if (!formula.isParsed())
                 return;
             for (var ref : formula.getRefs()) {
@@ -240,7 +240,7 @@ public class JSheetTableModel extends AbstractTableModel {
             }
         }
 
-        void removeFormula(Cell cell, ExprWrapper formula) {
+        void removeFormula(Cell cell, Formula formula) {
             if (!formula.isParsed())
                 return;
             for (var ref : formula.getRefs()) {
@@ -276,7 +276,7 @@ public class JSheetTableModel extends AbstractTableModel {
         Collection<Cell> getDependentOn(Cell cell) {
             Set<Cell> dependent = new HashSet<>();
             Value cellValue = getValueAt(cell.row, cell.column);
-            if (cellValue != null && cellValue.getTag() == Type.EXPRESSION)
+            if (cellValue != null && cellValue.getTag() == Type.FORMULA)
                 dependent.add(cell);
             Queue<Cell> queue = new ArrayDeque<>();
             queue.add(cell);
@@ -340,7 +340,7 @@ public class JSheetTableModel extends AbstractTableModel {
                     }
                 }
             }
-            ExprWrapper current = getValueAt(u.row, u.column).getAsExpression();
+            Formula current = getValueAt(u.row, u.column).getAsFormula();
             if (circular) {
                 current.setResult(Result.failure("Circular dependency"));
             } else {

@@ -47,12 +47,12 @@ public class FileLoadStoreTest {
             for (int column = 0; column < read.getColumnCount(); column++) {
                 Value expected = model.getValueAt(row, column);
                 Value actual = read.getValueAt(row, column);
-                if (expected != null && expected.getTag() == Type.EXPRESSION) {
+                if (expected != null && expected.getTag() == Type.FORMULA) {
                     assertNotNull(actual);
-                    assertSame(Type.EXPRESSION, actual.getTag());
+                    assertSame(Type.FORMULA, actual.getTag());
                     assertEquals(
-                        expected.getAsExpression().eval(model),
-                        actual.getAsExpression().eval(read)
+                        expected.getAsFormula().eval(model),
+                        actual.getAsFormula().eval(read)
                     );
                 } else {
                     assertEquals(expected, actual);
