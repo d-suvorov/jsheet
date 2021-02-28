@@ -14,7 +14,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Objects;
 
 import static java.awt.event.ActionEvent.CTRL_MASK;
@@ -39,7 +38,7 @@ public class JSheet extends JFrame {
     private JSheetTableModel model;
     private JSheetTable table;
 
-    private File currentDirectory = Paths.get("").toFile();
+    private final JFileChooser chooser = new JFileChooser();
     private File currentFile = null;
 
     // File menu
@@ -53,7 +52,7 @@ public class JSheet extends JFrame {
 
     private final ActionListener openActionListener = event -> {
         if (saveChanged()) return;
-        File file = askForFile();
+        File file = askForOpenFile();
         if (file == null)
             return;
         try {
@@ -72,7 +71,7 @@ public class JSheet extends JFrame {
     private final ActionListener saveActionListener = event -> save();
 
     private final ActionListener saveAsActionListener = event -> {
-        File file = askForFile();
+        File file = askForSaveFile();
         saveTo(file);
     };
 
@@ -96,7 +95,7 @@ public class JSheet extends JFrame {
     );
 
     private boolean save() {
-        File file = currentFile != null ? currentFile : askForFile();
+        File file = currentFile != null ? currentFile : askForSaveFile();
         return saveTo(file);
     }
 
@@ -118,18 +117,21 @@ public class JSheet extends JFrame {
         return false;
     }
 
-    private File askForFile() {
-        JFileChooser chooser = new JFileChooser(currentDirectory);
-        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+    private File askForOpenFile() {
+        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
             return null;
-        }
+        return chooser.getSelectedFile();
+    }
+
+    private File askForSaveFile() {
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+            return null;
         return chooser.getSelectedFile();
     }
 
     private void updateCurrentFile(File file) {
         if (!Objects.equals(currentFile, file)) {
             currentFile = file;
-            currentDirectory = currentFile.getParentFile();
         }
     }
 
