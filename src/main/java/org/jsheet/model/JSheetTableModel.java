@@ -93,7 +93,7 @@ public class JSheetTableModel extends AbstractTableModel {
             dependencies.removeFormula(current, formula);
         }
         data.get(rowIndex)[columnIndex] = getModelValue(value, current);
-        dependencies.recomputeAll(current);
+        dependencies.reevaluateAll(current);
         fireTableCellUpdated(rowIndex, columnIndex);
     }
 
@@ -156,7 +156,7 @@ public class JSheetTableModel extends AbstractTableModel {
     }
 
     /**
-     * If {@code cell} contains a formula than its result is already computed
+     * If {@code cell} contains a formula than its result is already evaluated
      */
     public Result getResultAt(Cell cell) {
         Value value = getValueAt(cell.row, cell.column);
@@ -212,8 +212,8 @@ public class JSheetTableModel extends AbstractTableModel {
         }
     }
 
-    private enum ComputationStage {
-        NOT_COMPUTED, IN_PROGRESS, COMPUTED
+    private enum EvaluationStage {
+        NOT_EVALUATED, IN_PROGRESS, EVALUATED
     }
 
     private class DependencyManager {
@@ -222,7 +222,7 @@ public class JSheetTableModel extends AbstractTableModel {
         private final Map<Cell, Collection<Cell>> referencedBy = new HashMap<>();
 
         // Computation state
-        private final Map<Cell, ComputationStage> computationStage = new HashMap<>();
+        private final Map<Cell, EvaluationStage> evaluationStage = new HashMap<>();
 
         void addFormula(Cell cell, Formula formula) {
             if (!formula.isParsed())
@@ -295,17 +295,17 @@ public class JSheetTableModel extends AbstractTableModel {
             return dependent;
         }
 
-        void recomputeAll(Cell changed) {
+        void reevaluateAll(Cell changed) {
             // Find all cells that need re-computation and invalidate them
             Collection<Cell> invalid = getDependentOn(changed);
-            computationStage.clear();
+            evaluationStage.clear();
             for (var cell : invalid) {
-                computationStage.put(cell, ComputationStage.NOT_COMPUTED);
+                evaluationStage.put(cell, EvaluationStage.NOT_EVALUATED);
             }
 
-            // Recompute all at once in a single DFS traversal
+            // Re-evaluate all at once in a single DFS traversal
             for (var cell : invalid) {
-                if (computationStage.get(cell) == ComputationStage.NOT_COMPUTED)
+                if (evaluationStage.get(cell) == EvaluationStage.NOT_EVALUATED)
                     dfs(cell);
             }
 
@@ -316,26 +316,26 @@ public class JSheetTableModel extends AbstractTableModel {
         }
 
         void dfs(Cell u) {
-            computationStage.put(u, ComputationStage.IN_PROGRESS);
+            evaluationStage.put(u, EvaluationStage.IN_PROGRESS);
             boolean circular = false;
             if (references.containsKey(u)) {
                 for (var v : references.get(u)) {
-                    if (!computationStage.containsKey(v)) {
+                    if (!evaluationStage.containsKey(v)) {
                         // v is a plain value or doesn't need re-computation
                         continue;
                     }
-                    ComputationStage stage = computationStage.get(v);
-                    if (stage == ComputationStage.COMPUTED) {
-                        // If v is computed, we can safely get its value
+                    EvaluationStage stage = evaluationStage.get(v);
+                    if (stage == EvaluationStage.EVALUATED) {
+                        // If v is evaluated, we can safely get its value
                         // If v is on a cycle, the error will propagate to u
                         continue;
                     }
-                    if (stage == ComputationStage.IN_PROGRESS) {
+                    if (stage == EvaluationStage.IN_PROGRESS) {
                         // Found a loop
                         circular = true;
                         continue;
                     }
-                    if (stage == ComputationStage.NOT_COMPUTED) {
+                    if (stage == EvaluationStage.NOT_EVALUATED) {
                         dfs(v);
                     }
                 }
@@ -347,7 +347,7 @@ public class JSheetTableModel extends AbstractTableModel {
                 // All of the cells u references are evaluated
                 current.eval(JSheetTableModel.this);
             }
-            computationStage.put(u, ComputationStage.COMPUTED);
+            evaluationStage.put(u, EvaluationStage.EVALUATED);
         }
     }
 }
