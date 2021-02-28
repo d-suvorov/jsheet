@@ -2,14 +2,18 @@ package org.jsheet.model.expr;
 
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
+import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class Literal extends Expr {
     private final Value value;
 
     public Literal(Value value) {
+        if (value.getTag() == Type.EXPR)
+            throw new IllegalArgumentException();
         this.value = value;
     }
 
@@ -20,6 +24,21 @@ public class Literal extends Expr {
     @Override
     public Result eval(JSheetTableModel model) {
         return Result.success(value);
+    }
+
+    @Override
+    public Literal shift(JSheetTableModel model, int rowShift, int columnShift) {
+        return this; // Plain values are immutable
+    }
+
+    @Override
+    public Stream<Ref> getRefs() {
+        return Stream.empty();
+    }
+
+    @Override
+    public Stream<Range> getRanges() {
+        return Stream.empty();
     }
 
     @Override

@@ -6,6 +6,7 @@ import org.jsheet.model.expr.Ref;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExprWrapper {
     public final String originalDefinition;
@@ -64,6 +65,13 @@ public class ExprWrapper {
      */
     void resolveRefs(JSheetTableModel model) {
         refs.forEach(r -> r.resolve(model));
+    }
+
+    public ExprWrapper shift(JSheetTableModel model, int rowShift, int columnShift) {
+        Expr shiftedExpr = expression.shift(model, rowShift, columnShift);
+        List<Ref> refs = shiftedExpr.getRefs().collect(Collectors.toList());
+        List<Range> ranges = shiftedExpr.getRanges().collect(Collectors.toList());
+        return new ExprWrapper("= " + shiftedExpr.toString(), shiftedExpr, refs, ranges);
     }
 
     @Override

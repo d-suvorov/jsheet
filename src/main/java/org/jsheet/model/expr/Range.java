@@ -4,6 +4,7 @@ import org.jsheet.model.*;
 
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class Range extends Expr implements Iterable<JSheetCell> {
     private final Ref first;
@@ -33,6 +34,23 @@ public class Range extends Expr implements Iterable<JSheetCell> {
 
     public boolean isResolved() {
         return first.isResolved() && last.isResolved();
+    }
+
+    @Override
+    public Range shift(JSheetTableModel model, int rowShift, int columnShift) {
+        Ref shiftedFirst = first.shift(model, rowShift, columnShift);
+        Ref shiftedLast = last.shift(model, rowShift, columnShift);
+        return new Range(shiftedFirst, shiftedLast);
+    }
+
+    @Override
+    public Stream<Ref> getRefs() {
+        return Stream.concat(first.getRefs(), last.getRefs());
+    }
+
+    @Override
+    public Stream<Range> getRanges() {
+        return Stream.of(this);
     }
 
     @Override

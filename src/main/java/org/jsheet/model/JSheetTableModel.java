@@ -97,13 +97,18 @@ public class JSheetTableModel extends AbstractTableModel {
         fireTableCellUpdated(rowIndex, columnIndex);
     }
 
-    private Value getModelValue(Object value, JSheetCell current) {
-        if (value == null)
+    private Value getModelValue(Object object, JSheetCell current) {
+        if (object == null)
             return null;
-        if (value instanceof Value)
-            return (Value) value;
-        if (value instanceof String) {
-            String strValue = (String) value;
+        if (object instanceof Value) {
+            Value value = (Value) object;
+            if (value.getTag() == Type.EXPR) {
+                dependencies.addFormula(current, value.getAsExpr());
+            }
+            return value;
+        }
+        if (object instanceof String) {
+            String strValue = (String) object;
             if (strValue.startsWith("=")) {
                 ExprWrapper wrapper = ParserUtils.parse(strValue);
                 wrapper.resolveRefs(this);
@@ -117,18 +122,18 @@ public class JSheetTableModel extends AbstractTableModel {
         throw new AssertionError();
     }
 
-    private Value getLiteral(String value) {
+    private Value getLiteral(String strValue) {
         // Boolean
-        if (value.equals("false")) return Value.of(false);
-        if (value.equals("true")) return Value.of(true);
+        if (strValue.equals("false")) return Value.of(false);
+        if (strValue.equals("true")) return Value.of(true);
 
         // Number
         try {
-            return Value.of(Double.parseDouble(value));
+            return Value.of(Double.parseDouble(strValue));
         } catch (NumberFormatException ignored) {}
 
         // String
-        return Value.of(value);
+        return Value.of(strValue);
     }
 
     public JSheetCell resolveRef(String name) {
