@@ -2,17 +2,17 @@ package org.jsheet.model;
 
 import java.util.Iterator;
 
-public class RangeValue implements Iterable<JSheetCell> {
-    private final JSheetCell first;
-    private final JSheetCell last;
+public class RangeValue implements Iterable<Cell> {
+    private final Cell first;
+    private final Cell last;
 
-    public RangeValue(JSheetCell first, JSheetCell last) {
+    public RangeValue(Cell first, Cell last) {
         this.first = first;
         this.last = last;
     }
 
     @Override
-    public Iterator<JSheetCell> iterator() {
+    public Iterator<Cell> iterator() {
         return new RangeIterator(first, last);
     }
 }

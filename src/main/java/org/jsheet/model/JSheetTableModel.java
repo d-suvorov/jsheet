@@ -86,7 +86,7 @@ public class JSheetTableModel extends AbstractTableModel {
     @Override
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
         setModified(true);
-        JSheetCell current = new JSheetCell(rowIndex, columnIndex);
+        Cell current = new Cell(rowIndex, columnIndex);
         Value prev = getValueAt(rowIndex, columnIndex);
         if (prev != null && prev.getTag() == Type.EXPRESSION) {
             ExprWrapper wrapper = prev.getAsExpression();
@@ -97,7 +97,7 @@ public class JSheetTableModel extends AbstractTableModel {
         fireTableCellUpdated(rowIndex, columnIndex);
     }
 
-    private Value getModelValue(Object object, JSheetCell current) {
+    private Value getModelValue(Object object, Cell current) {
         if (object == null)
             return null;
         if (object instanceof Value) {
@@ -137,7 +137,7 @@ public class JSheetTableModel extends AbstractTableModel {
         return Value.of(strValue);
     }
 
-    public JSheetCell resolveRef(String name) {
+    public Cell resolveRef(String name) {
         Matcher matcher = REF_PATTERN.matcher(name);
         if (!matcher.matches())
             return null;
@@ -152,13 +152,13 @@ public class JSheetTableModel extends AbstractTableModel {
         if (rowIndex >= getRowCount())
             return null;
 
-        return new JSheetCell(rowIndex, columnIndex);
+        return new Cell(rowIndex, columnIndex);
     }
 
     /**
      * If {@code cell} contains a formula than its result is already computed
      */
-    public Result getResultAt(JSheetCell cell) {
+    public Result getResultAt(Cell cell) {
         Value value = getValueAt(cell.row, cell.column);
         String strCell = getColumnName(cell.column) + cell.row;
         if (value == null) {
@@ -218,13 +218,13 @@ public class JSheetTableModel extends AbstractTableModel {
 
     private class DependencyManager {
         // Dependency graph
-        private final Map<JSheetCell, Collection<JSheetCell>> references = new HashMap<>();
-        private final Map<JSheetCell, Collection<JSheetCell>> referencedBy = new HashMap<>();
+        private final Map<Cell, Collection<Cell>> references = new HashMap<>();
+        private final Map<Cell, Collection<Cell>> referencedBy = new HashMap<>();
 
         // Computation state
-        private final Map<JSheetCell, ComputationStage> computationStage = new HashMap<>();
+        private final Map<Cell, ComputationStage> computationStage = new HashMap<>();
 
-        void addFormula(JSheetCell cell, ExprWrapper formula) {
+        void addFormula(Cell cell, ExprWrapper formula) {
             if (!formula.isParsed())
                 return;
             for (var ref : formula.getRefs()) {
@@ -240,7 +240,7 @@ public class JSheetTableModel extends AbstractTableModel {
             }
         }
 
-        void removeFormula(JSheetCell cell, ExprWrapper formula) {
+        void removeFormula(Cell cell, ExprWrapper formula) {
             if (!formula.isParsed())
                 return;
             for (var ref : formula.getRefs()) {
@@ -256,7 +256,7 @@ public class JSheetTableModel extends AbstractTableModel {
             }
         }
 
-        void addLink(JSheetCell from, JSheetCell to) {
+        void addLink(Cell from, Cell to) {
             references
                 .computeIfAbsent(from, k -> new ArrayList<>())
                 .add(to);
@@ -265,7 +265,7 @@ public class JSheetTableModel extends AbstractTableModel {
                 .add(from);
         }
 
-        void removeLink(JSheetCell from, JSheetCell to) {
+        void removeLink(Cell from, Cell to) {
             references.get(from).remove(to);
             referencedBy.get(to).remove(from);
         }
@@ -273,16 +273,16 @@ public class JSheetTableModel extends AbstractTableModel {
         /**
          * @return a set of cells that are which transitively depend on {@code cell}.
          */
-        Collection<JSheetCell> getDependentOn(JSheetCell cell) {
-            Set<JSheetCell> dependent = new HashSet<>();
+        Collection<Cell> getDependentOn(Cell cell) {
+            Set<Cell> dependent = new HashSet<>();
             Value cellValue = getValueAt(cell.row, cell.column);
             if (cellValue != null && cellValue.getTag() == Type.EXPRESSION)
                 dependent.add(cell);
-            Queue<JSheetCell> queue = new ArrayDeque<>();
+            Queue<Cell> queue = new ArrayDeque<>();
             queue.add(cell);
             while (!queue.isEmpty()) {
-                JSheetCell v = queue.remove();
-                Collection<JSheetCell> us = referencedBy.get(v);
+                Cell v = queue.remove();
+                Collection<Cell> us = referencedBy.get(v);
                 if (us == null)
                     continue;
                 for (var u : us) {
@@ -295,9 +295,9 @@ public class JSheetTableModel extends AbstractTableModel {
             return dependent;
         }
 
-        void recomputeAll(JSheetCell changed) {
+        void recomputeAll(Cell changed) {
             // Find all cells that need re-computation and invalidate them
-            Collection<JSheetCell> invalid = getDependentOn(changed);
+            Collection<Cell> invalid = getDependentOn(changed);
             computationStage.clear();
             for (var cell : invalid) {
                 computationStage.put(cell, ComputationStage.NOT_COMPUTED);
@@ -315,7 +315,7 @@ public class JSheetTableModel extends AbstractTableModel {
             }
         }
 
-        void dfs(JSheetCell u) {
+        void dfs(Cell u) {
             computationStage.put(u, ComputationStage.IN_PROGRESS);
             boolean circular = false;
             if (references.containsKey(u)) {

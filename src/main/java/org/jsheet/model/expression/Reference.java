@@ -1,6 +1,6 @@
 package org.jsheet.model.expression;
 
-import org.jsheet.model.JSheetCell;
+import org.jsheet.model.Cell;
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
 
@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 public class Reference extends Expression {
     private final String name;
-    private JSheetCell cell;
+    private Cell cell;
 
     public Reference(String name) {
         this.name = name;
@@ -30,7 +30,7 @@ public class Reference extends Expression {
         return String.format("Reference %s unresolved", name);
     }
 
-    public JSheetCell getCell() {
+    public Cell getCell() {
         return cell;
     }
 
@@ -43,7 +43,7 @@ public class Reference extends Expression {
     public Reference shift(JSheetTableModel model, int rowShift, int columnShift) {
         if (!isResolved())
             throw new IllegalStateException();
-        JSheetCell shiftedCell = new JSheetCell(cell.row + rowShift, cell.column + columnShift);
+        Cell shiftedCell = new Cell(cell.row + rowShift, cell.column + columnShift);
         if (shiftedCell.row >= model.getRowCount() || shiftedCell.column >= model.getColumnCount())
             throw new IllegalStateException();
         String shiftedName = model.getColumnName(shiftedCell.column) + shiftedCell.row;

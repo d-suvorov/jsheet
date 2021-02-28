@@ -49,7 +49,7 @@ public class JSheetTable extends JTable {
         if (selectedRow == -1 || selectedColumn == -1)
             return;
         clipboard = new Clipboard(
-            new JSheetCell(selectedRow, selectedColumn),
+            new Cell(selectedRow, selectedColumn),
             getSelectedRowCount(), getSelectedColumnCount()
         );
     }
@@ -60,16 +60,16 @@ public class JSheetTable extends JTable {
         if (selectedRow == -1 || selectedColumn == -1)
             return;
         if (clipboard != null)
-            clipboard.paste(new JSheetCell(selectedRow, selectedColumn));
+            clipboard.paste(new Cell(selectedRow, selectedColumn));
     }
 
     private class Clipboard {
-        final JSheetCell source;
+        final Cell source;
         final int rowCount;
         final int columnCount;
         final Value[][] buffer;
 
-        Clipboard(JSheetCell source, int rowCount, int columnCount) {
+        Clipboard(Cell source, int rowCount, int columnCount) {
             this.source = source;
             this.rowCount = rowCount;
             this.columnCount = columnCount;
@@ -88,7 +88,7 @@ public class JSheetTable extends JTable {
             }
         }
 
-        void paste(JSheetCell destination) {
+        void paste(Cell destination) {
             TableModel model = getModel();
             for (int rowOffset = 0; rowOffset < rowCount; rowOffset++) {
                 int dstRow = destination.row + rowOffset;

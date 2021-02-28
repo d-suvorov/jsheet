@@ -3,14 +3,14 @@ package org.jsheet.model;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class RangeIterator implements Iterator<JSheetCell> {
-    private final JSheetCell firstCell;
-    private final JSheetCell lastCell;
+public class RangeIterator implements Iterator<Cell> {
+    private final Cell firstCell;
+    private final Cell lastCell;
 
     private int currentRow;
     private int currentColumn;
 
-    public RangeIterator(JSheetCell firstCell, JSheetCell lastCell) {
+    public RangeIterator(Cell firstCell, Cell lastCell) {
         this.firstCell = firstCell;
         this.lastCell = lastCell;
         currentRow = firstCell.getRow();
@@ -24,10 +24,10 @@ public class RangeIterator implements Iterator<JSheetCell> {
     }
 
     @Override
-    public JSheetCell next() {
+    public Cell next() {
         if (!hasNext())
             throw new NoSuchElementException();
-        JSheetCell next = new JSheetCell(currentRow, currentColumn);
+        Cell next = new Cell(currentRow, currentColumn);
         if (currentColumn < lastCell.getColumn()) {
             currentColumn++;
         } else { // currentColumn == lastCell.getColumn()

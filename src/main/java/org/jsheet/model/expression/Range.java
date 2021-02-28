@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class Range extends Expression implements Iterable<JSheetCell> {
+public class Range extends Expression implements Iterable<Cell> {
     private final Reference first;
     private final Reference last;
 
@@ -21,8 +21,8 @@ public class Range extends Expression implements Iterable<JSheetCell> {
             return Result.failure(first.unresolvedMessage());
         if (!last.isResolved())
             return Result.failure(last.unresolvedMessage());
-        JSheetCell firstCell = first.getCell();
-        JSheetCell lastCell = last.getCell();
+        Cell firstCell = first.getCell();
+        Cell lastCell = last.getCell();
         if (firstCell.getRow() > lastCell.getRow()
             || firstCell.getColumn() > lastCell.getColumn())
         {
@@ -77,7 +77,7 @@ public class Range extends Expression implements Iterable<JSheetCell> {
     }
 
     @Override
-    public Iterator<JSheetCell> iterator() {
+    public Iterator<Cell> iterator() {
         if (!isResolved())
             throw new IllegalStateException("unresolved range");
         return new RangeIterator(first.getCell(), last.getCell());
