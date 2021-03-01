@@ -169,6 +169,7 @@ public class JSheet extends JFrame {
 
             model = new JSheetTableModel();
             table = new JSheetTable(model);
+            table.setDefaultEditor(Object.class, new JSheetEditor(JSheet.this));
             table.setDefaultRenderer(Value.class, new ExpressionRenderer());
             table.setPreferredScrollableViewportSize(new Dimension(1500, 800));
             table.setFillsViewportHeight(true);

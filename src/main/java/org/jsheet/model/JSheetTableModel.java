@@ -3,7 +3,6 @@ package org.jsheet.model;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
-import org.jsheet.parser.ParserUtils;
 
 import javax.swing.table.AbstractTableModel;
 import java.io.File;
@@ -86,7 +85,7 @@ public class JSheetTableModel extends AbstractTableModel {
      * 3. Invalidate formulae results current cell is transitively {@code referencedBy}.
      **/
     @Override
-    public void setValueAt(Object value, int rowIndex, int columnIndex) {
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         setModified(true);
         Cell current = new Cell(rowIndex, columnIndex);
         Value prev = getValueAt(rowIndex, columnIndex);
@@ -94,49 +93,15 @@ public class JSheetTableModel extends AbstractTableModel {
             Formula formula = prev.getAsFormula();
             dependencies.removeFormula(current, formula);
         }
-        data.get(rowIndex)[columnIndex] = getModelValue(value, current);
+        Value value = (Value) aValue;
+        if (value.getTag() == Type.FORMULA) {
+            Formula formula = value.getAsFormula();
+            formula.resolveReferences(this);
+            dependencies.addFormula(current, formula);
+        }
+        data.get(rowIndex)[columnIndex] = value;
         dependencies.reevaluateAll(current);
         fireTableCellUpdated(rowIndex, columnIndex);
-    }
-
-    private Value getModelValue(Object object, Cell current) {
-        if (object == null)
-            return null;
-        if (object instanceof Value) {
-            Value value = (Value) object;
-            if (value.getTag() == Type.FORMULA) {
-                dependencies.addFormula(current, value.getAsFormula());
-            }
-            return value;
-        }
-        if (object instanceof String) {
-            String strValue = (String) object;
-            if (strValue.startsWith("=")) {
-                Formula formula = ParserUtils.parse(strValue);
-                if (formula.isParsed())
-                    formula.resolveReferences(this);
-                dependencies.addFormula(current, formula);
-                return Value.of(formula);
-            } else {
-                return getLiteral(strValue);
-            }
-        }
-        // Only gets string values typed by user or model values pasted from other cells
-        throw new AssertionError();
-    }
-
-    private Value getLiteral(String strValue) {
-        // Boolean
-        if (strValue.equals("false")) return Value.of(false);
-        if (strValue.equals("true")) return Value.of(true);
-
-        // Number
-        try {
-            return Value.of(Double.parseDouble(strValue));
-        } catch (NumberFormatException ignored) {}
-
-        // String
-        return Value.of(strValue);
     }
 
     public Cell resolveReference(String name) {

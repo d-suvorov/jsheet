@@ -4,7 +4,9 @@ import org.jsheet.model.expression.*;
 import org.jsheet.model.Formula;
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Value;
+import org.jsheet.parser.ParseException;
 import org.jsheet.parser.ParserUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +24,12 @@ public class ParserTest {
     }
 
     private void testParserImpl(String input, Expression expected) {
-        Formula formula = ParserUtils.parse(input);
+        Formula formula = null;
+        try {
+            formula = ParserUtils.parse(input);
+        } catch (ParseException ignored) {
+            Assertions.fail("should be correctly parsed");
+        }
         assertEquals(expected, formula.expression);
     }
 
