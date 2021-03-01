@@ -13,43 +13,19 @@ import java.util.stream.Collectors;
 public class Formula {
     public final String originalDefinition;
 
-    private final boolean isParsed;
-    private final String parsingError;
-
     public final Expression expression;
     private final List<Reference> references;
     private final List<Range> ranges;
 
     private Result result;
 
-    /**
-     * For successfully parsed expression.
-     */
     public Formula(String originalDefinition, Expression expression,
         List<Reference> references, List<Range> ranges)
     {
         this.originalDefinition = originalDefinition;
-        this.isParsed = true;
-        this.parsingError = null;
         this.expression = expression;
         this.references = references;
         this.ranges = ranges;
-    }
-
-    /**
-     * For expression parsed with an error.
-     */
-    public Formula(String originalDefinition, String parsingError) {
-        this.originalDefinition = originalDefinition;
-        this.isParsed = false;
-        this.parsingError = parsingError;
-        this.expression = null;
-        this.references = null;
-        this.ranges = null;
-    }
-
-    public boolean isParsed() {
-        return isParsed;
     }
 
     /**
@@ -57,7 +33,6 @@ public class Formula {
      * and the last references for each range (e.g. A1 and A10 for A1:A10)
      */
     public List<Reference> getReferences() {
-        Objects.requireNonNull(references, () -> "getting references of an incorrect formula");
         return Collections.unmodifiableList(references);
     }
 
@@ -65,7 +40,6 @@ public class Formula {
      * @return a list of all ranges in this formula.
      */
     public List<Range> getRanges() {
-        Objects.requireNonNull(ranges, () -> "getting ranges of an incorrect formula");
         return Collections.unmodifiableList(ranges);
     }
 
@@ -76,12 +50,7 @@ public class Formula {
      * the current expression.
      */
     public Result eval(JSheetTableModel model) {
-        if (!isParsed()) {
-            result = Result.failure(parsingError);
-        } else {
-            Objects.requireNonNull(expression, () -> "evaluating an incorrect formula");
-            result = expression.eval(model);
-        }
+        result = expression.eval(model);
         return result;
     }
 
@@ -102,11 +71,6 @@ public class Formula {
     }
 
     public Formula shift(JSheetTableModel model, int rowShift, int columnShift) {
-        if (!isParsed) {
-            // There's nothing more we can do, treat not parsed formula as a string
-            return new Formula(originalDefinition, parsingError);
-        }
-        Objects.requireNonNull(expression);
         Expression shiftedExpr = expression.shift(model, rowShift, columnShift);
         List<Reference> references = shiftedExpr
             .getReferences()

@@ -3,6 +3,7 @@ package org.jsheet;
 import com.opencsv.exceptions.CsvValidationException;
 import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Value;
+import org.jsheet.parser.ParseException;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -59,7 +60,7 @@ public class JSheet extends JFrame {
             model = JSheetTableModel.read(file);
             table.setModel(model);
             updateCurrentFile(file);
-        } catch (IOException | CsvValidationException e) {
+        } catch (IOException | CsvValidationException | ParseException e) {
             JOptionPane.showMessageDialog(this,
                 String.format("Cannot read %s: %s", file.getName(), e.getMessage()),
                 ERROR_MESSAGE_TITLE,

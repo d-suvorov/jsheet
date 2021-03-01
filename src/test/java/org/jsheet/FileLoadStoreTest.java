@@ -1,24 +1,26 @@
 package org.jsheet;
 
 import com.opencsv.exceptions.CsvValidationException;
+import org.jsheet.model.Cell;
 import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Type;
-import org.jsheet.model.Value;
+import org.jsheet.model.Result;
+import org.jsheet.parser.ParseException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class FileLoadStoreTest {
     static JSheetTableModel model;
 
     @BeforeAll
-    static void setUp() {
+    static void setUp() throws ParseException {
         model = new JSheetTableModel(5, 5);
-        Object[][] data = {
+        String[][] data = {
             { "1", "2", "3", "4", "5" },
             { null, null, null, null, null },
             { "a,bc", "=A0+BX", "ab\nc", null, "42" },
@@ -27,13 +29,13 @@ public class FileLoadStoreTest {
         };
         for (int row = 0; row < data.length; row++) {
             for (int column = 0; column < data[row].length; column++) {
-                model.setValueAt(data[row][column], row, column);
+                TestUtils.setValue(model, data[row][column], row, column);
             }
         }
     }
 
     @Test
-    void fileLoadStore() throws IOException, CsvValidationException {
+    void fileLoadStore() throws IOException, CsvValidationException, ParseException {
         File file = File.createTempFile("test", ".csv");
         file.deleteOnExit();
 
@@ -45,18 +47,9 @@ public class FileLoadStoreTest {
         assertEquals(model.getRowCount(), read.getRowCount());
         for (int row = 0; row < read.getRowCount(); row++) {
             for (int column = 0; column < read.getColumnCount(); column++) {
-                Value expected = model.getValueAt(row, column);
-                Value actual = read.getValueAt(row, column);
-                if (expected != null && expected.getTag() == Type.FORMULA) {
-                    assertNotNull(actual);
-                    assertSame(Type.FORMULA, actual.getTag());
-                    assertEquals(
-                        expected.getAsFormula().eval(model),
-                        actual.getAsFormula().eval(read)
-                    );
-                } else {
-                    assertEquals(expected, actual);
-                }
+                Result expected = model.getResultAt(new Cell(row, column));
+                Result actual = read.getResultAt(new Cell(row, column));
+                assertEquals(expected, actual);
             }
         }
     }

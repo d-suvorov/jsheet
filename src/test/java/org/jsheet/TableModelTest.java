@@ -4,6 +4,7 @@ import org.jsheet.model.JSheetTableModel;
 import org.jsheet.model.Result;
 import org.jsheet.model.Type;
 import org.jsheet.model.Value;
+import org.jsheet.parser.ParseException;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,11 +33,11 @@ public class TableModelTest {
     @Nested
     class ReadWrite {
         @Test
-        void simpleReadWrite() {
+        void simpleReadWrite() throws ParseException {
             String dVal = "42";
             String strVal = "abc";
-            model.setValueAt(dVal, 0, 0);
-            model.setValueAt(strVal, 0, 1);
+            TestUtils.setValue(model, dVal, 0, 0);
+            TestUtils.setValue(model, strVal, 0, 1);
             assertEquals(Double.parseDouble(dVal), model.getValueAt(0, 0).getAsDouble());
             assertEquals(strVal, model.getValueAt(0, 1).getAsString());
         }
@@ -45,17 +46,17 @@ public class TableModelTest {
     @Nested
     class Arithmetic {
         @Test
-        public void simpleExpression1() {
+        public void simpleExpression1() throws ParseException {
             testDoubleValuedFormula("= 1 + 2 * 3", 1 + 2 * 3);
         }
 
         @Test
-        public void simpleExpression2() {
+        public void simpleExpression2() throws ParseException {
             testDoubleValuedFormula("= (1 + 2) * 3", (1 + 2) * 3);
         }
 
         @Test
-        public void divisionByZero() {
+        public void divisionByZero() throws ParseException {
             testDoubleValuedFormula("= 42 / 0", Double.POSITIVE_INFINITY);
         }
     }
@@ -63,22 +64,22 @@ public class TableModelTest {
     @Nested
     class Comparison {
         @Test
-        public void less() {
+        public void less() throws ParseException {
             testBooleanValuedFormula("= 1 < 2", true);
         }
 
         @Test
-        public void lessOrEqual() {
+        public void lessOrEqual() throws ParseException {
             testBooleanValuedFormula("= 1 <= 2", true);
         }
 
         @Test
-        public void greater() {
+        public void greater() throws ParseException {
             testBooleanValuedFormula("= 1 > 2", false);
         }
 
         @Test
-        public void greaterOrEqual() {
+        public void greaterOrEqual() throws ParseException {
             testBooleanValuedFormula("= 1 >= 2", false);
         }
     }
@@ -86,17 +87,17 @@ public class TableModelTest {
     @Nested
     class Logical {
         @Test
-        public void and() {
+        public void and() throws ParseException {
             testBooleanValuedFormula("= false && true", false);
         }
 
         @Test
-        public void or() {
+        public void or() throws ParseException {
             testBooleanValuedFormula("= false || true", true);
         }
 
         @Test
-        public void simple() {
+        public void simple() throws ParseException {
             testBooleanValuedFormula("= 1 > 2 || 1 != 42", true);
         }
     }
@@ -104,7 +105,7 @@ public class TableModelTest {
     @Nested
     class Conditional {
         @Test
-        public void conditional() {
+        public void conditional() throws ParseException {
             testDoubleValuedFormula("= if true then 42 else 0", 42);
             testDoubleValuedFormula("= if false then 42 else 0", 0);
         }
@@ -113,19 +114,19 @@ public class TableModelTest {
     @Nested
     class Functions {
         @Test
-        public void pow() {
+        public void pow() throws ParseException {
             testDoubleValuedFormula("= pow(2, 4)", Math.pow(2, 4));
         }
 
         @Test
-        public void length() {
+        public void length() throws ParseException {
             testDoubleValuedFormula("= length(\"abracadabra\")", "abracadabra".length());
         }
 
         @Test
-        public void lengthByReference() {
-            model.setValueAt("abracadabra", 0, 0);
-            model.setValueAt("= length(A0)", 0, 1);
+        public void lengthByReference() throws ParseException {
+            TestUtils.setValue(model, "abracadabra", 0, 0);
+            TestUtils.setValue(model, "= length(A0)", 0, 1);
             Value value = model.getValueAt(0, 1);
             assertSame(Type.FORMULA, value.getTag());
             Result result = value.getAsFormula().getResult();
@@ -133,8 +134,8 @@ public class TableModelTest {
         }
 
         @Test
-        public void undefined() {
-            model.setValueAt("= abracadabra(2, 4)", 0, 0);
+        public void undefined() throws ParseException {
+            TestUtils.setValue(model, "= abracadabra(2, 4)", 0, 0);
             Value value = model.getValueAt(0, 0);
             assertSame(Type.FORMULA, value.getTag());
             Result result = value.getAsFormula().getResult();
@@ -153,38 +154,38 @@ public class TableModelTest {
         }
 
         @Test
-        public void simpleRangeSum() {
-            model.setValueAt("1", 0, 0);
-            model.setValueAt("2", 0, 1);
-            model.setValueAt("3", 0, 2);
-            model.setValueAt("1", 1, 0);
-            model.setValueAt("2", 1, 1);
-            model.setValueAt("3", 1, 2);
-            model.setValueAt("=sum(A0:C0)", 2, 0);
-            model.setValueAt("=sum(A1:C1)", 2, 1);
-            model.setValueAt("=sum(A0:C1)", 2, 2);
+        public void simpleRangeSum() throws ParseException {
+            TestUtils.setValue(model, "1", 0, 0);
+            TestUtils.setValue(model, "2", 0, 1);
+            TestUtils.setValue(model, "3", 0, 2);
+            TestUtils.setValue(model, "1", 1, 0);
+            TestUtils.setValue(model, "2", 1, 1);
+            TestUtils.setValue(model, "3", 1, 2);
+            TestUtils.setValue(model, "=sum(A0:C0)", 2, 0);
+            TestUtils.setValue(model, "=sum(A1:C1)", 2, 1);
+            TestUtils.setValue(model, "=sum(A0:C1)", 2, 2);
             checkSuccessDoubleResult(6, 2, 0);
             checkSuccessDoubleResult(6, 2, 1);
             checkSuccessDoubleResult(12, 2, 2);
         }
 
         @Test
-        public void singletonRange() {
+        public void singletonRange() throws ParseException {
             double val = 42;
-            model.setValueAt(Double.toString(val), 0, 0);
-            model.setValueAt("=sum(A0:A0)", 0, 1);
+            TestUtils.setValue(model, Double.toString(val), 0, 0);
+            TestUtils.setValue(model, "=sum(A0:A0)", 0, 1);
             checkSuccessDoubleResult(val, 0, 1);
         }
 
         @Test
-        public void negativeRangeSum() {
-            model.setValueAt("1", 0, 0);
-            model.setValueAt("2", 0, 1);
-            model.setValueAt("3", 0, 2);
-            model.setValueAt("1", 1, 0);
-            model.setValueAt("2", 1, 1);
-            model.setValueAt("3", 1, 2);
-            model.setValueAt("=sum(C1:A0)", 2, 0);
+        public void negativeRangeSum() throws ParseException {
+            TestUtils.setValue(model, "1", 0, 0);
+            TestUtils.setValue(model, "2", 0, 1);
+            TestUtils.setValue(model, "3", 0, 2);
+            TestUtils.setValue(model, "1", 1, 0);
+            TestUtils.setValue(model, "2", 1, 1);
+            TestUtils.setValue(model, "3", 1, 2);
+            TestUtils.setValue(model, "=sum(C1:A0)", 2, 0);
             checkErrorResult("Incorrect range: C1:A0", 2, 0);
         }
     }
@@ -192,34 +193,34 @@ public class TableModelTest {
     @Nested
     class EvaluationWithReferences {
         @Test
-        void simpleReferences() {
+        void simpleReferences() throws ParseException {
             double val = 42;
-            model.setValueAt(Double.toString(val), 0, 0);
-            model.setValueAt("= A0 + 1", 0, 1);
-            model.setValueAt("= B0 - 1", 0, 2);
+            TestUtils.setValue(model, Double.toString(val), 0, 0);
+            TestUtils.setValue(model, "= A0 + 1", 0, 1);
+            TestUtils.setValue(model, "= B0 - 1", 0, 2);
             checkSuccessDoubleResult(val + 1, 0, 1);
             checkSuccessDoubleResult(val, 0, 2);
             val += 0.5;
-            model.setValueAt(Double.toString(val), 0, 0);
+            TestUtils.setValue(model, Double.toString(val), 0, 0);
             checkSuccessDoubleResult(val + 1, 0, 1);
             checkSuccessDoubleResult(val, 0, 2);
         }
 
         @Test
-        void dependenciesSimpleCycle() {
+        void dependenciesSimpleCycle() throws ParseException {
             double val = 42;
             // A0:C0 is a cycle
-            model.setValueAt("= C0", 0, 0);
-            model.setValueAt("= A0", 0, 1);
-            model.setValueAt("= B0", 0, 2);
+            TestUtils.setValue(model, "= C0", 0, 0);
+            TestUtils.setValue(model, "= A0", 0, 1);
+            TestUtils.setValue(model, "= B0", 0, 2);
             // D0 -> C0
-            model.setValueAt("= C0", 0, 3);
+            TestUtils.setValue(model, "= C0", 0, 3);
             checkErrorResult("Circular dependency", 0, 0);
             checkErrorResult("Circular dependency", 0, 1);
             checkErrorResult("Circular dependency", 0, 2);
             checkErrorResult("Circular dependency", 0, 3);
             // Break the cycle
-            model.setValueAt(Double.toString(val), 0, 2);
+            TestUtils.setValue(model, Double.toString(val), 0, 2);
             checkSuccessDoubleResult(val, 0, 0);
             checkSuccessDoubleResult(val, 0, 1);
             checkPlainDouble(val, 0, 2);
@@ -227,34 +228,34 @@ public class TableModelTest {
         }
 
         @Test
-        void dependenciesLoop() {
-            model.setValueAt("=A0", 0, 0);
+        void dependenciesLoop() throws ParseException {
+            TestUtils.setValue(model, "=A0", 0, 0);
             checkErrorResult("Circular dependency", 0, 0);
         }
 
         @Test
-        void dependenciesTwoCycles() {
+        void dependenciesTwoCycles() throws ParseException {
             double val = 42;
             // A0:C0 is a cycle
-            model.setValueAt("= C0", 0, 0);
-            model.setValueAt("= A0", 0, 1);
-            model.setValueAt("= B0", 0, 2);
+            TestUtils.setValue(model, "= C0", 0, 0);
+            TestUtils.setValue(model, "= A0", 0, 1);
+            TestUtils.setValue(model, "= B0", 0, 2);
             // E0:C0 is a cycle
-            model.setValueAt("= D0", 0, 2);
-            model.setValueAt("= E0", 0, 3);
-            model.setValueAt("= C0", 0, 4);
+            TestUtils.setValue(model, "= D0", 0, 2);
+            TestUtils.setValue(model, "= E0", 0, 3);
+            TestUtils.setValue(model, "= C0", 0, 4);
             checkErrorResult("Circular dependency", 0, 0);
             checkErrorResult("Circular dependency", 0, 1);
             checkErrorResult("Circular dependency", 0, 2);
             checkErrorResult("Circular dependency", 0, 3);
             checkErrorResult("Circular dependency", 0, 4);
             // Break the cycle
-            model.setValueAt(null, 0, 2);
+            TestUtils.setValue(model, null, 0, 2);
             checkErrorResult("Cell C0 is uninitialized", 0, 0);
             checkErrorResult("Cell C0 is uninitialized", 0, 1);
             checkErrorResult("Cell C0 is uninitialized", 0, 3);
             checkErrorResult("Cell C0 is uninitialized", 0, 4);
-            model.setValueAt(Double.toString(42), 0, 2);
+            TestUtils.setValue(model, Double.toString(42), 0, 2);
             checkSuccessDoubleResult(val, 0, 0);
             checkSuccessDoubleResult(val, 0, 1);
             checkSuccessDoubleResult(val, 0, 3);
@@ -262,16 +263,16 @@ public class TableModelTest {
         }
 
         @Test
-        void sameReferences() {
+        void sameReferences() throws ParseException {
             double val = 42;
-            model.setValueAt(Double.toString(val), 0, 0);
-            model.setValueAt("=A0 + A0", 0, 1);
+            TestUtils.setValue(model, Double.toString(val), 0, 0);
+            TestUtils.setValue(model, "=A0 + A0", 0, 1);
             checkSuccessDoubleResult(val + val, 0, 1);
         }
 
         @Test
-        void sameReferencesLoop() {
-            model.setValueAt("=A0 + A0", 0, 0);
+        void sameReferencesLoop() throws ParseException {
+            TestUtils.setValue(model, "=A0 + A0", 0, 0);
             checkErrorResult("Circular dependency", 0, 0);
         }
     }
@@ -303,13 +304,17 @@ public class TableModelTest {
         assertEquals(expected, result.message());
     }
 
-    private void testDoubleValuedFormula(String formula, double expectedResult) {
-        model.setValueAt(formula, 0, 0);
+    private void testDoubleValuedFormula(String formula, double expectedResult)
+        throws ParseException
+    {
+        TestUtils.setValue(model, formula, 0, 0);
         checkSuccessDoubleResult(expectedResult, 0, 0);
     }
 
-    private void testBooleanValuedFormula(String formula, boolean expectedResult) {
-        model.setValueAt(formula, 0, 0);
+    private void testBooleanValuedFormula(String formula, boolean expectedResult)
+        throws ParseException
+    {
+        TestUtils.setValue(model, formula, 0, 0);
         checkSuccessBooleanResult(expectedResult, 0, 0);
     }
 }

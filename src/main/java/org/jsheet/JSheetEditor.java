@@ -1,9 +1,7 @@
 package org.jsheet;
 
-import org.jsheet.model.Formula;
 import org.jsheet.model.Value;
 import org.jsheet.parser.ParseException;
-import org.jsheet.parser.ParserUtils;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -24,7 +22,7 @@ class JSheetEditor extends DefaultCellEditor {
     public boolean stopCellEditing() {
         String editorValue = (String) super.getCellEditorValue();
         try {
-            value = getModelValue(editorValue);
+            value = Value.parse(editorValue);
         } catch (ParseException e) {
             JOptionPane.showMessageDialog(
                 errorMessageComponent,
@@ -48,28 +46,5 @@ class JSheetEditor extends DefaultCellEditor {
     {
         this.value = (Value) value;
         return super.getTableCellEditorComponent(table, value, isSelected, row, column);
-    }
-
-    private Value getModelValue(String strValue) throws ParseException {
-        if (strValue.startsWith("=")) {
-            Formula formula = ParserUtils.parse(strValue);
-            return Value.of(formula);
-        } else {
-            return getLiteral(strValue);
-        }
-    }
-
-    private Value getLiteral(String strValue) {
-        // Boolean
-        if (strValue.equals("false")) return Value.of(false);
-        if (strValue.equals("true")) return Value.of(true);
-
-        // Number
-        try {
-            return Value.of(Double.parseDouble(strValue));
-        } catch (NumberFormatException ignored) {}
-
-        // String
-        return Value.of(strValue);
     }
 }

@@ -3,6 +3,7 @@ package org.jsheet.model;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
+import org.jsheet.parser.ParseException;
 
 import javax.swing.table.AbstractTableModel;
 import java.io.File;
@@ -37,19 +38,22 @@ public class JSheetTableModel extends AbstractTableModel {
     }
 
     /**
-     * Takes a raw {@code data} of string values and tries to reinsert them as model values.
+     * Constructs a model from a raw {@code data} of values.
      */
     private JSheetTableModel(List<Value[]> data) {
         this.data = data;
         for (int row = 0; row < getRowCount(); row++) {
             for (int column = 0; column < getColumnCount(); column++) {
                 Value value = getValueAt(row, column);
-                // tries to parse functions and numbers from strings
-                setValueAt(value == null ? null : value.getAsString(), row, column);
+                if (value != null && value.getTag() == Type.FORMULA) {
+                    Formula formula = value.getAsFormula();
+                    formula.resolveReferences(this);
+                    Cell current = new Cell(row, column);
+                    dependencies.addFormula(current, formula);
+                    dependencies.reevaluateAll(current);
+                }
             }
         }
-        // Hack: Reset modified flag mutated in the previous loop
-        setModified(false);
     }
 
     @Override
@@ -94,7 +98,7 @@ public class JSheetTableModel extends AbstractTableModel {
             dependencies.removeFormula(current, formula);
         }
         Value value = (Value) aValue;
-        if (value.getTag() == Type.FORMULA) {
+        if (value != null && value.getTag() == Type.FORMULA) {
             Formula formula = value.getAsFormula();
             formula.resolveReferences(this);
             dependencies.addFormula(current, formula);
@@ -149,7 +153,9 @@ public class JSheetTableModel extends AbstractTableModel {
     /**
      * Deserializes a model from a CSV {@code file}.
      */
-    public static JSheetTableModel read(File file) throws IOException, CsvValidationException {
+    public static JSheetTableModel read(File file)
+        throws IOException, CsvValidationException, ParseException
+    {
         List<Value[]> data = new ArrayList<>();
         try (var reader = new CSVReader(new FileReader(file))) {
             String[] line;
@@ -157,7 +163,7 @@ public class JSheetTableModel extends AbstractTableModel {
                 Value[] row = new Value[line.length];
                 for (int i = 0; i < line.length; i++) {
                     String strValue = line[i];
-                    row[i] = strValue.isEmpty() ? null : Value.of(strValue);
+                    row[i] = strValue.isEmpty() ? null : Value.parse(strValue);
                 }
                 data.add(row);
             }
@@ -192,8 +198,6 @@ public class JSheetTableModel extends AbstractTableModel {
         private final Map<Cell, EvaluationStage> evaluationStage = new HashMap<>();
 
         void addFormula(Cell cell, Formula formula) {
-            if (!formula.isParsed())
-                return;
             for (var ref : formula.getReferences()) {
                 if (ref.isResolved())
                     addLink(cell, ref.getCell());
@@ -208,8 +212,6 @@ public class JSheetTableModel extends AbstractTableModel {
         }
 
         void removeFormula(Cell cell, Formula formula) {
-            if (!formula.isParsed())
-                return;
             for (var ref : formula.getReferences()) {
                 if (ref.isResolved())
                     removeLink(cell, ref.getCell());
