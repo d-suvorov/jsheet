@@ -5,10 +5,13 @@ import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 
 import javax.swing.table.DefaultTableCellRenderer;
-import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 public class ExpressionRenderer extends DefaultTableCellRenderer {
-    private final DecimalFormat format = new DecimalFormat();
+    private final NumberFormat format = NumberFormat.getInstance();
+    {
+        format.setGroupingUsed(false);
+    }
 
     @Override
     protected void setValue(Object o) {

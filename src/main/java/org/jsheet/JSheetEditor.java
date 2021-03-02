@@ -45,6 +45,22 @@ class JSheetEditor extends DefaultCellEditor {
         JTable table, Object value, boolean isSelected, int row, int column)
     {
         this.value = (Value) value;
-        return super.getTableCellEditorComponent(table, value, isSelected, row, column);
+        String editorValue = toEditorValue(this.value);
+        return super.getTableCellEditorComponent(table, editorValue, isSelected, row, column);
+    }
+
+    private String toEditorValue(Value value) {
+        if (value == null)
+            return null;
+        switch (value.getTag()) {
+            case BOOLEAN: return value.getAsBoolean().toString();
+            case DOUBLE: return value.getAsDouble().toString();
+            case STRING: return value.getAsString();
+            case FORMULA: return value.getAsFormula().originalDefinition;
+            /* Range value is never shown in the editor
+               since ranges only occur inside formulae */
+            case RANGE: throw new AssertionError();
+        }
+        throw new AssertionError();
     }
 }

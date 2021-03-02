@@ -77,19 +77,8 @@ public class Value {
     }
 
     @Override
-    // Used when user edits cell content
-    // TODO try to implement it with table editor
     public String toString() {
-        switch (getTag()) {
-            case BOOLEAN: return String.valueOf(getAsBoolean());
-            case DOUBLE: return String.valueOf(getAsDouble());
-            case STRING: return getAsString();
-            case FORMULA: return getAsFormula().originalDefinition;
-            /* Range value is never shown in the editor
-               since ranges only occur inside formulae */
-            case RANGE: return "RANGE";
-        }
-        throw new AssertionError();
+        return String.format("Value{tag=%s, value=%s}", tag, value);
     }
 
     public static Value parse(String strValue) throws ParseException {
