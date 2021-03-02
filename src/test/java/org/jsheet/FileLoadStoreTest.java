@@ -3,7 +3,7 @@ package org.jsheet;
 import com.opencsv.exceptions.CsvValidationException;
 import org.jsheet.model.Cell;
 import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
+import org.jsheet.model.Value;
 import org.jsheet.parser.ParseException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -47,8 +47,8 @@ public class FileLoadStoreTest {
         assertEquals(model.getRowCount(), read.getRowCount());
         for (int row = 0; row < read.getRowCount(); row++) {
             for (int column = 0; column < read.getColumnCount(); column++) {
-                Result expected = model.getResultAt(new Cell(row, column));
-                Result actual = read.getResultAt(new Cell(row, column));
+                Value expected = model.getResultAt(new Cell(row, column));
+                Value actual = read.getResultAt(new Cell(row, column));
                 assertEquals(expected, actual);
             }
         }

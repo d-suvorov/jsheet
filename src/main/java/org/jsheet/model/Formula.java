@@ -17,7 +17,7 @@ public class Formula {
     private final List<Reference> references;
     private final List<Range> ranges;
 
-    private Result result;
+    private Value result;
 
     public Formula(String originalDefinition, Expression expression,
         List<Reference> references, List<Range> ranges)
@@ -49,16 +49,16 @@ public class Formula {
      * before calling this method to resolve all references that occur in
      * the current expression.
      */
-    public Result eval(JSheetTableModel model) {
+    public Value eval(JSheetTableModel model) {
         result = expression.eval(model);
         return result;
     }
 
-    public Result getResult() {
+    public Value getResult() {
         return result;
     }
 
-    public void setResult(Result result) {
+    public void setResult(Value result) {
         this.result = result;
     }
 

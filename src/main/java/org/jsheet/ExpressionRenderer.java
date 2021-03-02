@@ -1,6 +1,5 @@
 package org.jsheet;
 
-import org.jsheet.model.Result;
 import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 
@@ -17,13 +16,13 @@ public class ExpressionRenderer extends DefaultTableCellRenderer {
     protected void setValue(Object o) {
         Value value = (Value) o;
         if (value.getTag() == Type.FORMULA) {
-            Result result = value.getAsFormula().getResult();
+            Value result = value.getAsFormula().getResult();
             if (!result.isPresent()) {
                 setText("!ERROR");
-                setToolTipText(result.message());
+                setToolTipText(result.getMessage());
                 return;
             }
-            value = result.get();
+            value = result;
         }
         setText(renderPlainValue(value));
         setToolTipText(null);

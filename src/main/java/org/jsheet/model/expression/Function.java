@@ -1,12 +1,16 @@
 package org.jsheet.model.expression;
 
-import org.jsheet.model.*;
+import org.jsheet.model.JSheetTableModel;
+import org.jsheet.model.Type;
+import org.jsheet.model.Value;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.jsheet.model.Result.failure;
 import static org.jsheet.model.Type.*;
 
 public class Function extends Expression {
@@ -19,7 +23,7 @@ public class Function extends Expression {
     }
 
     @Override
-    public Result eval(JSheetTableModel model) {
+    public Value eval(JSheetTableModel model) {
         if (name.equals("pow")) {
             return evalPow(args, model);
         }
@@ -29,12 +33,12 @@ public class Function extends Expression {
         if (name.equals("sum")) {
             return evalSum(args, model);
         }
-        return failure("Unknown function: " + name);
+        return Value.error("Unknown function: " + name);
     }
 
-    private Result evalPow(List<Expression> args, JSheetTableModel model) {
+    private Value evalPow(List<Expression> args, JSheetTableModel model) {
         if (args.size() != 2)
-            return failure(wrongNumberOfArgsMessage("pow"));
+            return Value.error(wrongNumberOfArgsMessage("pow"));
 
         List<Value> values = evaluate(args, model);
         if (values == null)
@@ -47,12 +51,12 @@ public class Function extends Expression {
         Value baseValue = values.get(0);
         Value expValue = values.get(1);
         double result = Math.pow(baseValue.getAsDouble(), expValue.getAsDouble());
-        return Result.success(Value.of(result));
+        return Value.of(result);
     }
 
-    private Result evalLength(List<Expression> args, JSheetTableModel model) {
+    private Value evalLength(List<Expression> args, JSheetTableModel model) {
         if (args.size() != 1)
-            return failure(wrongNumberOfArgsMessage("length"));
+            return Value.error(wrongNumberOfArgsMessage("length"));
 
         List<Value> values = evaluate(args, model);
         if (values == null)
@@ -64,12 +68,12 @@ public class Function extends Expression {
 
         Value strValue = values.get(0);
         double result = strValue.getAsString().length();
-        return Result.success(Value.of(result));
+        return Value.of(result);
     }
 
-    private Result evalSum(List<Expression> args, JSheetTableModel model) {
+    private Value evalSum(List<Expression> args, JSheetTableModel model) {
         if (args.size() != 1)
-            return failure(wrongNumberOfArgsMessage("sum"));
+            return Value.error(wrongNumberOfArgsMessage("sum"));
         Value range = evaluate(args.get(0), model);
         if (range == null)
             return evaluationError;
@@ -78,15 +82,14 @@ public class Function extends Expression {
 
         double sum = 0;
         for (var c : range.getAsRange()) {
-            Result res = model.getResultAt(c);
-            if (!res.isPresent())
-                return res;
-            Value addend = res.get();
+            Value addend = model.getResultAt(c);
+            if (!addend.isPresent())
+                return addend;
             if (!typecheck(addend, DOUBLE))
                 return typecheckError;
             sum += addend.getAsDouble();
         }
-        return Result.success(Value.of(sum));
+        return Value.of(sum);
     }
 
     private String wrongNumberOfArgsMessage(String name) {

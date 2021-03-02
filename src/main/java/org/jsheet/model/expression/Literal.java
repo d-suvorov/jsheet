@@ -1,7 +1,6 @@
 package org.jsheet.model.expression;
 
 import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
 import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 
@@ -22,8 +21,8 @@ public class Literal extends Expression {
     }
 
     @Override
-    public Result eval(JSheetTableModel model) {
-        return Result.success(value);
+    public Value eval(JSheetTableModel model) {
+        return value;
     }
 
     @Override

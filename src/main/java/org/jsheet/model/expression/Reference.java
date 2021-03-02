@@ -2,7 +2,7 @@ package org.jsheet.model.expression;
 
 import org.jsheet.model.Cell;
 import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
+import org.jsheet.model.Value;
 
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -16,9 +16,9 @@ public class Reference extends Expression {
     }
 
     @Override
-    public Result eval(JSheetTableModel model) {
+    public Value eval(JSheetTableModel model) {
         if (!isResolved())
-            return Result.failure(unresolvedMessage());
+            return Value.error(unresolvedMessage());
         return model.getResultAt(cell);
     }
 

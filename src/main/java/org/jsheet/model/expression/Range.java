@@ -16,20 +16,20 @@ public class Range extends Expression implements Iterable<Cell> {
     }
 
     @Override
-    public Result eval(JSheetTableModel model) {
+    public Value eval(JSheetTableModel model) {
         if (!first.isResolved())
-            return Result.failure(first.unresolvedMessage());
+            return Value.error(first.unresolvedMessage());
         if (!last.isResolved())
-            return Result.failure(last.unresolvedMessage());
+            return Value.error(last.unresolvedMessage());
         Cell firstCell = first.getCell();
         Cell lastCell = last.getCell();
         if (firstCell.getRow() > lastCell.getRow()
             || firstCell.getColumn() > lastCell.getColumn())
         {
-            return Result.failure("Incorrect range: " + this);
+            return Value.error("Incorrect range: " + this);
         }
         RangeValue range = new RangeValue(firstCell, lastCell);
-        return Result.success(Value.of(range));
+        return Value.of(range);
     }
 
     public boolean isResolved() {

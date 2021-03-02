@@ -1,7 +1,6 @@
 package org.jsheet.model.expression;
 
 import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
 import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 
@@ -26,7 +25,7 @@ public class Binop extends Expression {
     }
 
     @Override
-    public Result eval(JSheetTableModel model) {
+    public Value eval(JSheetTableModel model) {
         List<Expression> params = Arrays.asList(left, right);
         List<Value> values = evaluate(params, model);
         if (values == null)
@@ -41,7 +40,7 @@ public class Binop extends Expression {
     }
 
     @SuppressWarnings("Convert2MethodRef")
-    private Result evalArithmetic(List<Value> values) {
+    private Value evalArithmetic(List<Value> values) {
         List<Type> types = Arrays.asList(DOUBLE, DOUBLE);
         if (!typecheck(values, types))
             return typecheckError;
@@ -67,10 +66,10 @@ public class Binop extends Expression {
         Value leftValue = values.get(0);
         Value rightValue = values.get(1);
         Double result = binary.apply(leftValue.getAsDouble(), rightValue.getAsDouble());
-        return Result.success(Value.of(result));
+        return Value.of(result);
     }
 
-    private Result evalLogical(List<Value> values) {
+    private Value evalLogical(List<Value> values) {
         List<Type> types = Arrays.asList(BOOLEAN, BOOLEAN);
         if (!typecheck(values, types))
             return typecheckError;
@@ -90,11 +89,11 @@ public class Binop extends Expression {
         Value leftValue = values.get(0);
         Value rightValue = values.get(1);
         Boolean result = binary.apply(leftValue.getAsBoolean(), rightValue.getAsBoolean());
-        return Result.success(Value.of(result));
+        return Value.of(result);
     }
 
     @SuppressWarnings("Convert2MethodRef")
-    private Result evalComparison(List<Value> values) {
+    private Value evalComparison(List<Value> values) {
         List<Type> types = Arrays.asList(DOUBLE, DOUBLE);
         if (!typecheck(values, types))
             return typecheckError;
@@ -126,7 +125,7 @@ public class Binop extends Expression {
         Value leftValue = values.get(0);
         Value rightValue = values.get(1);
         Boolean result = binary.apply(leftValue.getAsDouble(), rightValue.getAsDouble());
-        return Result.success(Value.of(result));
+        return Value.of(result);
     }
 
     private boolean isArithmetic() {

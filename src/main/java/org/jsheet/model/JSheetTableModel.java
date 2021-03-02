@@ -129,16 +129,16 @@ public class JSheetTableModel extends AbstractTableModel {
     /**
      * If {@code cell} contains a formula than its result is already evaluated
      */
-    public Result getResultAt(Cell cell) {
+    public Value getResultAt(Cell cell) {
         Value value = getValueAt(cell.row, cell.column);
         String strCell = getColumnName(cell.column) + cell.row;
         if (value == null) {
-            return Result.failure(String.format("Cell %s is uninitialized", strCell));
+            return Value.error(String.format("Cell %s is uninitialized", strCell));
         }
         if (value.getTag() == Type.FORMULA) {
             return value.getAsFormula().getResult();
         } else { // Plain value
-            return Result.success(value);
+            return value;
         }
     }
 
@@ -178,7 +178,7 @@ public class JSheetTableModel extends AbstractTableModel {
         try (var writer = new CSVWriter(new FileWriter(file))) {
             for (int row = 0; row < model.getRowCount(); row++) {
                 String[] strRow = Arrays.stream(model.data.get(row))
-                    .map(o -> o == null ? "" : o.toString())
+                    .map(o -> o == null ? "" : o.getPlain().toString())
                     .toArray(String[]::new);
                 writer.writeNext(strRow);
             }
@@ -311,7 +311,7 @@ public class JSheetTableModel extends AbstractTableModel {
             }
             Formula current = getValueAt(u.row, u.column).getAsFormula();
             if (circular) {
-                current.setResult(Result.failure("Circular dependency"));
+                current.setResult(Value.error("Circular dependency"));
             } else {
                 // All of the cells u references are evaluated
                 current.eval(JSheetTableModel.this);

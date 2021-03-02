@@ -1,7 +1,6 @@
 package org.jsheet.model.expression;
 
 import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
 import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 
@@ -10,10 +9,10 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public abstract class Expression {
-    protected Result evaluationError;
-    protected Result typecheckError;
+    protected Value evaluationError;
+    protected Value typecheckError;
 
-    public abstract Result eval(JSheetTableModel model);
+    public abstract Value eval(JSheetTableModel model);
 
     /**
      * @return a copy of this expression with cell references
@@ -46,12 +45,12 @@ public abstract class Expression {
      * Same as {@link Expression#evaluate(List, JSheetTableModel) but for a single value}.
      */
     protected Value evaluate(Expression param, JSheetTableModel model) {
-        Result res = param.eval(model);
-        if (!res.isPresent()) {
-            evaluationError = res;
+        Value value = param.eval(model);
+        if (!value.isPresent()) {
+            evaluationError = value;
             return null;
         }
-        return res.get();
+        return value;
     }
 
     /**
@@ -74,7 +73,7 @@ public abstract class Expression {
         if (value.getTag() == type)
             return true;
         String message = typeMismatchMessage(type, value.getTag());
-        typecheckError = Result.failure(message);
+        typecheckError = Value.error(message);
         return false;
     }
 

@@ -1,7 +1,6 @@
 package org.jsheet;
 
 import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
 import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 import org.jsheet.parser.ParseException;
@@ -129,8 +128,8 @@ public class TableModelTest {
             TestUtils.setValue(model, "= length(A0)", 0, 1);
             Value value = model.getValueAt(0, 1);
             assertSame(Type.FORMULA, value.getTag());
-            Result result = value.getAsFormula().getResult();
-            assertEquals("abracadabra".length(), result.get().getAsDouble(), 0);
+            Value result = value.getAsFormula().getResult();
+            assertEquals("abracadabra".length(), result.getAsDouble(), 0);
         }
 
         @Test
@@ -138,9 +137,9 @@ public class TableModelTest {
             TestUtils.setValue(model, "= abracadabra(2, 4)", 0, 0);
             Value value = model.getValueAt(0, 0);
             assertSame(Type.FORMULA, value.getTag());
-            Result result = value.getAsFormula().getResult();
+            Value result = value.getAsFormula().getResult();
             assertFalse(result.isPresent());
-            assertEquals("Unknown function: abracadabra", result.message());
+            assertEquals("Unknown function: abracadabra", result.getMessage());
         }
     }
 
@@ -286,22 +285,22 @@ public class TableModelTest {
     private void checkSuccessBooleanResult(boolean expected, int row, int column) {
         Value val = model.getValueAt(row, column);
         assertSame(val.getTag(), Type.FORMULA);
-        Result result = val.getAsFormula().getResult();
-        assertEquals(expected, result.get().getAsBoolean());
+        Value result = val.getAsFormula().getResult();
+        assertEquals(expected, result.getAsBoolean());
     }
 
     private void checkSuccessDoubleResult(double expected, int row, int column) {
         Value val = model.getValueAt(row, column);
         assertSame(val.getTag(), Type.FORMULA);
-        Result result = val.getAsFormula().getResult();
-        assertEquals(expected, result.get().getAsDouble(), 0);
+        Value result = val.getAsFormula().getResult();
+        assertEquals(expected, result.getAsDouble(), 0);
     }
 
     private void checkErrorResult(String expected, int row, int column) {
         Value val = model.getValueAt(row, column);
         assertSame(val.getTag(), Type.FORMULA);
-        Result result = val.getAsFormula().getResult();
-        assertEquals(expected, result.message());
+        Value result = val.getAsFormula().getResult();
+        assertEquals(expected, result.getMessage());
     }
 
     private void testDoubleValuedFormula(String formula, double expectedResult)

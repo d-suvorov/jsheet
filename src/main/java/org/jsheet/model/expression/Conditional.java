@@ -1,7 +1,6 @@
 package org.jsheet.model.expression;
 
 import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
 import org.jsheet.model.Type;
 import org.jsheet.model.Value;
 
@@ -20,7 +19,7 @@ public class Conditional extends Expression {
     }
 
     @Override
-    public Result eval(JSheetTableModel model) {
+    public Value eval(JSheetTableModel model) {
         Value condValue = evaluate(condition, model);
         if (condValue == null)
             return evaluationError;
@@ -30,7 +29,7 @@ public class Conditional extends Expression {
         Value resultValue = evaluate(chosen, model);
         if (resultValue == null)
             return evaluationError;
-        return Result.success(resultValue);
+        return resultValue;
     }
 
     @Override
