@@ -78,7 +78,15 @@ public class Value {
 
     @Override
     public String toString() {
-        return String.format("Value{tag=%s, value=%s}", tag, value);
+        switch (getTag()) {
+            case BOOLEAN: return getAsBoolean().toString();
+            case DOUBLE: return getAsDouble().toString();
+            case STRING: return getAsString();
+            case FORMULA: return getAsFormula().originalDefinition;
+            /* Range values only occur inside formulae */
+            case RANGE: throw new AssertionError();
+        }
+        throw new AssertionError();
     }
 
     public static Value parse(String strValue) throws ParseException {
