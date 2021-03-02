@@ -41,8 +41,11 @@ public class Reference extends Expression {
 
     @Override
     public Reference shift(JSheetTableModel model, int rowShift, int columnShift) {
-        if (!isResolved())
-            throw new IllegalStateException();
+        if (!isResolved()) {
+            // Leave unresolved references as-is. They only hold
+            // a string value, thus it's perfectly fine to re-use them
+            return this;
+        }
         Cell shiftedCell = new Cell(cell.row + rowShift, cell.column + columnShift);
         if (shiftedCell.row >= model.getRowCount() || shiftedCell.column >= model.getColumnCount())
             throw new IllegalStateException();
