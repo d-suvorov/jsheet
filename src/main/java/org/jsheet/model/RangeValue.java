@@ -5,10 +5,16 @@ import java.util.Iterator;
 public class RangeValue implements Iterable<Cell> {
     private final Cell first;
     private final Cell last;
+    private final String name;
 
-    public RangeValue(Cell first, Cell last) {
+    public RangeValue(Cell first, Cell last, String name) {
         this.first = first;
         this.last = last;
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override

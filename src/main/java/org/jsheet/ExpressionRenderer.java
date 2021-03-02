@@ -31,11 +31,11 @@ public class ExpressionRenderer extends DefaultTableCellRenderer {
 
     private String renderPlainValue(Value value) {
         switch (value.getTag()) {
-            case BOOLEAN: return String.valueOf(value.getAsBoolean());
+            case BOOLEAN: return value.getAsBoolean().toString();
             case DOUBLE: return format.format(value.getAsDouble());
             case STRING: return value.getAsString();
+            case RANGE: return value.getAsRange().getName();
             case FORMULA:
-            case RANGE:
                 throw new AssertionError("should not be rendered");
             default: throw new AssertionError();
         }

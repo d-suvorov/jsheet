@@ -28,7 +28,7 @@ public class Range extends Expression implements Iterable<Cell> {
         {
             return Result.failure("Incorrect range: " + this);
         }
-        RangeValue range = new RangeValue(firstCell, lastCell);
+        RangeValue range = new RangeValue(firstCell, lastCell, toString());
         return Result.success(Value.of(range));
     }
 
