@@ -13,6 +13,7 @@ public class JSheetTable extends JTable {
         super(model);
         setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         setCellSelectionEnabled(true);
+        getTableHeader().setReorderingAllowed(false);
     }
 
     @Override
