@@ -19,7 +19,7 @@ public class FileLoadStoreTest {
 
     @BeforeAll
     static void setUp() throws ParseException {
-        model = new JSheetTableModel(5, 5);
+        model = new JSheetTableModel(10, 10);
         String[][] data = {
             { "1", "2", "3", "4", "5" },
             { null, null, null, null, null },
