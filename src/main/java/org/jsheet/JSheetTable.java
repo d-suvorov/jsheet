@@ -32,9 +32,9 @@ public class JSheetTable extends JTable {
             return;
         int rowCount = getSelectedRowCount();
         int columnCount = getSelectedColumnCount();
-        for (int row = selectedRow; row < rowCount; row++) {
-            for (int column = selectedColumn; column < columnCount; column++) {
-                setValueAt(null, row, column);
+        for (int rowOffset = 0; rowOffset < rowCount; rowOffset++) {
+            for (int columnOffset = 0; columnOffset < columnCount; columnOffset++) {
+                setValueAt(null, selectedRow + rowOffset, selectedColumn + columnOffset);
             }
         }
     }
