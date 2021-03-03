@@ -177,10 +177,10 @@ public class Lexer {
             return Token.NUM;
         }
 
-        if (Character.isLetter(c)) {
+        if (isValidIdStartCharacter(c)) {
             StringBuilder sb = new StringBuilder();
             sb.append(c);
-            while (hasNextChar() && Character.isLetterOrDigit(peek())) {
+            while (hasNextChar() && isValidIdCharacter(peek())) {
                 sb.append(nextChar());
             }
             String name = sb.toString();
@@ -196,6 +196,14 @@ public class Lexer {
         }
 
         throw new ParseException();
+    }
+
+    private boolean isValidIdStartCharacter(char c) {
+        return Character.isLetter(c) || c == '$';
+    }
+
+    private boolean isValidIdCharacter(char c) {
+        return Character.isLetterOrDigit(c) || c == '$';
     }
 
     private boolean hasNextChar() {

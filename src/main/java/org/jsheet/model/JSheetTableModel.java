@@ -11,14 +11,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class JSheetTableModel extends AbstractTableModel {
     private static final int DEFAULT_ROW_COUNT = 100;
     private static final int DEFAULT_COLUMN_COUNT = 26;
-
-    private static final Pattern REFERENCE_PATTERN = Pattern.compile("([a-zA-Z]+)(\\d+)");
 
     private final List<Value[]> data;
     private final DependencyManager dependencies = new DependencyManager();
@@ -106,24 +102,6 @@ public class JSheetTableModel extends AbstractTableModel {
         data.get(rowIndex)[columnIndex] = value;
         dependencies.reevaluateAll(current);
         fireTableCellUpdated(rowIndex, columnIndex);
-    }
-
-    public Cell resolveReference(String name) {
-        Matcher matcher = REFERENCE_PATTERN.matcher(name);
-        if (!matcher.matches())
-            return null;
-
-        String column = matcher.group(1);
-        int columnIndex = findColumn(column);
-        if (columnIndex == -1)
-            return null;
-
-        String row = matcher.group(2);
-        int rowIndex = Integer.parseInt(row);
-        if (rowIndex >= getRowCount())
-            return null;
-
-        return new Cell(rowIndex, columnIndex);
     }
 
     /**
