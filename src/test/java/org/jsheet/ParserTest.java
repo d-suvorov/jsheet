@@ -1,13 +1,11 @@
 package org.jsheet;
 
-import org.jsheet.expression.*;
-import org.jsheet.data.Formula;
-import org.jsheet.data.JSheetTableModel;
 import org.jsheet.data.Value;
+import org.jsheet.expression.*;
+import org.jsheet.parser.Lexer;
 import org.jsheet.parser.ParseException;
-import org.jsheet.parser.ParserUtils;
+import org.jsheet.parser.Parser;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -16,27 +14,21 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ParserTest {
-    public static JSheetTableModel model;
-
-    @BeforeAll
-    static void setUp() {
-        model = new JSheetTableModel();
-    }
-
     private void testParserImpl(String input, Expression expected) {
-        Formula formula = null;
         try {
-            formula = ParserUtils.parse(input);
+            Lexer lexer = new Lexer(input);
+            Parser parser = new Parser(lexer);
+            assertEquals(expected, parser.parse());
         } catch (ParseException ignored) {
             Assertions.fail("should be correctly parsed");
         }
-        assertEquals(expected, formula.expression);
     }
 
     private Literal lit(double v) {
         return new Literal(Value.of(v));
     }
 
+    @SuppressWarnings("SameParameterValue")
     private Literal lit(boolean b) {
         return new Literal(Value.of(b));
     }
@@ -47,25 +39,25 @@ public class ParserTest {
 
     @Test
     public void booleanLiteral() {
-        testParserImpl("= false", new Literal(Value.of(false)));
-        testParserImpl("= true", new Literal(Value.of(true)));
+        testParserImpl("false", new Literal(Value.of(false)));
+        testParserImpl("true", new Literal(Value.of(true)));
     }
 
     @Test
     public void numberLiteral() {
-        testParserImpl("= 42", lit(42));
-        testParserImpl("= 42.1", lit(42.1));
-        testParserImpl("= .1", lit(.1));
+        testParserImpl("42", lit(42));
+        testParserImpl("42.1", lit(42.1));
+        testParserImpl(".1", lit(.1));
     }
 
     @Test
     public void stringLiteral() {
         String s = "";
-        testParserImpl("= \"" + s + "\"", new Literal(Value.of(s)));
+        testParserImpl("\"" + s + "\"", new Literal(Value.of(s)));
         s = "abacaba";
-        testParserImpl("= \"" + s + "\"", new Literal(Value.of(s)));
+        testParserImpl("\"" + s + "\"", new Literal(Value.of(s)));
         s = "abra\\\"cadabra";
-        testParserImpl("= \"" + s + "\"", new Literal(Value.of("abra\"cadabra")));
+        testParserImpl("\"" + s + "\"", new Literal(Value.of("abra\"cadabra")));
     }
 
     @Test
@@ -75,7 +67,7 @@ public class ParserTest {
             "+",
             bin(lit(2), "*", lit(3))
         );
-        testParserImpl("= 1 + 2 * 3", expected);
+        testParserImpl("1 + 2 * 3", expected);
     }
 
     @Test
@@ -85,7 +77,7 @@ public class ParserTest {
             "*",
             lit(3)
         );
-        testParserImpl("= (1 + 2) * 3", expected);
+        testParserImpl("(1 + 2) * 3", expected);
     }
 
     @Test
@@ -99,19 +91,19 @@ public class ParserTest {
                 bin(bin(lit(42), "/", lit(2)), ">", lit(20))
             )
         );
-        testParserImpl("= 1 == 2 || 1 + 1 == 1 + 1 && 42 / 2 > 20", expected);
+        testParserImpl("1 == 2 || 1 + 1 == 1 + 1 && 42 / 2 > 20", expected);
     }
 
     @Test
     public void functionWithNoArgs() {
         Expression expected = new Function("rand", Collections.emptyList());
-        testParserImpl("= rand()", expected);
+        testParserImpl("rand()", expected);
     }
 
     @Test
     public void functionWithOneArgs() {
         Expression expected = new Function("sqrt", Collections.singletonList(lit(4)));
-        testParserImpl("= sqrt(4)", expected);
+        testParserImpl("sqrt(4)", expected);
     }
 
     @Test
@@ -119,7 +111,7 @@ public class ParserTest {
         Expression expected = new Function(
             "pow", Arrays.asList(lit(2), lit(4))
         );
-        testParserImpl("= pow(2, 4)", expected);
+        testParserImpl("pow(2, 4)", expected);
     }
 
     @Test
@@ -128,12 +120,12 @@ public class ParserTest {
             "sum",
             Collections.singletonList(new Range(new Reference("A1"), new Reference("A10")))
         );
-        testParserImpl("= sum(A1:A10)", expected);
+        testParserImpl("sum(A1:A10)", expected);
     }
 
     @Test
     public void conditional() {
         Expression expected = new Conditional(lit(true), lit(42), lit(43));
-        testParserImpl("= if true then 42 else 43", expected);
+        testParserImpl("if true then 42 else 43", expected);
     }
 }

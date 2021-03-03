@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class Formula {
     public final String originalDefinition;
 
-    public final Expression expression;
+    private final Expression expression;
     private final List<Reference> references;
     private final List<Range> ranges;
 
@@ -44,16 +44,19 @@ public class Formula {
     }
 
     /**
-     * Evaluates this expression and returns the result.
+     * Evaluates this expression and stores the result, which can later
+     * be retrieved with {@link Formula#getResult()} method.
      * The user must call {@link Formula#resolveReferences(JSheetTableModel)}
      * before calling this method to resolve all references that occur in
      * the current expression.
      */
-    public Result eval(JSheetTableModel model) {
+    public void eval(JSheetTableModel model) {
         result = expression.eval(model);
-        return result;
     }
 
+    /**
+     * @return previously computed formula value.
+     */
     public Result getResult() {
         return result;
     }

@@ -17,10 +17,6 @@ public class Literal extends Expression {
         this.value = value;
     }
 
-    public Value getValue() {
-        return value;
-    }
-
     @Override
     public Result eval(JSheetTableModel model) {
         return Result.success(value);
