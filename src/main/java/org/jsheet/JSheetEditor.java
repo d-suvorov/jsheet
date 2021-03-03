@@ -26,8 +26,8 @@ class JSheetEditor extends DefaultCellEditor {
         } catch (ParseException e) {
             JOptionPane.showMessageDialog(
                 errorMessageComponent,
-                "Parse error",
-                "Error",
+                "The formula contains syntax errors",
+                "Try again",
                 JOptionPane.ERROR_MESSAGE
             );
             return false;
