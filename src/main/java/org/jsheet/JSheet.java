@@ -42,12 +42,25 @@ public class JSheet extends JFrame {
     private final JFileChooser chooser = new JFileChooser();
     private File currentFile = null;
 
+    private final DimensionDialog dimensionDialog = new DimensionDialog(this);
+    {
+        dimensionDialog.pack();
+    }
+
     // File menu
 
     private final ActionListener newActionListener = event -> {
         if (saveChanged()) return;
+
+        dimensionDialog.setLocationRelativeTo(this);
+        dimensionDialog.setVisible(true);
+        if (!dimensionDialog.isValidDimension())
+            return;
+
+        int rowCount = dimensionDialog.getRowCount();
+        int columnCount = dimensionDialog.getColumnCount();
+        model = new JSheetTableModel(rowCount, columnCount);
         currentFile = null;
-        model = new JSheetTableModel();
         table.setModel(model);
     };
 
@@ -175,7 +188,7 @@ public class JSheet extends JFrame {
             table.setDefaultEditor(Object.class, new JSheetEditor(JSheet.this));
             table.setDefaultRenderer(Value.class, new ExpressionRenderer());
             table.setPreferredScrollableViewportSize(new Dimension(1500, 800));
-            table.setFillsViewportHeight(true);
+            table.setFillsViewportHeight(false);
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
             JTable rowHeader = new JTable(new AbstractTableModel() {

@@ -13,8 +13,14 @@ import java.io.IOException;
 import java.util.*;
 
 public class JSheetTableModel extends AbstractTableModel {
-    private static final int DEFAULT_ROW_COUNT = 100;
-    private static final int DEFAULT_COLUMN_COUNT = 26;
+    public static final int DEFAULT_ROW_COUNT = 100;
+    public static final int DEFAULT_COLUMN_COUNT = 26;
+
+    public static final int MIN_ROW_COUNT = 10;
+    public static final int MIN_COLUMN_COUNT = 10;
+
+    public static final int MAX_ROW_COUNT = 1000;
+    public static final int MAX_COLUMN_COUNT = 100;
 
     private final List<Value[]> data;
     private final DependencyManager dependencies = new DependencyManager();
@@ -25,8 +31,10 @@ public class JSheetTableModel extends AbstractTableModel {
     }
 
     public JSheetTableModel(int rowCount, int columnCount) {
-        if (rowCount == 0 || columnCount == 0)
-            throw new IllegalArgumentException();
+        if (rowCount < MIN_ROW_COUNT || rowCount > MAX_ROW_COUNT)
+            throw new IllegalArgumentException("illegal row count");
+        if (columnCount < MIN_COLUMN_COUNT || columnCount > MAX_COLUMN_COUNT)
+            throw new IllegalArgumentException("illegal column count");
         data = new ArrayList<>(rowCount);
         for (int i = 0; i < rowCount; i++) {
             data.add(new Value[columnCount]);
