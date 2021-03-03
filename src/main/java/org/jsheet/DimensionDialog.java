@@ -60,7 +60,7 @@ class DimensionDialog extends JDialog implements ActionListener, PropertyChangeL
         textField = new JTextField(10);
 
         String message = String.format(
-            "Please enter row count (%d - %d) and column count (%d -%d) separated by comma.",
+            "Please enter row count (%d - %d) and column count (%d - %d) separated by comma.",
             MIN_ROW_COUNT, MAX_ROW_COUNT,
             MIN_COLUMN_COUNT, MAX_COLUMN_COUNT
         );
