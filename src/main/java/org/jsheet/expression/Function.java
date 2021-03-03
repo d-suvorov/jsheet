@@ -1,13 +1,13 @@
-package org.jsheet.model.expression;
+package org.jsheet.expression;
 
-import org.jsheet.model.*;
+import org.jsheet.data.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.jsheet.model.Result.failure;
-import static org.jsheet.model.Type.*;
+import static org.jsheet.data.Result.failure;
+import static org.jsheet.data.Type.*;
 
 public class Function extends Expression {
     private final String name;

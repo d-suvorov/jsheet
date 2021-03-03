@@ -6,7 +6,7 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import static org.jsheet.model.JSheetTableModel.*;
+import static org.jsheet.data.JSheetTableModel.*;
 
 class DimensionDialog extends JDialog implements ActionListener, PropertyChangeListener {
     private static final String ENTER_STRING = "Enter";

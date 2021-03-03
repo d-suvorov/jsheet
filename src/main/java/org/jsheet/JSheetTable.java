@@ -1,6 +1,6 @@
 package org.jsheet;
 
-import org.jsheet.model.*;
+import org.jsheet.data.*;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;

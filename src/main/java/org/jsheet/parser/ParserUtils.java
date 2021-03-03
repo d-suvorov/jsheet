@@ -1,7 +1,7 @@
 package org.jsheet.parser;
 
-import org.jsheet.model.Formula;
-import org.jsheet.model.expression.Expression;
+import org.jsheet.data.Formula;
+import org.jsheet.expression.Expression;
 
 public class ParserUtils {
     public static Formula parse(String definition) throws ParseException {

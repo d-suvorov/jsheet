@@ -1,7 +1,7 @@
 package org.jsheet;
 
-import org.jsheet.model.Cell;
-import org.jsheet.model.RangeIterator;
+import org.jsheet.data.Cell;
+import org.jsheet.data.RangeIterator;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;

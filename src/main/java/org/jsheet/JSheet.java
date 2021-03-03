@@ -1,8 +1,8 @@
 package org.jsheet;
 
 import com.opencsv.exceptions.CsvValidationException;
-import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Value;
+import org.jsheet.data.JSheetTableModel;
+import org.jsheet.data.Value;
 import org.jsheet.parser.ParseException;
 
 import javax.swing.*;

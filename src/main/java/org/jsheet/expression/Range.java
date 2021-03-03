@@ -1,6 +1,6 @@
-package org.jsheet.model.expression;
+package org.jsheet.expression;
 
-import org.jsheet.model.*;
+import org.jsheet.data.*;
 
 import java.util.Iterator;
 import java.util.Objects;

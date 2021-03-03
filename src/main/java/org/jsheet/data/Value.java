@@ -1,4 +1,4 @@
-package org.jsheet.model;
+package org.jsheet.data;
 
 import org.jsheet.parser.ParseException;
 import org.jsheet.parser.ParserUtils;

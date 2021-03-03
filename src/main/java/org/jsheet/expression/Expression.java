@@ -1,9 +1,9 @@
-package org.jsheet.model.expression;
+package org.jsheet.expression;
 
-import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
-import org.jsheet.model.Type;
-import org.jsheet.model.Value;
+import org.jsheet.data.JSheetTableModel;
+import org.jsheet.data.Result;
+import org.jsheet.data.Type;
+import org.jsheet.data.Value;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.jsheet.model;
+package org.jsheet.data;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

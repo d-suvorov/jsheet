@@ -1,9 +1,9 @@
 package org.jsheet;
 
 import com.opencsv.exceptions.CsvValidationException;
-import org.jsheet.model.Cell;
-import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
+import org.jsheet.data.Cell;
+import org.jsheet.data.JSheetTableModel;
+import org.jsheet.data.Result;
 import org.jsheet.parser.ParseException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

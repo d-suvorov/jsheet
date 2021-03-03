@@ -1,4 +1,4 @@
-package org.jsheet.model;
+package org.jsheet.data;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;

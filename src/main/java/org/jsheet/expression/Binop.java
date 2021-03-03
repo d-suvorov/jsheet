@@ -1,9 +1,9 @@
-package org.jsheet.model.expression;
+package org.jsheet.expression;
 
-import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
-import org.jsheet.model.Type;
-import org.jsheet.model.Value;
+import org.jsheet.data.JSheetTableModel;
+import org.jsheet.data.Result;
+import org.jsheet.data.Type;
+import org.jsheet.data.Value;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,8 +11,8 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
-import static org.jsheet.model.Type.BOOLEAN;
-import static org.jsheet.model.Type.DOUBLE;
+import static org.jsheet.data.Type.BOOLEAN;
+import static org.jsheet.data.Type.DOUBLE;
 
 public class Binop extends Expression {
     private final String op;

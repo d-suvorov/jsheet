@@ -1,8 +1,8 @@
-package org.jsheet.model.expression;
+package org.jsheet.expression;
 
-import org.jsheet.model.Cell;
-import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Result;
+import org.jsheet.data.Cell;
+import org.jsheet.data.JSheetTableModel;
+import org.jsheet.data.Result;
 
 import java.util.Objects;
 import java.util.regex.Matcher;

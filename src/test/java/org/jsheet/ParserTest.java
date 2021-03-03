@@ -1,9 +1,9 @@
 package org.jsheet;
 
-import org.jsheet.model.expression.*;
-import org.jsheet.model.Formula;
-import org.jsheet.model.JSheetTableModel;
-import org.jsheet.model.Value;
+import org.jsheet.expression.*;
+import org.jsheet.data.Formula;
+import org.jsheet.data.JSheetTableModel;
+import org.jsheet.data.Value;
 import org.jsheet.parser.ParseException;
 import org.jsheet.parser.ParserUtils;
 import org.junit.jupiter.api.Assertions;

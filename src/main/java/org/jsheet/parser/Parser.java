@@ -1,7 +1,7 @@
 package org.jsheet.parser;
 
-import org.jsheet.model.Value;
-import org.jsheet.model.expression.*;
+import org.jsheet.data.Value;
+import org.jsheet.expression.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
