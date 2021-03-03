@@ -35,6 +35,10 @@ public class Parser {
         return or(true);
     }
 
+    /**
+     * Reads the next token after.
+     * @param read is the first token of the expression read.
+     */
     private Expression or(boolean read) throws ParseException {
         Expression expr = and(read);
         while (current == OR) {
@@ -45,6 +49,10 @@ public class Parser {
         return expr;
     }
 
+    /**
+     * Reads the next token after.
+     * @param read is the first token of the expression read.
+     */
     private Expression and(boolean read) throws ParseException {
         Expression expr = comparison(read);
         while (current == AND) {
@@ -55,6 +63,10 @@ public class Parser {
         return expr;
     }
 
+    /**
+     * Reads the next token after.
+     * @param read is the first token of the expression read.
+     */
     private Expression comparison(boolean read) throws ParseException {
         Expression expr = sum(read);
         while (current == EQ || current == NE || current == LT
@@ -67,6 +79,10 @@ public class Parser {
         return expr;
     }
 
+    /**
+     * Reads the next token after.
+     * @param read is the first token of the expression read.
+     */
     private Expression sum(boolean read) throws ParseException {
         Expression expr = product(read);
         while (current == PLUS || current == MINUS) {
@@ -77,6 +93,10 @@ public class Parser {
         return expr;
     }
 
+    /**
+     * Reads the next token after.
+     * @param read is the first token of the expression read.
+     */
     private Expression product(boolean read) throws ParseException  {
         Expression expr = factor(read);
         while (current == MUL || current == DIV) {
@@ -87,6 +107,10 @@ public class Parser {
         return expr;
     }
 
+    /**
+     * Reads the next token after.
+     * @param read is the first token of the expression read.
+     */
     private Expression factor(boolean read) throws ParseException {
         if (!read)
             readNextToken();
