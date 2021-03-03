@@ -85,6 +85,8 @@ public class JSheet extends JFrame {
 
     private final ActionListener pasteActionListener = event -> table.paste();
 
+    private final ActionListener deleteActionListener = event -> table.delete();
+
     // About menu
 
     private final ActionListener aboutActionListener = event -> JOptionPane.showMessageDialog(
@@ -253,13 +255,14 @@ public class JSheet extends JFrame {
         ));
         menuBar.add(getJMenu(
             "Edit", KeyEvent.VK_E,
-            new String[] { "Cut", "Copy", "Paste" },
-            new int[] { VK_T, VK_C, VK_P },
-            new KeyStroke[] { null, null, null },
+            new String[] { "Cut", "Copy", "Paste", "Delete" },
+            new int[] { VK_T, VK_C, VK_P, VK_D },
+            new KeyStroke[] { null, null, null, null },
             new ActionListener[] {
                 cutActionListener,
                 copyActionListener,
-                pasteActionListener
+                pasteActionListener,
+                deleteActionListener
             }
         ));
         menuBar.add(getJMenu(
