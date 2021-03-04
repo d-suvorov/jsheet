@@ -48,6 +48,9 @@ public class ParserTest {
         testParserImpl("42", lit(42));
         testParserImpl("42.1", lit(42.1));
         testParserImpl(".1", lit(.1));
+        testParserImpl("-42", lit(-42));
+        testParserImpl("-42.1", lit(-42.1));
+        testParserImpl("-.1", lit(-.1));
     }
 
     @Test

@@ -117,6 +117,11 @@ public class Parser {
         switch (current) {
             case BOOL: return literal(Value.of(lexer.currentBool()));
             case NUM: return literal(Value.of(lexer.currentNum()));
+            case MINUS: {
+                readNextToken();
+                if (current != NUM) throw new ParseException();
+                return literal(Value.of(-lexer.currentNum()));
+            }
             case STR: return literal(Value.of(lexer.currentString()));
             case ID: {
                 String name = lexer.currentId();
