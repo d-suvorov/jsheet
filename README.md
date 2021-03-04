@@ -8,7 +8,7 @@ Features
 
 _jsheet_ supports four basic types of values and building formulae over them.
 The supported types are: boolean, double precision floating-point numbers,
-strings and ranges. The formula starts with `=` by convention and consist of:
+strings and ranges. The formula starts with `=` by convention and consists of:
 - A literal value, such as `false`, `true`, `1.46`, `"abracadabra"`. Numeric
   literals in exponential form are not supported;
 - A reference in A1-format, such as `B52`. By default, references are shifted
