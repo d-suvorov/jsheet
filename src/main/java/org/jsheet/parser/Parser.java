@@ -1,6 +1,6 @@
 package org.jsheet.parser;
 
-import org.jsheet.data.Value;
+import org.jsheet.evaluation.Value;
 import org.jsheet.expression.*;
 
 import java.util.ArrayList;

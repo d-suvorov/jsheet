@@ -1,8 +1,8 @@
 package org.jsheet;
 
-import org.jsheet.data.Result;
-import org.jsheet.data.Type;
-import org.jsheet.data.Value;
+import org.jsheet.evaluation.Result;
+import org.jsheet.evaluation.Type;
+import org.jsheet.evaluation.Value;
 
 import javax.swing.table.DefaultTableCellRenderer;
 import java.text.NumberFormat;

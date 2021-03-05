@@ -1,5 +1,7 @@
 package org.jsheet.data;
 
+import org.jsheet.evaluation.Result;
+import org.jsheet.evaluation.Value;
 import org.jsheet.expression.EvaluationException;
 import org.jsheet.expression.Expression;
 import org.jsheet.expression.Range;

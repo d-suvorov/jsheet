@@ -1,6 +1,9 @@
 package org.jsheet.expression;
 
 import org.jsheet.data.*;
+import org.jsheet.evaluation.RangeIterator;
+import org.jsheet.evaluation.RangeValue;
+import org.jsheet.evaluation.Value;
 
 import java.util.Iterator;
 import java.util.Objects;

@@ -1,6 +1,8 @@
 package org.jsheet;
 
 import org.jsheet.data.*;
+import org.jsheet.evaluation.Type;
+import org.jsheet.evaluation.Value;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;

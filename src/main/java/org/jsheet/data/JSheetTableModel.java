@@ -3,6 +3,9 @@ package org.jsheet.data;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
+import org.jsheet.evaluation.Result;
+import org.jsheet.evaluation.Type;
+import org.jsheet.evaluation.Value;
 import org.jsheet.parser.ParseException;
 
 import javax.swing.table.AbstractTableModel;

@@ -1,4 +1,6 @@
-package org.jsheet.data;
+package org.jsheet.evaluation;
+
+import org.jsheet.data.Cell;
 
 import java.util.Iterator;
 

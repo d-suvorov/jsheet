@@ -1,5 +1,6 @@
-package org.jsheet.data;
+package org.jsheet.evaluation;
 
+import org.jsheet.data.Formula;
 import org.jsheet.parser.ParseException;
 import org.jsheet.parser.ParserUtils;
 
