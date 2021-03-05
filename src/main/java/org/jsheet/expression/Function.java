@@ -39,8 +39,7 @@ public class Function extends Expression {
     private Value evalPow(List<Expression> args, JSheetTableModel model)
         throws EvaluationException
     {
-        if (args.size() != 2)
-            throw new EvaluationException(wrongNumberOfArgsMessage("pow"));
+        checkArgumentsNumber("pow", 2, args.size());
         List<Value> values = evaluate(args, model);
         typecheck(values, Arrays.asList(DOUBLE, DOUBLE));
         Value baseValue = values.get(0);
@@ -52,8 +51,7 @@ public class Function extends Expression {
     private Value evalLength(List<Expression> args, JSheetTableModel model)
         throws EvaluationException
     {
-        if (args.size() != 1)
-            throw new EvaluationException(wrongNumberOfArgsMessage("length"));
+        checkArgumentsNumber("length", 1, args.size());
         List<Value> values = evaluate(args, model);
         typecheck(values, Collections.singletonList(STRING));
         Value strValue = values.get(0);
@@ -64,8 +62,7 @@ public class Function extends Expression {
     private Value evalSum(List<Expression> args, JSheetTableModel model)
         throws EvaluationException
     {
-        if (args.size() != 1)
-            throw new EvaluationException(wrongNumberOfArgsMessage("sum"));
+        checkArgumentsNumber("sum", 1, args.size());
         Value range = evaluate(args.get(0), model);
         typecheck(range, RANGE);
         double sum = 0;
@@ -80,8 +77,13 @@ public class Function extends Expression {
         return Value.of(sum);
     }
 
-    private String wrongNumberOfArgsMessage(String name) {
-        return "Wrong number of arguments for function: " + name;
+    private void checkArgumentsNumber(String name, int expected, int actual)
+        throws EvaluationException
+    {
+        if (expected != actual) {
+            String message = "Wrong number of arguments for function: " + name;
+            throw new EvaluationException(message);
+        }
     }
 
     @Override
