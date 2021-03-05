@@ -1,10 +1,8 @@
 package org.jsheet.expression;
 
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.data.Type;
 import org.jsheet.data.Value;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -26,22 +24,21 @@ public class Binop extends Expression {
 
     @Override
     public Value eval(JSheetTableModel model) throws EvaluationException {
-        List<Expression> params = Arrays.asList(left, right);
-        List<Value> values = evaluate(params, model);
+        Value leftValue = evaluate(left, model);
+        Value rightValue = evaluate(right, model);
         if (isArithmetic())
-            return evalArithmetic(values);
+            return evalArithmetic(leftValue, rightValue);
         if (isLogical())
-            return evalLogical(values);
+            return evalLogical(leftValue, rightValue);
         if (isComparison())
-            return evalComparison(values);
+            return evalComparison(leftValue, rightValue);
         throw new AssertionError();
     }
 
     @SuppressWarnings("Convert2MethodRef")
-    private Value evalArithmetic(List<Value> values) throws EvaluationException {
-        List<Type> types = Arrays.asList(DOUBLE, DOUBLE);
-        typecheck(values, types);
-
+    private Value evalArithmetic(Value leftValue, Value rightValue) throws EvaluationException {
+        typecheck(leftValue, DOUBLE);
+        typecheck(rightValue, DOUBLE);
         BiFunction<Double, Double, Double> binary;
         switch (op) {
             case "+":
@@ -59,17 +56,13 @@ public class Binop extends Expression {
             default:
                 throw new AssertionError();
         }
-
-        Value leftValue = values.get(0);
-        Value rightValue = values.get(1);
         Double result = binary.apply(leftValue.getAsDouble(), rightValue.getAsDouble());
         return Value.of(result);
     }
 
-    private Value evalLogical(List<Value> values) throws EvaluationException {
-        List<Type> types = Arrays.asList(BOOLEAN, BOOLEAN);
-        typecheck(values, types);
-
+    private Value evalLogical(Value leftValue, Value rightValue) throws EvaluationException {
+        typecheck(leftValue, BOOLEAN);
+        typecheck(rightValue, BOOLEAN);
         BiFunction<Boolean, Boolean, Boolean> binary;
         switch (op) {
             case "&&":
@@ -81,18 +74,14 @@ public class Binop extends Expression {
             default:
                 throw new AssertionError();
         }
-
-        Value leftValue = values.get(0);
-        Value rightValue = values.get(1);
         Boolean result = binary.apply(leftValue.getAsBoolean(), rightValue.getAsBoolean());
         return Value.of(result);
     }
 
     @SuppressWarnings("Convert2MethodRef")
-    private Value evalComparison(List<Value> values) throws EvaluationException {
-        List<Type> types = Arrays.asList(DOUBLE, DOUBLE);
-        typecheck(values, types);
-
+    private Value evalComparison(Value leftValue, Value rightValue) throws EvaluationException {
+        typecheck(leftValue, DOUBLE);
+        typecheck(rightValue, DOUBLE);
         BiFunction<Double, Double, Boolean> binary;
         switch (op) {
             case "<":
@@ -116,9 +105,6 @@ public class Binop extends Expression {
             default:
                 throw new AssertionError();
         }
-
-        Value leftValue = values.get(0);
-        Value rightValue = values.get(1);
         Boolean result = binary.apply(leftValue.getAsDouble(), rightValue.getAsDouble());
         return Value.of(result);
     }
