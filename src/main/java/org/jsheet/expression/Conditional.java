@@ -20,10 +20,10 @@ public class Conditional extends Expression {
 
     @Override
     public Value eval(JSheetTableModel model) throws EvaluationException {
-        Value condValue = evaluate(condition, model);
+        Value condValue = condition.eval(model);
         typecheck(condValue, Type.BOOLEAN);
         Expression chosen = condValue.getAsBoolean() ? thenClause : elseClause;
-        return evaluate(chosen, model);
+        return chosen.eval(model);
     }
 
     @Override

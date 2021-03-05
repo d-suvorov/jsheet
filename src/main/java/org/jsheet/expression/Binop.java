@@ -24,8 +24,8 @@ public class Binop extends Expression {
 
     @Override
     public Value eval(JSheetTableModel model) throws EvaluationException {
-        Value leftValue = evaluate(left, model);
-        Value rightValue = evaluate(right, model);
+        Value leftValue = left.eval(model);
+        Value rightValue = right.eval(model);
         if (isArithmetic())
             return evalArithmetic(leftValue, rightValue);
         if (isLogical())

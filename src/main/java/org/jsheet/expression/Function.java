@@ -4,8 +4,8 @@ import org.jsheet.data.JSheetTableModel;
 import org.jsheet.data.Result;
 import org.jsheet.data.Value;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -40,7 +40,7 @@ public class Function extends Expression {
         throws EvaluationException
     {
         checkArgumentsNumber("pow", 2, args.size());
-        List<Value> values = evaluate(args, model);
+        List<Value> values = evalArgs(args, model);
         typecheck(values, Arrays.asList(DOUBLE, DOUBLE));
         Value baseValue = values.get(0);
         Value expValue = values.get(1);
@@ -52,9 +52,8 @@ public class Function extends Expression {
         throws EvaluationException
     {
         checkArgumentsNumber("length", 1, args.size());
-        List<Value> values = evaluate(args, model);
-        typecheck(values, Collections.singletonList(STRING));
-        Value strValue = values.get(0);
+        Value strValue = args.get(0).eval(model);
+        typecheck(strValue, STRING);
         double result = strValue.getAsString().length();
         return Value.of(result);
     }
@@ -63,7 +62,7 @@ public class Function extends Expression {
         throws EvaluationException
     {
         checkArgumentsNumber("sum", 1, args.size());
-        Value range = evaluate(args.get(0), model);
+        Value range = args.get(0).eval(model);
         typecheck(range, RANGE);
         double sum = 0;
         for (var c : range.getAsRange()) {
@@ -84,6 +83,16 @@ public class Function extends Expression {
             String message = "Wrong number of arguments for function: " + name;
             throw new EvaluationException(message);
         }
+    }
+
+    private List<Value> evalArgs(List<Expression> args, JSheetTableModel model)
+        throws EvaluationException
+    {
+        List<Value> values = new ArrayList<>(args.size());
+        for (var p : args) {
+            values.add(p.eval(model));
+        }
+        return values;
     }
 
     @Override
