@@ -1,5 +1,6 @@
 package org.jsheet.data;
 
+import org.jsheet.expression.EvaluationException;
 import org.jsheet.expression.Expression;
 import org.jsheet.expression.Range;
 import org.jsheet.expression.Reference;
@@ -51,7 +52,12 @@ public class Formula {
      * the current expression.
      */
     public void eval(JSheetTableModel model) {
-        result = expression.eval(model);
+        try {
+            Value value = expression.eval(model);
+            result = Result.success(value);
+        } catch (EvaluationException e) {
+            result = Result.failure(e.getMessage());
+        }
     }
 
     /**

@@ -3,6 +3,7 @@ package org.jsheet.expression;
 import org.jsheet.data.Cell;
 import org.jsheet.data.JSheetTableModel;
 import org.jsheet.data.Result;
+import org.jsheet.data.Value;
 
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -30,18 +31,21 @@ public class Reference extends Expression {
     }
 
     @Override
-    public Result eval(JSheetTableModel model) {
+    public Value eval(JSheetTableModel model) throws EvaluationException {
         if (!isResolved())
-            return Result.failure(unresolvedMessage());
-        return model.getResultAt(cell);
-    }
-
-    public boolean isResolved() {
-        return cell != null;
+            throw new EvaluationException(unresolvedMessage());
+        Result result = model.getResultAt(cell);
+        if (!result.isPresent())
+            throw new EvaluationException(result.message());
+        return result.get();
     }
 
     public String unresolvedMessage() {
         return String.format("Reference %s unresolved", name);
+    }
+
+    public boolean isResolved() {
+        return cell != null;
     }
 
     public Cell getCell() {

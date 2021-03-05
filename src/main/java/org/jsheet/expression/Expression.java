@@ -1,7 +1,6 @@
 package org.jsheet.expression;
 
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.data.Result;
 import org.jsheet.data.Type;
 import org.jsheet.data.Value;
 
@@ -10,10 +9,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public abstract class Expression {
-    protected Result evaluationError;
-    protected Result typecheckError;
-
-    public abstract Result eval(JSheetTableModel model);
+    public abstract Value eval(JSheetTableModel model) throws EvaluationException;
 
     /**
      * @return a copy of this expression with cell references
@@ -27,17 +23,16 @@ public abstract class Expression {
 
     /**
      * Evaluates a list of expressions.
-     * Writes {@code evaluationError} if an error occurs.
      *
-     * @return a list of values or {@code null} if an error occurs.
+     * @return a list of values
+     * @throws EvaluationException if an error occurs.
      */
-    protected List<Value> evaluate(List<Expression> params, JSheetTableModel model) {
+    protected List<Value> evaluate(List<Expression> params, JSheetTableModel model)
+        throws EvaluationException
+    {
         List<Value> values = new ArrayList<>(params.size());
         for (var p : params) {
-            Value value = evaluate(p, model);
-            if (value == null)
-                return null;
-            values.add(value);
+            values.add(evaluate(p, model));
         }
         return values;
     }
@@ -45,40 +40,30 @@ public abstract class Expression {
     /**
      * Same as {@link Expression#evaluate(List, JSheetTableModel) but for a single value}.
      */
-    protected Value evaluate(Expression param, JSheetTableModel model) {
-        Result res = param.eval(model);
-        if (!res.isPresent()) {
-            evaluationError = res;
-            return null;
-        }
-        return res.get();
+    protected Value evaluate(Expression param, JSheetTableModel model)
+        throws EvaluationException
+    {
+        return param.eval(model);
     }
 
     /**
      * Typechecks a list of values.
-     * Writes {@code typecheckError} if types mismatch.
      *
-     * @return {@code true} iff all the values have correct type.
+     * @throws EvaluationException if types mismatch.
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    protected boolean typecheck(List<Value> values, List<Type> types) {
-        for (int i = 0; i < values.size(); i++) {
-            if (!typecheck(values.get(i), types.get(i)))
-                return false;
+    protected void typecheck(List<Value> values, List<Type> types) throws EvaluationException {
+        for (int i = 0; i < values.size(); i++)
+            typecheck(values.get(i), types.get(i));
+    }
+
+    protected void typecheck(Value value, Type type) throws EvaluationException {
+        if (value.getTag() != type) {
+            String message = typeMismatchMessage(type, value.getTag());
+            throw new EvaluationException(message);
         }
-        return true;
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    protected boolean typecheck(Value value, Type type) {
-        if (value.getTag() == type)
-            return true;
-        String message = typeMismatchMessage(type, value.getTag());
-        typecheckError = Result.failure(message);
-        return false;
-    }
-
-    protected String typeMismatchMessage(Type expected, Type actual) {
+    private String typeMismatchMessage(Type expected, Type actual) {
         return String.format("Expected %s and got %s", expected.name(), actual.name());
     }
 }

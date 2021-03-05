@@ -1,12 +1,16 @@
 package org.jsheet.expression;
 
-import org.jsheet.data.*;
+import org.jsheet.data.JSheetTableModel;
+import org.jsheet.data.Result;
+import org.jsheet.data.Value;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.jsheet.data.Result.failure;
 import static org.jsheet.data.Type.*;
 
 public class Function extends Expression {
@@ -19,7 +23,7 @@ public class Function extends Expression {
     }
 
     @Override
-    public Result eval(JSheetTableModel model) {
+    public Value eval(JSheetTableModel model) throws EvaluationException {
         if (name.equals("pow")) {
             return evalPow(args, model);
         }
@@ -29,64 +33,51 @@ public class Function extends Expression {
         if (name.equals("sum")) {
             return evalSum(args, model);
         }
-        return failure("Unknown function: " + name);
+        throw new EvaluationException("Unknown function: " + name);
     }
 
-    private Result evalPow(List<Expression> args, JSheetTableModel model) {
+    private Value evalPow(List<Expression> args, JSheetTableModel model)
+        throws EvaluationException
+    {
         if (args.size() != 2)
-            return failure(wrongNumberOfArgsMessage("pow"));
-
+            throw new EvaluationException(wrongNumberOfArgsMessage("pow"));
         List<Value> values = evaluate(args, model);
-        if (values == null)
-            return evaluationError;
-
-        List<Type> types = Arrays.asList(DOUBLE, DOUBLE);
-        if (!typecheck(values, types))
-            return typecheckError;
-
+        typecheck(values, Arrays.asList(DOUBLE, DOUBLE));
         Value baseValue = values.get(0);
         Value expValue = values.get(1);
         double result = Math.pow(baseValue.getAsDouble(), expValue.getAsDouble());
-        return Result.success(Value.of(result));
+        return Value.of(result);
     }
 
-    private Result evalLength(List<Expression> args, JSheetTableModel model) {
+    private Value evalLength(List<Expression> args, JSheetTableModel model)
+        throws EvaluationException
+    {
         if (args.size() != 1)
-            return failure(wrongNumberOfArgsMessage("length"));
-
+            throw new EvaluationException(wrongNumberOfArgsMessage("length"));
         List<Value> values = evaluate(args, model);
-        if (values == null)
-            return evaluationError;
-
-        List<Type> types = Collections.singletonList(STRING);
-        if (!typecheck(values, types))
-            return typecheckError;
-
+        typecheck(values, Collections.singletonList(STRING));
         Value strValue = values.get(0);
         double result = strValue.getAsString().length();
-        return Result.success(Value.of(result));
+        return Value.of(result);
     }
 
-    private Result evalSum(List<Expression> args, JSheetTableModel model) {
+    private Value evalSum(List<Expression> args, JSheetTableModel model)
+        throws EvaluationException
+    {
         if (args.size() != 1)
-            return failure(wrongNumberOfArgsMessage("sum"));
+            throw new EvaluationException(wrongNumberOfArgsMessage("sum"));
         Value range = evaluate(args.get(0), model);
-        if (range == null)
-            return evaluationError;
-        if (!typecheck(range, RANGE))
-            return typecheckError;
-
+        typecheck(range, RANGE);
         double sum = 0;
         for (var c : range.getAsRange()) {
             Result res = model.getResultAt(c);
             if (!res.isPresent())
-                return res;
+                throw new EvaluationException(res.message());
             Value addend = res.get();
-            if (!typecheck(addend, DOUBLE))
-                return typecheckError;
+            typecheck(addend, DOUBLE);
             sum += addend.getAsDouble();
         }
-        return Result.success(Value.of(sum));
+        return Value.of(sum);
     }
 
     private String wrongNumberOfArgsMessage(String name) {

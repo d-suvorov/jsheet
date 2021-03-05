@@ -1,7 +1,6 @@
 package org.jsheet.expression;
 
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.data.Result;
 import org.jsheet.data.Type;
 import org.jsheet.data.Value;
 
@@ -20,17 +19,11 @@ public class Conditional extends Expression {
     }
 
     @Override
-    public Result eval(JSheetTableModel model) {
+    public Value eval(JSheetTableModel model) throws EvaluationException {
         Value condValue = evaluate(condition, model);
-        if (condValue == null)
-            return evaluationError;
-        if (!typecheck(condValue, Type.BOOLEAN))
-            return typecheckError;
+        typecheck(condValue, Type.BOOLEAN);
         Expression chosen = condValue.getAsBoolean() ? thenClause : elseClause;
-        Value resultValue = evaluate(chosen, model);
-        if (resultValue == null)
-            return evaluationError;
-        return Result.success(resultValue);
+        return evaluate(chosen, model);
     }
 
     @Override

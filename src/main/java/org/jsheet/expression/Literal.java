@@ -1,7 +1,6 @@
 package org.jsheet.expression;
 
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.data.Result;
 import org.jsheet.data.Type;
 import org.jsheet.data.Value;
 
@@ -18,8 +17,8 @@ public class Literal extends Expression {
     }
 
     @Override
-    public Result eval(JSheetTableModel model) {
-        return Result.success(value);
+    public Value eval(JSheetTableModel model) {
+        return value;
     }
 
     @Override
