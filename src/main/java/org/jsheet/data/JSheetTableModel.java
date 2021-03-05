@@ -112,16 +112,14 @@ public class JSheetTableModel extends AbstractTableModel {
         fireTableCellUpdated(rowIndex, columnIndex);
     }
 
-    /**
-     * If {@code cell} contains a formula than its result is already evaluated
-     */
     public Result getResultAt(Cell cell) {
         Value value = getValueAt(cell.row, cell.column);
-        String strCell = getColumnName(cell.column) + cell.row;
         if (value == null) {
+            String strCell = getColumnName(cell.column) + cell.row;
             return Result.failure(String.format("Cell %s is uninitialized", strCell));
         }
         if (value.getTag() == Type.FORMULA) {
+            // If a cell contains a formula than its result is already evaluated
             return value.getAsFormula().getResult();
         } else { // Plain value
             return Result.success(value);
