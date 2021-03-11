@@ -1,6 +1,5 @@
 package org.jsheet.parser;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class Lexer {
@@ -30,17 +29,16 @@ public class Lexer {
         }
     }
 
-    private final Map<String, Token> keywords = new HashMap<>();
-    {
-        keywords.put("if", Token.IF);
-        keywords.put("then", Token.THEN);
-        keywords.put("else", Token.ELSE);
-    }
-    private final Map<String, Boolean> boolLiterals = new HashMap<>();
-    {
-        boolLiterals.put("false", false);
-        boolLiterals.put("true", true);
-    }
+    public static final Map<String, Token> KEYWORDS = Map.of(
+        "if", Token.IF,
+        "then", Token.THEN,
+        "else", Token.ELSE
+    );
+
+    public static final Map<String, Boolean> BOOL_LITERALS = Map.of(
+        "false", false,
+        "true", true
+    );
 
     private final CharSequence input;
     private int position;
@@ -184,11 +182,11 @@ public class Lexer {
                 sb.append(nextChar());
             }
             String name = sb.toString();
-            if (keywords.containsKey(name)) {
-                return keywords.get(name);
+            if (KEYWORDS.containsKey(name)) {
+                return KEYWORDS.get(name);
             }
-            if (boolLiterals.containsKey(name)) {
-                currentBool = boolLiterals.get(name);
+            if (BOOL_LITERALS.containsKey(name)) {
+                currentBool = BOOL_LITERALS.get(name);
                 return Token.BOOL;
             }
             currentId = name;

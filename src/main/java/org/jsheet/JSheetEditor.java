@@ -2,6 +2,7 @@ package org.jsheet;
 
 import org.jsheet.expression.evaluation.Value;
 import org.jsheet.parser.ParseException;
+import org.jsheet.parser.ParserUtils;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -22,7 +23,7 @@ class JSheetEditor extends DefaultCellEditor {
     public boolean stopCellEditing() {
         String editorValue = (String) super.getCellEditorValue();
         try {
-            value = Value.parse(editorValue);
+            value = ParserUtils.parseValue(editorValue);
         } catch (ParseException e) {
             JOptionPane.showMessageDialog(
                 errorMessageComponent,
