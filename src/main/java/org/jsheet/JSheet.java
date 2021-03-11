@@ -2,7 +2,7 @@ package org.jsheet;
 
 import com.opencsv.exceptions.CsvValidationException;
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.evaluation.Value;
+import org.jsheet.expression.evaluation.Value;
 import org.jsheet.parser.ParseException;
 
 import javax.swing.*;

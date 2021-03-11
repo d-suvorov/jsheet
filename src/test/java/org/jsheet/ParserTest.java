@@ -1,6 +1,6 @@
 package org.jsheet;
 
-import org.jsheet.evaluation.Value;
+import org.jsheet.expression.evaluation.Value;
 import org.jsheet.expression.*;
 import org.jsheet.parser.Lexer;
 import org.jsheet.parser.ParseException;

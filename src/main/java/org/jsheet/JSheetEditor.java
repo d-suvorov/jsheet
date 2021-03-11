@@ -1,6 +1,6 @@
 package org.jsheet;
 
-import org.jsheet.evaluation.Value;
+import org.jsheet.expression.evaluation.Value;
 import org.jsheet.parser.ParseException;
 
 import javax.swing.*;

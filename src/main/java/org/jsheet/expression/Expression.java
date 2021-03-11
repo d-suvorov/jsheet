@@ -1,8 +1,8 @@
 package org.jsheet.expression;
 
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.evaluation.Type;
-import org.jsheet.evaluation.Value;
+import org.jsheet.expression.evaluation.Type;
+import org.jsheet.expression.evaluation.Value;
 
 import java.util.List;
 import java.util.stream.Stream;

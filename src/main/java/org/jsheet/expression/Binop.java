@@ -1,15 +1,15 @@
 package org.jsheet.expression;
 
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.evaluation.Value;
+import org.jsheet.expression.evaluation.Value;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
-import static org.jsheet.evaluation.Type.BOOLEAN;
-import static org.jsheet.evaluation.Type.DOUBLE;
+import static org.jsheet.expression.evaluation.Type.BOOLEAN;
+import static org.jsheet.expression.evaluation.Type.DOUBLE;
 
 public class Binop extends Expression {
     private final String op;

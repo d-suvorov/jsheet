@@ -2,8 +2,8 @@ package org.jsheet.expression;
 
 import org.jsheet.data.Cell;
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.evaluation.Result;
-import org.jsheet.evaluation.Value;
+import org.jsheet.expression.evaluation.Result;
+import org.jsheet.expression.evaluation.Value;
 
 import java.util.Objects;
 import java.util.regex.Matcher;

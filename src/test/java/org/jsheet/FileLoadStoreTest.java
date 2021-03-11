@@ -3,7 +3,7 @@ package org.jsheet;
 import com.opencsv.exceptions.CsvValidationException;
 import org.jsheet.data.Cell;
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.evaluation.Result;
+import org.jsheet.expression.evaluation.Result;
 import org.jsheet.parser.ParseException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

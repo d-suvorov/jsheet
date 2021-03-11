@@ -1,8 +1,8 @@
 package org.jsheet.expression;
 
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.evaluation.Result;
-import org.jsheet.evaluation.Value;
+import org.jsheet.expression.evaluation.Result;
+import org.jsheet.expression.evaluation.Value;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.jsheet.evaluation.Type.*;
+import static org.jsheet.expression.evaluation.Type.*;
 
 public class Function extends Expression {
     private final String name;

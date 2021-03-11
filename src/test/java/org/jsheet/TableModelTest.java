@@ -1,9 +1,9 @@
 package org.jsheet;
 
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.evaluation.Result;
-import org.jsheet.evaluation.Type;
-import org.jsheet.evaluation.Value;
+import org.jsheet.expression.evaluation.Result;
+import org.jsheet.expression.evaluation.Type;
+import org.jsheet.expression.evaluation.Value;
 import org.jsheet.parser.ParseException;
 import org.junit.jupiter.api.*;
 
