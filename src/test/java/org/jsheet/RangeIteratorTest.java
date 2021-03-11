@@ -19,7 +19,7 @@ public class RangeIteratorTest {
         while (iterator.hasNext()) {
             sequence.add(iterator.next());
         }
-        List<Cell> expected = Arrays.asList(
+        List<Cell> expected = List.of(
             new Cell(1, 1), new Cell(1, 2), new Cell(1, 3),
             new Cell(2, 1), new Cell(2, 2), new Cell(2, 3),
             new Cell(3, 1), new Cell(3, 2), new Cell(3, 3)

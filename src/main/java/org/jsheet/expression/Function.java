@@ -5,7 +5,6 @@ import org.jsheet.expression.evaluation.Result;
 import org.jsheet.expression.evaluation.Value;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -41,7 +40,7 @@ public class Function extends Expression {
     {
         checkArgumentsNumber("pow", 2, args.size());
         List<Value> values = evalArgs(args, model);
-        typecheck(values, Arrays.asList(DOUBLE, DOUBLE));
+        typecheck(values, List.of(DOUBLE, DOUBLE));
         Value baseValue = values.get(0);
         Value expValue = values.get(1);
         double result = Math.pow(baseValue.getAsDouble(), expValue.getAsDouble());

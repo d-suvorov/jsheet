@@ -1,15 +1,15 @@
 package org.jsheet;
 
-import org.jsheet.expression.evaluation.Value;
 import org.jsheet.expression.*;
+import org.jsheet.expression.evaluation.Value;
 import org.jsheet.parser.Lexer;
 import org.jsheet.parser.ParseException;
 import org.jsheet.parser.Parser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -112,7 +112,7 @@ public class ParserTest {
     @Test
     public void functionWithTwoArgs() {
         Expression expected = new Function(
-            "pow", Arrays.asList(lit(2), lit(4))
+            "pow", List.of(lit(2), lit(4))
         );
         testParserImpl("pow(2, 4)", expected);
     }
