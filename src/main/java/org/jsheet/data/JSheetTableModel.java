@@ -74,7 +74,7 @@ public class JSheetTableModel extends AbstractTableModel {
         return data.get(0).length;
     }
 
-    private boolean containsCell(int rowIndex, int columnIndex) {
+    public boolean containsCell(int rowIndex, int columnIndex) {
         return rowIndex >= 0 && rowIndex < getRowCount()
             && columnIndex >= 0 && columnIndex < getColumnCount();
     }
