@@ -7,6 +7,7 @@ import org.jsheet.expression.evaluation.Result;
 import org.jsheet.expression.evaluation.Type;
 import org.jsheet.expression.evaluation.Value;
 import org.jsheet.parser.ParseException;
+import org.jsheet.parser.ParserUtils;
 
 import javax.swing.table.AbstractTableModel;
 import java.io.File;
@@ -73,7 +74,7 @@ public class JSheetTableModel extends AbstractTableModel {
         return data.get(0).length;
     }
 
-    private boolean containsCell(int rowIndex, int columnIndex) {
+    public boolean containsCell(int rowIndex, int columnIndex) {
         return rowIndex >= 0 && rowIndex < getRowCount()
             && columnIndex >= 0 && columnIndex < getColumnCount();
     }
@@ -150,7 +151,7 @@ public class JSheetTableModel extends AbstractTableModel {
                 Value[] row = new Value[line.length];
                 for (int i = 0; i < line.length; i++) {
                     String strValue = line[i];
-                    row[i] = strValue.isEmpty() ? null : Value.parse(strValue);
+                    row[i] = strValue.isEmpty() ? null : ParserUtils.parseValue(strValue);
                 }
                 data.add(row);
             }

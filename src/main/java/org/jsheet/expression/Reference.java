@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 public class Reference extends Expression {
     private static final Pattern REFERENCE_PATTERN
         = Pattern.compile("(\\$)?([a-zA-Z]+)(\\$)?(\\d+)");
+    public static final String OUT_OF_BOUNDS_REFERENCE_NAME = "REF";
 
     private final String name;
     private Cell cell;
@@ -90,9 +91,11 @@ public class Reference extends Expression {
         }
         if (isRowAbsolute) rowShift = 0;
         if (isColumnAbsolute) columnShift = 0;
-        Cell shiftedCell = new Cell(cell.row + rowShift, cell.column + columnShift);
-        if (shiftedCell.row >= model.getRowCount() || shiftedCell.column >= model.getColumnCount())
-            throw new IllegalStateException();
+        int shiftedRow = cell.row + rowShift;
+        int shiftedColumn = cell.column + columnShift;
+        if (!model.containsCell(shiftedRow, shiftedColumn))
+            return new Reference(OUT_OF_BOUNDS_REFERENCE_NAME, null, false, false);
+        Cell shiftedCell = new Cell(shiftedRow, shiftedColumn);
         String shiftedName = (isColumnAbsolute ? "$" : "")
             + model.getColumnName(shiftedCell.column)
             + (isRowAbsolute ? "$" : "")

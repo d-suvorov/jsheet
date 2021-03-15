@@ -1,8 +1,6 @@
 package org.jsheet.expression.evaluation;
 
 import org.jsheet.data.Formula;
-import org.jsheet.parser.ParseException;
-import org.jsheet.parser.ParserUtils;
 
 import java.util.Objects;
 
@@ -88,28 +86,5 @@ public class Value {
             case RANGE: throw new AssertionError();
         }
         throw new AssertionError();
-    }
-
-    public static Value parse(String strValue) throws ParseException {
-        if (strValue.startsWith("=")) {
-            Formula formula = ParserUtils.parse(strValue);
-            return Value.of(formula);
-        } else {
-            return parseLiteral(strValue);
-        }
-    }
-
-    private static Value parseLiteral(String strValue) {
-        // Boolean
-        if (strValue.equals("false")) return Value.of(false);
-        if (strValue.equals("true")) return Value.of(true);
-
-        // Number
-        try {
-            return Value.of(Double.parseDouble(strValue));
-        } catch (NumberFormatException ignored) {}
-
-        // String
-        return Value.of(strValue);
     }
 }
