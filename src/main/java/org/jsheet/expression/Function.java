@@ -1,16 +1,12 @@
 package org.jsheet.expression;
 
-import org.jsheet.data.JSheetTableModel;
-import org.jsheet.expression.evaluation.Result;
-import org.jsheet.expression.evaluation.Value;
+import org.jsheet.evaluation.EvaluationException;
+import org.jsheet.evaluation.EvaluationVisitor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.jsheet.expression.evaluation.Type.*;
 
 public class Function extends Expression {
     private final String name;
@@ -22,84 +18,13 @@ public class Function extends Expression {
     }
 
     @Override
-    public Value eval(JSheetTableModel model) throws EvaluationException {
-        if (name.equals("pow")) {
-            return evalPow(args, model);
-        }
-        if (name.equals("length")) {
-            return evalLength(args, model);
-        }
-        if (name.equals("sum")) {
-            return evalSum(args, model);
-        }
-        throw new EvaluationException("Unknown function: " + name);
-    }
-
-    private Value evalPow(List<Expression> args, JSheetTableModel model)
-        throws EvaluationException
-    {
-        checkArgumentsNumber("pow", 2, args.size());
-        List<Value> values = evalArgs(args, model);
-        typecheck(values, List.of(DOUBLE, DOUBLE));
-        Value baseValue = values.get(0);
-        Value expValue = values.get(1);
-        double result = Math.pow(baseValue.getAsDouble(), expValue.getAsDouble());
-        return Value.of(result);
-    }
-
-    private Value evalLength(List<Expression> args, JSheetTableModel model)
-        throws EvaluationException
-    {
-        checkArgumentsNumber("length", 1, args.size());
-        Value strValue = args.get(0).eval(model);
-        typecheck(strValue, STRING);
-        double result = strValue.getAsString().length();
-        return Value.of(result);
-    }
-
-    private Value evalSum(List<Expression> args, JSheetTableModel model)
-        throws EvaluationException
-    {
-        checkArgumentsNumber("sum", 1, args.size());
-        Value range = args.get(0).eval(model);
-        typecheck(range, RANGE);
-        double sum = 0;
-        for (var c : range.getAsRange()) {
-            Result res = model.getResultAt(c);
-            if (!res.isPresent())
-                throw new EvaluationException(res.message());
-            Value addend = res.get();
-            typecheck(addend, DOUBLE);
-            sum += addend.getAsDouble();
-        }
-        return Value.of(sum);
-    }
-
-    private void checkArgumentsNumber(String name, int expected, int actual)
-        throws EvaluationException
-    {
-        if (expected != actual) {
-            String message = "Wrong number of arguments for function: " + name;
-            throw new EvaluationException(message);
-        }
-    }
-
-    private List<Value> evalArgs(List<Expression> args, JSheetTableModel model)
-        throws EvaluationException
-    {
-        List<Value> values = new ArrayList<>(args.size());
-        for (var p : args) {
-            values.add(p.eval(model));
-        }
-        return values;
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override
-    public Function shift(JSheetTableModel model, int rowShift, int columnShift) {
-        List<Expression> shiftedArgs = args.stream()
-            .map(e -> e.shift(model, rowShift, columnShift))
-            .collect(Collectors.toList());
-        return new Function(name, shiftedArgs);
+    public <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException {
+        return visitor.visit(this);
     }
 
     @Override
@@ -110,6 +35,14 @@ public class Function extends Expression {
     @Override
     public Stream<Range> getRanges() {
         return args.stream().flatMap(Expression::getRanges);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<Expression> getArgs() {
+        return args;
     }
 
     @Override

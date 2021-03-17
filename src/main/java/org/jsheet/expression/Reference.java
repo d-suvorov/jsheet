@@ -2,8 +2,8 @@ package org.jsheet.expression;
 
 import org.jsheet.data.Cell;
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.expression.evaluation.Result;
-import org.jsheet.expression.evaluation.Value;
+import org.jsheet.evaluation.EvaluationException;
+import org.jsheet.evaluation.EvaluationVisitor;
 
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -32,17 +32,13 @@ public class Reference extends Expression {
     }
 
     @Override
-    public Value eval(JSheetTableModel model) throws EvaluationException {
-        if (!isResolved())
-            throw new EvaluationException(unresolvedMessage());
-        Result result = model.getResultAt(cell);
-        if (!result.isPresent())
-            throw new EvaluationException(result.message());
-        return result.get();
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 
-    public String unresolvedMessage() {
-        return String.format("Reference %s unresolved", name);
+    @Override
+    public <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException {
+        return visitor.visit(this);
     }
 
     public boolean isResolved() {
@@ -83,27 +79,6 @@ public class Reference extends Expression {
     }
 
     @Override
-    public Reference shift(JSheetTableModel model, int rowShift, int columnShift) {
-        if (!isResolved()) {
-            // Leave unresolved references as-is. They only hold
-            // a string value, thus it's perfectly fine to re-use them
-            return this;
-        }
-        if (isRowAbsolute) rowShift = 0;
-        if (isColumnAbsolute) columnShift = 0;
-        int shiftedRow = cell.row + rowShift;
-        int shiftedColumn = cell.column + columnShift;
-        if (!model.containsCell(shiftedRow, shiftedColumn))
-            return new Reference(OUT_OF_BOUNDS_REFERENCE_NAME, null, false, false);
-        Cell shiftedCell = new Cell(shiftedRow, shiftedColumn);
-        String shiftedName = (isColumnAbsolute ? "$" : "")
-            + model.getColumnName(shiftedCell.column)
-            + (isRowAbsolute ? "$" : "")
-            + shiftedCell.row;
-        return new Reference(shiftedName, shiftedCell, isRowAbsolute, isColumnAbsolute);
-    }
-
-    @Override
     public Stream<Reference> getReferences() {
         return Stream.of(this);
     }
@@ -111,6 +86,18 @@ public class Reference extends Expression {
     @Override
     public Stream<Range> getRanges() {
         return Stream.empty();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isRowAbsolute() {
+        return isRowAbsolute;
+    }
+
+    public boolean isColumnAbsolute() {
+        return isColumnAbsolute;
     }
 
     @Override

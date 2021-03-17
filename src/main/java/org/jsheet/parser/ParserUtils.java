@@ -2,7 +2,7 @@ package org.jsheet.parser;
 
 import org.jsheet.data.Formula;
 import org.jsheet.expression.Expression;
-import org.jsheet.expression.evaluation.Value;
+import org.jsheet.evaluation.Value;
 
 public class ParserUtils {
     public static Value parseValue(String strValue) throws ParseException {

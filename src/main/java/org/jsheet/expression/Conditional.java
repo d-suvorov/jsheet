@@ -1,8 +1,7 @@
 package org.jsheet.expression;
 
-import org.jsheet.data.JSheetTableModel;
-import org.jsheet.expression.evaluation.Type;
-import org.jsheet.expression.evaluation.Value;
+import org.jsheet.evaluation.EvaluationException;
+import org.jsheet.evaluation.EvaluationVisitor;
 
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -19,20 +18,13 @@ public class Conditional extends Expression {
     }
 
     @Override
-    public Value eval(JSheetTableModel model) throws EvaluationException {
-        Value condValue = condition.eval(model);
-        typecheck(condValue, Type.BOOLEAN);
-        Expression chosen = condValue.getAsBoolean() ? thenClause : elseClause;
-        return chosen.eval(model);
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override
-    public Expression shift(JSheetTableModel model, int rowShift, int columnShift) {
-        return new Conditional(
-            condition.shift(model, rowShift, columnShift),
-            thenClause.shift(model, rowShift, columnShift),
-            elseClause.shift(model, rowShift, columnShift)
-        );
+    public <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException {
+        return visitor.visit(this);
     }
 
     @Override
@@ -45,6 +37,18 @@ public class Conditional extends Expression {
     public Stream<Range> getRanges() {
         return Stream.of(condition, thenClause, elseClause)
             .flatMap(Expression::getRanges);
+    }
+
+    public Expression getCondition() {
+        return condition;
+    }
+
+    public Expression getThenClause() {
+        return thenClause;
+    }
+
+    public Expression getElseClause() {
+        return elseClause;
     }
 
     @Override

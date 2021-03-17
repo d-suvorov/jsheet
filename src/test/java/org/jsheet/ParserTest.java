@@ -1,7 +1,6 @@
 package org.jsheet;
 
 import org.jsheet.expression.*;
-import org.jsheet.expression.evaluation.Value;
 import org.jsheet.parser.Lexer;
 import org.jsheet.parser.ParseException;
 import org.jsheet.parser.Parser;
@@ -24,13 +23,17 @@ public class ParserTest {
         }
     }
 
-    private Literal lit(double v) {
-        return new Literal(Value.of(v));
+    private DoubleLiteral lit(double v) {
+        return new DoubleLiteral(v);
     }
 
     @SuppressWarnings("SameParameterValue")
-    private Literal lit(boolean b) {
-        return new Literal(Value.of(b));
+    private BooleanLiteral lit(boolean b) {
+        return new BooleanLiteral(b);
+    }
+
+    private StringLiteral lit(String s) {
+        return new StringLiteral(s);
     }
 
     private Binop bin(Expression left, String op, Expression right) {
@@ -39,8 +42,8 @@ public class ParserTest {
 
     @Test
     public void booleanLiteral() {
-        testParserImpl("false", new Literal(Value.of(false)));
-        testParserImpl("true", new Literal(Value.of(true)));
+        testParserImpl("false", lit(false));
+        testParserImpl("true", lit(true));
     }
 
     @Test
@@ -56,11 +59,11 @@ public class ParserTest {
     @Test
     public void stringLiteral() {
         String s = "";
-        testParserImpl("\"" + s + "\"", new Literal(Value.of(s)));
+        testParserImpl("\"" + s + "\"", lit(s));
         s = "abacaba";
-        testParserImpl("\"" + s + "\"", new Literal(Value.of(s)));
+        testParserImpl("\"" + s + "\"", lit(s));
         s = "abra\\\"cadabra";
-        testParserImpl("\"" + s + "\"", new Literal(Value.of("abra\"cadabra")));
+        testParserImpl("\"" + s + "\"", lit("abra\"cadabra"));
     }
 
     @Test

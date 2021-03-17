@@ -1,15 +1,10 @@
 package org.jsheet.expression;
 
-import org.jsheet.data.JSheetTableModel;
-import org.jsheet.expression.evaluation.Value;
+import org.jsheet.evaluation.EvaluationException;
+import org.jsheet.evaluation.EvaluationVisitor;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.stream.Stream;
-
-import static org.jsheet.expression.evaluation.Type.BOOLEAN;
-import static org.jsheet.expression.evaluation.Type.DOUBLE;
 
 public class Binop extends Expression {
     private final String op;
@@ -23,111 +18,13 @@ public class Binop extends Expression {
     }
 
     @Override
-    public Value eval(JSheetTableModel model) throws EvaluationException {
-        Value leftValue = left.eval(model);
-        Value rightValue = right.eval(model);
-        if (isArithmetic())
-            return evalArithmetic(leftValue, rightValue);
-        if (isLogical())
-            return evalLogical(leftValue, rightValue);
-        if (isComparison())
-            return evalComparison(leftValue, rightValue);
-        throw new AssertionError();
-    }
-
-    @SuppressWarnings("Convert2MethodRef")
-    private Value evalArithmetic(Value leftValue, Value rightValue) throws EvaluationException {
-        typecheck(leftValue, DOUBLE);
-        typecheck(rightValue, DOUBLE);
-        BiFunction<Double, Double, Double> binary;
-        switch (op) {
-            case "+":
-                binary = (a, b) -> a + b;
-                break;
-            case "-":
-                binary = (a, b) -> a - b;
-                break;
-            case "*":
-                binary = (a, b) -> a * b;
-                break;
-            case "/":
-                binary = (a, b) -> a / b;
-                break;
-            default:
-                throw new AssertionError();
-        }
-        Double result = binary.apply(leftValue.getAsDouble(), rightValue.getAsDouble());
-        return Value.of(result);
-    }
-
-    private Value evalLogical(Value leftValue, Value rightValue) throws EvaluationException {
-        typecheck(leftValue, BOOLEAN);
-        typecheck(rightValue, BOOLEAN);
-        BiFunction<Boolean, Boolean, Boolean> binary;
-        switch (op) {
-            case "&&":
-                binary = Boolean::logicalAnd;
-                break;
-            case "||":
-                binary = Boolean::logicalOr;
-                break;
-            default:
-                throw new AssertionError();
-        }
-        Boolean result = binary.apply(leftValue.getAsBoolean(), rightValue.getAsBoolean());
-        return Value.of(result);
-    }
-
-    @SuppressWarnings("Convert2MethodRef")
-    private Value evalComparison(Value leftValue, Value rightValue) throws EvaluationException {
-        typecheck(leftValue, DOUBLE);
-        typecheck(rightValue, DOUBLE);
-        BiFunction<Double, Double, Boolean> binary;
-        switch (op) {
-            case "<":
-                binary = (a, b) -> a < b;
-                break;
-            case "<=":
-                binary = (a, b) -> a <= b;
-                break;
-            case ">":
-                binary = (a, b) -> a > b;
-                break;
-            case ">=":
-                binary = (a, b) -> a >= b;
-                break;
-            case "==":
-                binary = (a, b) -> a.equals(b);
-                break;
-            case "!=":
-                binary = (a, b) -> !a.equals(b);
-                break;
-            default:
-                throw new AssertionError();
-        }
-        Boolean result = binary.apply(leftValue.getAsDouble(), rightValue.getAsDouble());
-        return Value.of(result);
-    }
-
-    private boolean isArithmetic() {
-        return List.of("+", "-", "*", "/").contains(op);
-    }
-
-    private boolean isLogical() {
-        return List.of("&&", "||").contains(op);
-    }
-
-    private boolean isComparison() {
-        return List.of("<", "<=", ">", ">=", "==", "!=").contains(op);
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override
-    public Expression shift(JSheetTableModel model, int rowShift, int columnShift) {
-        return new Binop(
-            op,
-            left.shift(model, rowShift, columnShift),
-            right.shift(model, rowShift, columnShift)
-        );
+    public <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException {
+        return visitor.visit(this);
     }
 
     @Override
@@ -138,6 +35,18 @@ public class Binop extends Expression {
     @Override
     public Stream<Range> getRanges() {
         return Stream.concat(left.getRanges(), right.getRanges());
+    }
+
+    public String getOp() {
+        return op;
+    }
+
+    public Expression getLeft() {
+        return left;
+    }
+
+    public Expression getRight() {
+        return right;
     }
 
     @Override

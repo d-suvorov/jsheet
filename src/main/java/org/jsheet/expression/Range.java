@@ -1,8 +1,8 @@
 package org.jsheet.expression;
 
-import org.jsheet.data.*;
-import org.jsheet.expression.evaluation.RangeValue;
-import org.jsheet.expression.evaluation.Value;
+import org.jsheet.data.Cell;
+import org.jsheet.evaluation.EvaluationException;
+import org.jsheet.evaluation.EvaluationVisitor;
 
 import java.util.Iterator;
 import java.util.Objects;
@@ -18,31 +18,17 @@ public class Range extends Expression implements Iterable<Cell> {
     }
 
     @Override
-    public Value eval(JSheetTableModel model) throws EvaluationException {
-        if (!first.isResolved())
-            throw new EvaluationException(first.unresolvedMessage());
-        if (!last.isResolved())
-            throw new EvaluationException(last.unresolvedMessage());
-        Cell firstCell = first.getCell();
-        Cell lastCell = last.getCell();
-        if (firstCell.getRow() > lastCell.getRow()
-            || firstCell.getColumn() > lastCell.getColumn())
-        {
-            throw new EvaluationException("Incorrect range: " + this);
-        }
-        RangeValue range = new RangeValue(firstCell, lastCell, toString());
-        return Value.of(range);
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException {
+        return visitor.visit(this);
     }
 
     public boolean isResolved() {
         return first.isResolved() && last.isResolved();
-    }
-
-    @Override
-    public Range shift(JSheetTableModel model, int rowShift, int columnShift) {
-        Reference shiftedFirst = first.shift(model, rowShift, columnShift);
-        Reference shiftedLast = last.shift(model, rowShift, columnShift);
-        return new Range(shiftedFirst, shiftedLast);
     }
 
     @Override
@@ -53,6 +39,14 @@ public class Range extends Expression implements Iterable<Cell> {
     @Override
     public Stream<Range> getRanges() {
         return Stream.of(this);
+    }
+
+    public Reference getFirst() {
+        return first;
+    }
+
+    public Reference getLast() {
+        return last;
     }
 
     @Override
