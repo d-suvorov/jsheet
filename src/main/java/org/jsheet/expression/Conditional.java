@@ -1,8 +1,7 @@
 package org.jsheet.expression;
 
-import org.jsheet.data.JSheetTableModel;
-import org.jsheet.expression.evaluation.Type;
-import org.jsheet.expression.evaluation.Value;
+import org.jsheet.expression.evaluation.EvaluationException;
+import org.jsheet.expression.evaluation.EvaluationVisitor;
 
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -24,11 +23,8 @@ public class Conditional extends Expression {
     }
 
     @Override
-    public Value eval(JSheetTableModel model) throws EvaluationException {
-        Value condValue = condition.eval(model);
-        typecheck(condValue, Type.BOOLEAN);
-        Expression chosen = condValue.getAsBoolean() ? thenClause : elseClause;
-        return chosen.eval(model);
+    public <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException {
+        return visitor.visit(this);
     }
 
     @Override

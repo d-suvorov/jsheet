@@ -2,8 +2,8 @@ package org.jsheet.expression;
 
 import org.jsheet.data.Cell;
 import org.jsheet.data.JSheetTableModel;
-import org.jsheet.expression.evaluation.Result;
-import org.jsheet.expression.evaluation.Value;
+import org.jsheet.expression.evaluation.EvaluationException;
+import org.jsheet.expression.evaluation.EvaluationVisitor;
 
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -37,17 +37,8 @@ public class Reference extends Expression {
     }
 
     @Override
-    public Value eval(JSheetTableModel model) throws EvaluationException {
-        if (!isResolved())
-            throw new EvaluationException(unresolvedMessage());
-        Result result = model.getResultAt(cell);
-        if (!result.isPresent())
-            throw new EvaluationException(result.message());
-        return result.get();
-    }
-
-    public String unresolvedMessage() {
-        return String.format("Reference %s unresolved", name);
+    public <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException {
+        return visitor.visit(this);
     }
 
     public boolean isResolved() {
@@ -95,6 +86,10 @@ public class Reference extends Expression {
     @Override
     public Stream<Range> getRanges() {
         return Stream.empty();
+    }
+
+    public String getName() {
+        return name;
     }
 
     public boolean isRowAbsolute() {

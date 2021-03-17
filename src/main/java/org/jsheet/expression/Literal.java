@@ -1,6 +1,7 @@
 package org.jsheet.expression;
 
-import org.jsheet.data.JSheetTableModel;
+import org.jsheet.expression.evaluation.EvaluationException;
+import org.jsheet.expression.evaluation.EvaluationVisitor;
 import org.jsheet.expression.evaluation.Type;
 import org.jsheet.expression.evaluation.Value;
 
@@ -22,8 +23,8 @@ public class Literal extends Expression {
     }
 
     @Override
-    public Value eval(JSheetTableModel model) {
-        return value;
+    public <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException {
+        return visitor.visit(this);
     }
 
     @Override
