@@ -92,13 +92,13 @@ public class JSheet extends JFrame {
 
     // Edit menu
 
-    private final ActionListener cutActionListener = event -> table.cut();
+    private final ActionListener cutActionListener = event -> showWaitCursorWhile(table::cut);
 
-    private final ActionListener copyActionListener = event -> table.copy();
+    private final ActionListener copyActionListener = event -> showWaitCursorWhile(table::copy);
 
-    private final ActionListener pasteActionListener = event -> table.paste();
+    private final ActionListener pasteActionListener = event -> showWaitCursorWhile(table::paste);
 
-    private final ActionListener deleteActionListener = event -> table.delete();
+    private final ActionListener deleteActionListener = event -> showWaitCursorWhile(table::delete);
 
     // About menu
 
@@ -108,6 +108,12 @@ public class JSheet extends JFrame {
         ABOUT_DIALOG_TITLE,
         JOptionPane.INFORMATION_MESSAGE
     );
+
+    private void showWaitCursorWhile(Runnable task) {
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        task.run();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }
 
     private boolean save() {
         File file = currentFile != null ? currentFile : askForSaveFile();
