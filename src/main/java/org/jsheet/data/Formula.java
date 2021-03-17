@@ -135,7 +135,17 @@ public class Formula {
         }
 
         @Override
-        public Literal visit(Literal literal) {
+        public BooleanLiteral visit(BooleanLiteral literal) {
+            return literal; // Plain values are immutable
+        }
+
+        @Override
+        public DoubleLiteral visit(DoubleLiteral literal) {
+            return literal; // Plain values are immutable
+        }
+
+        @Override
+        public StringLiteral visit(StringLiteral literal) {
             return literal; // Plain values are immutable
         }
 

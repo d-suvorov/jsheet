@@ -192,8 +192,18 @@ public class Evaluator implements EvaluationVisitor<Value> {
     }
 
     @Override
-    public Value visit(Literal literal) {
-        return literal.getValue();
+    public Value visit(BooleanLiteral literal) {
+        return Value.of(literal.getValue());
+    }
+
+    @Override
+    public Value visit(DoubleLiteral literal) {
+        return Value.of(literal.getValue());
+    }
+
+    @Override
+    public Value visit(StringLiteral literal) {
+        return Value.of(literal.getValue());
     }
 
     @Override

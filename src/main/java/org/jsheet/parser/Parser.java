@@ -1,6 +1,5 @@
 package org.jsheet.parser;
 
-import org.jsheet.expression.evaluation.Value;
 import org.jsheet.expression.*;
 
 import java.util.ArrayList;
@@ -115,14 +114,14 @@ public class Parser {
         if (!read)
             readNextToken();
         switch (current) {
-            case BOOL: return literal(Value.of(lexer.currentBool()));
-            case NUM: return literal(Value.of(lexer.currentNum()));
+            case BOOL: return literal(lexer.currentBool());
+            case NUM: return literal(lexer.currentNum());
             case MINUS: {
                 readNextToken();
                 if (current != NUM) throw new ParseException();
-                return literal(Value.of(-lexer.currentNum()));
+                return literal(-lexer.currentNum());
             }
-            case STR: return literal(Value.of(lexer.currentString()));
+            case STR: return literal(lexer.currentString());
             case ID: {
                 String name = lexer.currentId();
                 readNextToken();
@@ -146,9 +145,19 @@ public class Parser {
         throw new ParseException();
     }
 
-    private Expression literal(Value value) throws ParseException {
+    private BooleanLiteral literal(boolean value) throws ParseException {
         readNextToken();
-        return new Literal(value);
+        return new BooleanLiteral(value);
+    }
+
+    private DoubleLiteral literal(double value) throws ParseException {
+        readNextToken();
+        return new DoubleLiteral(value);
+    }
+
+    private StringLiteral literal(String value) throws ParseException {
+        readNextToken();
+        return new StringLiteral(value);
     }
 
     private Expression range(String firstName) throws ParseException {
