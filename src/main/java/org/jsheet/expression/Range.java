@@ -18,6 +18,11 @@ public class Range extends Expression implements Iterable<Cell> {
     }
 
     @Override
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
     public Value eval(JSheetTableModel model) throws EvaluationException {
         if (!first.isResolved())
             throw new EvaluationException(first.unresolvedMessage());
@@ -39,13 +44,6 @@ public class Range extends Expression implements Iterable<Cell> {
     }
 
     @Override
-    public Range shift(JSheetTableModel model, int rowShift, int columnShift) {
-        Reference shiftedFirst = first.shift(model, rowShift, columnShift);
-        Reference shiftedLast = last.shift(model, rowShift, columnShift);
-        return new Range(shiftedFirst, shiftedLast);
-    }
-
-    @Override
     public Stream<Reference> getReferences() {
         return Stream.concat(first.getReferences(), last.getReferences());
     }
@@ -53,6 +51,14 @@ public class Range extends Expression implements Iterable<Cell> {
     @Override
     public Stream<Range> getRanges() {
         return Stream.of(this);
+    }
+
+    public Reference getFirst() {
+        return first;
+    }
+
+    public Reference getLast() {
+        return last;
     }
 
     @Override

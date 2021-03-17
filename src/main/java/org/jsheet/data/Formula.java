@@ -1,11 +1,8 @@
 package org.jsheet.data;
 
+import org.jsheet.expression.*;
 import org.jsheet.expression.evaluation.Result;
 import org.jsheet.expression.evaluation.Value;
-import org.jsheet.expression.EvaluationException;
-import org.jsheet.expression.Expression;
-import org.jsheet.expression.Range;
-import org.jsheet.expression.Reference;
 
 import java.util.Collections;
 import java.util.List;
@@ -81,8 +78,13 @@ public class Formula {
         references.forEach(r -> r.resolve(model));
     }
 
+    /**
+     * @return a copy of this formula with cell references
+     * shifted by {@code rowShift} and {@code columnShift} respectively.
+     */
     public Formula shift(JSheetTableModel model, int rowShift, int columnShift) {
-        Expression shiftedExpr = expression.shift(model, rowShift, columnShift);
+        ExpressionShifter shifter = new ExpressionShifter(model, rowShift, columnShift);
+        Expression shiftedExpr = expression.accept(shifter);
         List<Reference> references = shiftedExpr
             .getReferences()
             .collect(Collectors.toList());
@@ -91,6 +93,79 @@ public class Formula {
             .collect(Collectors.toList());
         String newDefinition = "= " + shiftedExpr.toString();
         return new Formula(newDefinition, shiftedExpr, references, ranges);
+    }
+
+    private static class ExpressionShifter implements ExpressionVisitor<Expression> {
+        final JSheetTableModel model;
+        final int rowShift;
+        final int columnShift;
+
+        private ExpressionShifter(JSheetTableModel model, int rowShift, int columnShift) {
+            this.model = model;
+            this.rowShift = rowShift;
+            this.columnShift = columnShift;
+        }
+
+        @Override
+        public Binop visit(Binop binop) {
+            return new Binop(
+                binop.getOp(),
+                binop.getLeft().accept(this),
+                binop.getRight().accept(this)
+            );
+        }
+
+        @Override
+        public Conditional visit(Conditional conditional) {
+            return new Conditional(
+                conditional.getCondition().accept(this),
+                conditional.getThenClause().accept(this),
+                conditional.getElseClause().accept(this)
+            );
+        }
+
+        @Override
+        public Function visit(Function function) {
+            List<Expression> shiftedArgs = function.getArgs().stream()
+                .map(arg -> arg.accept(this))
+                .collect(Collectors.toList());
+            return new Function(function.getName(), shiftedArgs);
+        }
+
+        @Override
+        public Literal visit(Literal literal) {
+            return literal; // Plain values are immutable
+        }
+
+        @Override
+        public Range visit(Range range) {
+            return new Range(
+                visit(range.getFirst()),
+                visit(range.getLast())
+            );
+        }
+
+        @Override
+        public Reference visit(Reference reference) {
+            if (!reference.isResolved()) {
+                // Leave unresolved references as-is. They only hold
+                // a string value, thus it's perfectly fine to re-use them
+                return reference;
+            }
+            Cell cell = reference.getCell();
+            boolean rowAbsolute = reference.isRowAbsolute();
+            boolean columnAbsolute = reference.isColumnAbsolute();
+            int shiftedRow = rowAbsolute ? cell.row : cell.row + rowShift;
+            int shiftedColumn = columnAbsolute ? cell.column : cell.column + columnShift;
+            if (!model.containsCell(shiftedRow, shiftedColumn))
+                return new Reference(Reference.OUT_OF_BOUNDS_REFERENCE_NAME, null, false, false);
+            Cell shiftedCell = new Cell(shiftedRow, shiftedColumn);
+            String shiftedName = (columnAbsolute ? "$" : "")
+                + model.getColumnName(shiftedCell.column)
+                + (rowAbsolute ? "$" : "")
+                + shiftedCell.row;
+            return new Reference(shiftedName, shiftedCell, rowAbsolute, columnAbsolute);
+        }
     }
 
     @Override

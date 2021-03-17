@@ -17,13 +17,13 @@ public class Literal extends Expression {
     }
 
     @Override
-    public Value eval(JSheetTableModel model) {
-        return value;
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 
     @Override
-    public Literal shift(JSheetTableModel model, int rowShift, int columnShift) {
-        return this; // Plain values are immutable
+    public Value eval(JSheetTableModel model) {
+        return value;
     }
 
     @Override
@@ -34,6 +34,10 @@ public class Literal extends Expression {
     @Override
     public Stream<Range> getRanges() {
         return Stream.empty();
+    }
+
+    public Value getValue() {
+        return value;
     }
 
     @Override

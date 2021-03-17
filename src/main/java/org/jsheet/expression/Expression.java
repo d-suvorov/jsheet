@@ -8,13 +8,9 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public abstract class Expression {
-    public abstract Value eval(JSheetTableModel model) throws EvaluationException;
+    public abstract <R> R accept(ExpressionVisitor<R> visitor);
 
-    /**
-     * @return a copy of this expression with cell references
-     * shifted by {@code rowShift} and {@code columnShift} respectively.
-     */
-    public abstract Expression shift(JSheetTableModel model, int rowShift, int columnShift);
+    public abstract Value eval(JSheetTableModel model) throws EvaluationException;
 
     public abstract Stream<Reference> getReferences();
 

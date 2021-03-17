@@ -22,6 +22,11 @@ public class Function extends Expression {
     }
 
     @Override
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
     public Value eval(JSheetTableModel model) throws EvaluationException {
         if (name.equals("pow")) {
             return evalPow(args, model);
@@ -95,14 +100,6 @@ public class Function extends Expression {
     }
 
     @Override
-    public Function shift(JSheetTableModel model, int rowShift, int columnShift) {
-        List<Expression> shiftedArgs = args.stream()
-            .map(e -> e.shift(model, rowShift, columnShift))
-            .collect(Collectors.toList());
-        return new Function(name, shiftedArgs);
-    }
-
-    @Override
     public Stream<Reference> getReferences() {
         return args.stream().flatMap(Expression::getReferences);
     }
@@ -110,6 +107,14 @@ public class Function extends Expression {
     @Override
     public Stream<Range> getRanges() {
         return args.stream().flatMap(Expression::getRanges);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<Expression> getArgs() {
+        return args;
     }
 
     @Override

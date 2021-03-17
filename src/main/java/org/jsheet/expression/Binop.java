@@ -23,6 +23,11 @@ public class Binop extends Expression {
     }
 
     @Override
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
     public Value eval(JSheetTableModel model) throws EvaluationException {
         Value leftValue = left.eval(model);
         Value rightValue = right.eval(model);
@@ -122,15 +127,6 @@ public class Binop extends Expression {
     }
 
     @Override
-    public Expression shift(JSheetTableModel model, int rowShift, int columnShift) {
-        return new Binop(
-            op,
-            left.shift(model, rowShift, columnShift),
-            right.shift(model, rowShift, columnShift)
-        );
-    }
-
-    @Override
     public Stream<Reference> getReferences() {
         return Stream.concat(left.getReferences(), right.getReferences());
     }
@@ -138,6 +134,18 @@ public class Binop extends Expression {
     @Override
     public Stream<Range> getRanges() {
         return Stream.concat(left.getRanges(), right.getRanges());
+    }
+
+    public String getOp() {
+        return op;
+    }
+
+    public Expression getLeft() {
+        return left;
+    }
+
+    public Expression getRight() {
+        return right;
     }
 
     @Override

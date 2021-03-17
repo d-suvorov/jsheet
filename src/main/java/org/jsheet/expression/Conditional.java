@@ -19,20 +19,16 @@ public class Conditional extends Expression {
     }
 
     @Override
+    public <R> R accept(ExpressionVisitor<R> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
     public Value eval(JSheetTableModel model) throws EvaluationException {
         Value condValue = condition.eval(model);
         typecheck(condValue, Type.BOOLEAN);
         Expression chosen = condValue.getAsBoolean() ? thenClause : elseClause;
         return chosen.eval(model);
-    }
-
-    @Override
-    public Expression shift(JSheetTableModel model, int rowShift, int columnShift) {
-        return new Conditional(
-            condition.shift(model, rowShift, columnShift),
-            thenClause.shift(model, rowShift, columnShift),
-            elseClause.shift(model, rowShift, columnShift)
-        );
     }
 
     @Override
@@ -45,6 +41,18 @@ public class Conditional extends Expression {
     public Stream<Range> getRanges() {
         return Stream.of(condition, thenClause, elseClause)
             .flatMap(Expression::getRanges);
+    }
+
+    public Expression getCondition() {
+        return condition;
+    }
+
+    public Expression getThenClause() {
+        return thenClause;
+    }
+
+    public Expression getElseClause() {
+        return elseClause;
     }
 
     @Override
