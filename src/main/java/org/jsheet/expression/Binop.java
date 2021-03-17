@@ -1,7 +1,7 @@
 package org.jsheet.expression;
 
-import org.jsheet.expression.evaluation.EvaluationException;
-import org.jsheet.expression.evaluation.EvaluationVisitor;
+import org.jsheet.evaluation.EvaluationException;
+import org.jsheet.evaluation.EvaluationVisitor;
 
 import java.util.Objects;
 import java.util.stream.Stream;

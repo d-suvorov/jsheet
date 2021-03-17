@@ -1,7 +1,7 @@
 package org.jsheet.expression;
 
-import org.jsheet.expression.evaluation.EvaluationException;
-import org.jsheet.expression.evaluation.EvaluationVisitor;
+import org.jsheet.evaluation.EvaluationException;
+import org.jsheet.evaluation.EvaluationVisitor;
 
 public class BooleanLiteral extends Literal {
     private final boolean value;

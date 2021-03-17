@@ -1,4 +1,4 @@
-package org.jsheet.expression.evaluation;
+package org.jsheet.evaluation;
 
 import org.jsheet.data.Cell;
 import org.jsheet.data.JSheetTableModel;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import static org.jsheet.expression.evaluation.Type.*;
+import static org.jsheet.evaluation.Type.*;
 
 public class Evaluator implements EvaluationVisitor<Value> {
     private final JSheetTableModel model;

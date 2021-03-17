@@ -1,8 +1,8 @@
 package org.jsheet.expression;
 
 import org.jsheet.data.Cell;
-import org.jsheet.expression.evaluation.EvaluationException;
-import org.jsheet.expression.evaluation.EvaluationVisitor;
+import org.jsheet.evaluation.EvaluationException;
+import org.jsheet.evaluation.EvaluationVisitor;
 
 import java.util.Iterator;
 import java.util.Objects;
