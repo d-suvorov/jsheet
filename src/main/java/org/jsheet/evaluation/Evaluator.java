@@ -50,18 +50,13 @@ public class Evaluator implements ExpressionVisitor<Result> {
             default:
                 throw new AssertionError();
         }
-        return left
-            .typecheck(DOUBLE)
-            .flatMap(l ->
-                right
-                    .typecheck(DOUBLE)
-                    .flatMap(r -> Result.success(
-                        Value.of(binary.apply(
-                            l.getAsDouble(),
-                            r.getAsDouble()
-                        ))
-                    ))
-            );
+        return Result.combine(
+            left.typecheck(DOUBLE),
+            right.typecheck(DOUBLE),
+            (l, r) -> Value.of(
+                binary.apply(l.getAsDouble(), r.getAsDouble())
+            )
+        );
     }
 
     private Result evalLogical(String op, Result left, Result right) {
@@ -76,18 +71,13 @@ public class Evaluator implements ExpressionVisitor<Result> {
             default:
                 throw new AssertionError();
         }
-        return left
-            .typecheck(BOOLEAN)
-            .flatMap(l ->
-                right
-                    .typecheck(BOOLEAN)
-                    .flatMap(r -> Result.success(
-                        Value.of(binary.apply(
-                            l.getAsBoolean(),
-                            r.getAsBoolean()
-                        ))
-                    ))
-            );
+        return Result.combine(
+            left.typecheck(BOOLEAN),
+            right.typecheck(BOOLEAN),
+            (l, r) -> Value.of(
+                binary.apply(l.getAsBoolean(), r.getAsBoolean())
+            )
+        );
     }
 
     @SuppressWarnings("Convert2MethodRef")
@@ -115,18 +105,13 @@ public class Evaluator implements ExpressionVisitor<Result> {
             default:
                 throw new AssertionError();
         }
-        return left
-            .typecheck(DOUBLE)
-            .flatMap(l ->
-                right
-                    .typecheck(DOUBLE)
-                    .flatMap(r -> Result.success(
-                        Value.of(binary.apply(
-                            l.getAsDouble(),
-                            r.getAsDouble()
-                        ))
-                    ))
-            );
+        return Result.combine(
+            left.typecheck(DOUBLE),
+            right.typecheck(DOUBLE),
+            (l, r) -> Value.of(
+                binary.apply(l.getAsDouble(), r.getAsDouble())
+            )
+        );
     }
 
     private boolean isArithmetic(String op) {
@@ -169,18 +154,14 @@ public class Evaluator implements ExpressionVisitor<Result> {
     private Result evalPow(List<Expression> args) {
         if (args.size() != 2)
             return Result.failure(wrongNumberOfArgumentsMessage("pow"));
-        return args.get(0).accept(this)
-            .typecheck(DOUBLE)
-            .flatMap(base ->
-                args.get(1).accept(this)
-                    .typecheck(DOUBLE)
-                    .flatMap(exp -> Result.success(
-                        Value.of(Math.pow(
-                            base.getAsDouble(),
-                            exp.getAsDouble()
-                        ))
-                    ))
-            );
+        Result base = args.get(0).accept(this);
+        Result exp = args.get(1).accept(this);
+        return Result.combine(
+            base, exp,
+            (b, e) -> Value.of(
+                Math.pow(b.getAsDouble(), e.getAsDouble())
+            )
+        );
     }
 
     private Result evalLength(List<Expression> args) {

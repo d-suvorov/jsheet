@@ -1,7 +1,7 @@
 package org.jsheet.evaluation;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 /**
@@ -67,7 +67,7 @@ public class Result {
         return new Result(null, message, false);
     }
 
-    public static Result combine(Result a, Result b, BiFunction<Value, Value, Value> combiner) {
+    public static Result combine(Result a, Result b, BinaryOperator<Value> combiner) {
         return a.flatMap(av ->
             b.flatMap(bv ->
                 Result.success(combiner.apply(av, bv))
