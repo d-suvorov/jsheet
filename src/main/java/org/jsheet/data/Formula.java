@@ -24,7 +24,7 @@ public class Formula {
     public Formula(String originalDefinition, Expression expression) {
         this.originalDefinition = originalDefinition;
         this.expression = expression;
-        this.references = expression.getReferences().collect(Collectors.toList());
+        this.references = ReferenceCollector.getReferences(expression);
         this.ranges = expression.getRanges().collect(Collectors.toList());
     }
 
@@ -85,12 +85,6 @@ public class Formula {
     public Formula shift(JSheetTableModel model, int rowShift, int columnShift) {
         ExpressionShifter shifter = new ExpressionShifter(model, rowShift, columnShift);
         Expression shiftedExpr = expression.accept(shifter);
-        List<Reference> references = shiftedExpr
-            .getReferences()
-            .collect(Collectors.toList());
-        List<Range> ranges = shiftedExpr
-            .getRanges()
-            .collect(Collectors.toList());
         String newDefinition = "= " + shiftedExpr.toString();
         return new Formula(newDefinition, shiftedExpr);
     }

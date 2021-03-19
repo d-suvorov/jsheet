@@ -32,11 +32,6 @@ public class Range extends Expression implements Iterable<Cell> {
     }
 
     @Override
-    public Stream<Reference> getReferences() {
-        return Stream.concat(first.getReferences(), last.getReferences());
-    }
-
-    @Override
     public Stream<Range> getRanges() {
         return Stream.of(this);
     }

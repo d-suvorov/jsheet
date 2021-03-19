@@ -10,7 +10,5 @@ public abstract class Expression {
 
     public abstract <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException;
 
-    public abstract Stream<Reference> getReferences();
-
     public abstract Stream<Range> getRanges();
 }

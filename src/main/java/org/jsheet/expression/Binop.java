@@ -28,11 +28,6 @@ public class Binop extends Expression {
     }
 
     @Override
-    public Stream<Reference> getReferences() {
-        return Stream.concat(left.getReferences(), right.getReferences());
-    }
-
-    @Override
     public Stream<Range> getRanges() {
         return Stream.concat(left.getRanges(), right.getRanges());
     }

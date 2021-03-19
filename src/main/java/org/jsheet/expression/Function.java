@@ -28,11 +28,6 @@ public class Function extends Expression {
     }
 
     @Override
-    public Stream<Reference> getReferences() {
-        return args.stream().flatMap(Expression::getReferences);
-    }
-
-    @Override
     public Stream<Range> getRanges() {
         return args.stream().flatMap(Expression::getRanges);
     }

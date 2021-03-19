@@ -28,12 +28,6 @@ public class Conditional extends Expression {
     }
 
     @Override
-    public Stream<Reference> getReferences() {
-        return Stream.of(condition, thenClause, elseClause)
-            .flatMap(Expression::getReferences);
-    }
-
-    @Override
     public Stream<Range> getRanges() {
         return Stream.of(condition, thenClause, elseClause)
             .flatMap(Expression::getRanges);

@@ -79,11 +79,6 @@ public class Reference extends Expression {
     }
 
     @Override
-    public Stream<Reference> getReferences() {
-        return Stream.of(this);
-    }
-
-    @Override
     public Stream<Range> getRanges() {
         return Stream.empty();
     }
