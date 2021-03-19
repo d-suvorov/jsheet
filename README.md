@@ -16,7 +16,8 @@ strings and ranges. The formula starts with `=` by convention and consists of:
   denoted with dollar-sign;
 - A range, comprised of two references, as in `A1:A10`;
 - A function call, such as `pow(2, A1)`;
-- Common mathematical operators (`+`, `-`, `*`, `/`), relational operators
+- Common mathematical operators (`+`, `-`, `*`, `/`), however, unary operators
+  are not supported, and relational operators
   (`==`, `!=`, `<`, `<=`, `>`, `>=`);
 - Conditional expressions, such as `if (A1 == 42) then "yay!" else 1`.
 
