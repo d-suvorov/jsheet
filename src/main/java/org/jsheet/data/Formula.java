@@ -25,7 +25,7 @@ public class Formula {
         this.originalDefinition = originalDefinition;
         this.expression = expression;
         this.references = ReferenceCollector.getReferences(expression);
-        this.ranges = expression.getRanges().collect(Collectors.toList());
+        this.ranges = RangeCollector.getRanges(expression);
     }
 
     /**

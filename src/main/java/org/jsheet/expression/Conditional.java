@@ -4,7 +4,6 @@ import org.jsheet.evaluation.EvaluationException;
 import org.jsheet.evaluation.EvaluationVisitor;
 
 import java.util.Objects;
-import java.util.stream.Stream;
 
 public class Conditional extends Expression {
     private final Expression condition;
@@ -25,12 +24,6 @@ public class Conditional extends Expression {
     @Override
     public <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException {
         return visitor.visit(this);
-    }
-
-    @Override
-    public Stream<Range> getRanges() {
-        return Stream.of(condition, thenClause, elseClause)
-            .flatMap(Expression::getRanges);
     }
 
     public Expression getCondition() {

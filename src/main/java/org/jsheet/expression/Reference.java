@@ -8,7 +8,6 @@ import org.jsheet.evaluation.EvaluationVisitor;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public class Reference extends Expression {
     private static final Pattern REFERENCE_PATTERN
@@ -76,11 +75,6 @@ public class Reference extends Expression {
             return null;
 
         return new Cell(rowIndex, columnIndex);
-    }
-
-    @Override
-    public Stream<Range> getRanges() {
-        return Stream.empty();
     }
 
     public String getName() {

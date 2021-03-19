@@ -4,7 +4,6 @@ import org.jsheet.evaluation.EvaluationException;
 import org.jsheet.evaluation.EvaluationVisitor;
 
 import java.util.Objects;
-import java.util.stream.Stream;
 
 public class Binop extends Expression {
     private final String op;
@@ -25,11 +24,6 @@ public class Binop extends Expression {
     @Override
     public <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException {
         return visitor.visit(this);
-    }
-
-    @Override
-    public Stream<Range> getRanges() {
-        return Stream.concat(left.getRanges(), right.getRanges());
     }
 
     public String getOp() {

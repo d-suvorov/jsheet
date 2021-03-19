@@ -6,7 +6,6 @@ import org.jsheet.evaluation.EvaluationVisitor;
 
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 public class Range extends Expression implements Iterable<Cell> {
     private final Reference first;
@@ -29,11 +28,6 @@ public class Range extends Expression implements Iterable<Cell> {
 
     public boolean isResolved() {
         return first.isResolved() && last.isResolved();
-    }
-
-    @Override
-    public Stream<Range> getRanges() {
-        return Stream.of(this);
     }
 
     public Reference getFirst() {

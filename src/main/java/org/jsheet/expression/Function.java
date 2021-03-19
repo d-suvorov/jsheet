@@ -6,7 +6,6 @@ import org.jsheet.evaluation.EvaluationVisitor;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Function extends Expression {
     private final String name;
@@ -25,11 +24,6 @@ public class Function extends Expression {
     @Override
     public <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException {
         return visitor.visit(this);
-    }
-
-    @Override
-    public Stream<Range> getRanges() {
-        return args.stream().flatMap(Expression::getRanges);
     }
 
     public String getName() {
