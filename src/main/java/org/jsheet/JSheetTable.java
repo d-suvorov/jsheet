@@ -123,7 +123,7 @@ public class JSheetTable extends JTable {
 
         void paste(int bufferRow, int bufferColumn, int dstRow, int dstColumn) {
             Value value = buffer[bufferRow][bufferColumn];
-            if (value.getTag() == Type.FORMULA) {
+            if (value != null && value.getTag() == Type.FORMULA) {
                 int rowShift = dstRow - (origin.row + bufferRow);
                 int columnShift = dstColumn - (origin.column + bufferColumn);
                 Formula shifted = value.getAsFormula().shift(model, rowShift, columnShift);
