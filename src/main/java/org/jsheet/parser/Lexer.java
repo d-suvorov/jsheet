@@ -136,16 +136,10 @@ public class Lexer {
                         sb.append(c1);
                         continue;
                     }
-                    // Test for escape sequence
+                    // Escape sequence
                     if (!hasNextChar())
                         throw new ParseException();
-                    char c2 = nextChar();
-                    if (c2 == '\"') {
-                        sb.append("\"");
-                    } else {
-                        sb.append(c1);
-                        sb.append(c2);
-                    }
+                    sb.append(nextChar());
                 }
                 if (!hasNextChar())
                     throw new ParseException();
