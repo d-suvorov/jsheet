@@ -111,8 +111,11 @@ public class JSheet extends JFrame {
 
     private void showWaitCursorWhile(Runnable task) {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        task.run();
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        try {
+            task.run();
+        } finally {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
     }
 
     private boolean save() {
