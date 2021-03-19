@@ -52,7 +52,7 @@ public class Formula {
      */
     public void eval(JSheetTableModel model) {
         try {
-            Value value = expression.evaluate(new Evaluator(model));
+            Value value = expression.accept(new Evaluator(model));
             result = Result.success(value);
         } catch (EvaluationException e) {
             result = Result.failure(e.getMessage());

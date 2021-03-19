@@ -10,7 +10,7 @@ import java.util.function.BiFunction;
 
 import static org.jsheet.evaluation.Type.*;
 
-public class Evaluator implements EvaluationVisitor<Value> {
+public class Evaluator implements ExpressionVisitor<Value> {
     private final JSheetTableModel model;
 
     public Evaluator(JSheetTableModel model) {
@@ -18,9 +18,9 @@ public class Evaluator implements EvaluationVisitor<Value> {
     }
 
     @Override
-    public Value visit(Binop binop) throws EvaluationException {
-        Value leftValue = binop.getLeft().evaluate(this);
-        Value rightValue = binop.getRight().evaluate(this);
+    public Value visit(Binop binop) {
+        Value leftValue = binop.getLeft().accept(this);
+        Value rightValue = binop.getRight().accept(this);
         String op = binop.getOp();
         if (isArithmetic(op))
             return evalArithmetic(op, leftValue, rightValue);
@@ -32,7 +32,7 @@ public class Evaluator implements EvaluationVisitor<Value> {
     }
 
     @SuppressWarnings("Convert2MethodRef")
-    private Value evalArithmetic(String op, Value left, Value right) throws EvaluationException {
+    private Value evalArithmetic(String op, Value left, Value right) {
         typecheck(left, DOUBLE);
         typecheck(right, DOUBLE);
         BiFunction<Double, Double, Double> binary;
@@ -56,7 +56,7 @@ public class Evaluator implements EvaluationVisitor<Value> {
         return Value.of(result);
     }
 
-    private Value evalLogical(String op, Value left, Value right) throws EvaluationException {
+    private Value evalLogical(String op, Value left, Value right) {
         typecheck(left, BOOLEAN);
         typecheck(right, BOOLEAN);
         BiFunction<Boolean, Boolean, Boolean> binary;
@@ -75,7 +75,7 @@ public class Evaluator implements EvaluationVisitor<Value> {
     }
 
     @SuppressWarnings("Convert2MethodRef")
-    private Value evalComparison(String op, Value left, Value right) throws EvaluationException {
+    private Value evalComparison(String op, Value left, Value right) {
         typecheck(left, DOUBLE);
         typecheck(right, DOUBLE);
         BiFunction<Double, Double, Boolean> binary;
@@ -118,17 +118,17 @@ public class Evaluator implements EvaluationVisitor<Value> {
     }
 
     @Override
-    public Value visit(Conditional conditional) throws EvaluationException {
-        Value condValue = conditional.getCondition().evaluate(this);
+    public Value visit(Conditional conditional) {
+        Value condValue = conditional.getCondition().accept(this);
         typecheck(condValue, Type.BOOLEAN);
         Expression chosen = condValue.getAsBoolean()
             ? conditional.getThenClause()
             : conditional.getElseClause();
-        return chosen.evaluate(this);
+        return chosen.accept(this);
     }
 
     @Override
-    public Value visit(Function function) throws EvaluationException {
+    public Value visit(Function function) {
         String name = function.getName();
         List<Expression> args = function.getArgs();
         if (name.equals("pow"))
@@ -140,7 +140,7 @@ public class Evaluator implements EvaluationVisitor<Value> {
         throw new EvaluationException("Unknown function: " + name);
     }
 
-    private Value evalPow(List<Expression> args) throws EvaluationException {
+    private Value evalPow(List<Expression> args) {
         checkArgumentsNumber("pow", 2, args.size());
         List<Value> values = evalArgs(args);
         typecheck(values, List.of(DOUBLE, DOUBLE));
@@ -150,17 +150,17 @@ public class Evaluator implements EvaluationVisitor<Value> {
         return Value.of(result);
     }
 
-    private Value evalLength(List<Expression> args) throws EvaluationException {
+    private Value evalLength(List<Expression> args) {
         checkArgumentsNumber("length", 1, args.size());
-        Value strValue = args.get(0).evaluate(this);
+        Value strValue = args.get(0).accept(this);
         typecheck(strValue, STRING);
         double result = strValue.getAsString().length();
         return Value.of(result);
     }
 
-    private Value evalSum(List<Expression> args) throws EvaluationException {
+    private Value evalSum(List<Expression> args) {
         checkArgumentsNumber("sum", 1, args.size());
-        Value range = args.get(0).evaluate(this);
+        Value range = args.get(0).accept(this);
         typecheck(range, RANGE);
         double sum = 0;
         for (var c : range.getAsRange()) {
@@ -174,19 +174,17 @@ public class Evaluator implements EvaluationVisitor<Value> {
         return Value.of(sum);
     }
 
-    private void checkArgumentsNumber(String name, int expected, int actual)
-        throws EvaluationException
-    {
+    private void checkArgumentsNumber(String name, int expected, int actual) {
         if (expected != actual) {
             String message = "Wrong number of arguments for function: " + name;
             throw new EvaluationException(message);
         }
     }
 
-    private List<Value> evalArgs(List<Expression> args) throws EvaluationException {
+    private List<Value> evalArgs(List<Expression> args) {
         List<Value> values = new ArrayList<>(args.size());
         for (var arg : args) {
-            values.add(arg.evaluate(this));
+            values.add(arg.accept(this));
         }
         return values;
     }
@@ -207,7 +205,7 @@ public class Evaluator implements EvaluationVisitor<Value> {
     }
 
     @Override
-    public Value visit(Range range) throws EvaluationException {
+    public Value visit(Range range) {
         Reference first = range.getFirst();
         Reference last = range.getLast();
         if (!first.isResolved())
@@ -226,7 +224,7 @@ public class Evaluator implements EvaluationVisitor<Value> {
     }
 
     @Override
-    public Value visit(Reference reference) throws EvaluationException {
+    public Value visit(Reference reference) {
         if (!reference.isResolved())
             throw new EvaluationException(unresolvedMessage(reference));
         Result result = model.getResultAt(reference.getCell());
@@ -239,17 +237,12 @@ public class Evaluator implements EvaluationVisitor<Value> {
         return String.format("Reference %s unresolved", reference.getName());
     }
 
-    /**
-     * Typechecks a list of values.
-     *
-     * @throws EvaluationException if types mismatch.
-     */
-    private void typecheck(List<Value> values, List<Type> types) throws EvaluationException {
+    private void typecheck(List<Value> values, List<Type> types) {
         for (int i = 0; i < values.size(); i++)
             typecheck(values.get(i), types.get(i));
     }
 
-    private void typecheck(Value value, Type type) throws EvaluationException {
+    private void typecheck(Value value, Type type) {
         if (value.getTag() != type) {
             String message = typeMismatchMessage(type, value.getTag());
             throw new EvaluationException(message);

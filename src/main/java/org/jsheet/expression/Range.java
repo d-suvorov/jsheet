@@ -1,8 +1,6 @@
 package org.jsheet.expression;
 
 import org.jsheet.data.Cell;
-import org.jsheet.evaluation.EvaluationException;
-import org.jsheet.evaluation.EvaluationVisitor;
 
 import java.util.Iterator;
 import java.util.Objects;
@@ -18,11 +16,6 @@ public class Range extends Expression implements Iterable<Cell> {
 
     @Override
     public <R> R accept(ExpressionVisitor<R> visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
-    public <R> R evaluate(EvaluationVisitor<R> visitor) throws EvaluationException {
         return visitor.visit(this);
     }
 
