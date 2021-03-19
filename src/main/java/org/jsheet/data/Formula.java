@@ -1,10 +1,8 @@
 package org.jsheet.data;
 
-import org.jsheet.expression.*;
-import org.jsheet.evaluation.EvaluationException;
 import org.jsheet.evaluation.Evaluator;
 import org.jsheet.evaluation.Result;
-import org.jsheet.evaluation.Value;
+import org.jsheet.expression.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -51,12 +49,7 @@ public class Formula {
      * the current expression.
      */
     public void eval(JSheetTableModel model) {
-        try {
-            Value value = expression.accept(new Evaluator(model));
-            result = Result.success(value);
-        } catch (EvaluationException e) {
-            result = Result.failure(e.getMessage());
-        }
+        result = expression.accept(new Evaluator(model));
     }
 
     /**

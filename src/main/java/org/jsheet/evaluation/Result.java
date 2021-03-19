@@ -1,6 +1,8 @@
 package org.jsheet.evaluation;
 
 import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Represent a computation result which is either
@@ -33,12 +35,44 @@ public class Result {
         throw new IllegalStateException();
     }
 
+    public Result map(Function<Value, Value> f) {
+        if (!isPresent())
+            return this;
+        return Result.success(f.apply(value));
+    }
+
+    public Result flatMap(Function<Value, Result> f) {
+        if (!isPresent())
+            return this;
+        return f.apply(value);
+    }
+
+    public Result typecheck(Type expected) {
+        if (!isPresent())
+            return this;
+        if (value.getTag() == expected)
+            return this;
+        return Result.failure(typeMismatchMessage(expected, value.getTag()));
+    }
+
+    private static String typeMismatchMessage(Type expected, Type actual) {
+        return String.format("Expected %s and got %s", expected.name(), actual.name());
+    }
+
     public static Result success(Value value) {
         return new Result(value, null, true);
     }
 
     public static Result failure(String message) {
         return new Result(null, message, false);
+    }
+
+    public static Result combine(Result a, Result b, BiFunction<Value, Value, Value> combiner) {
+        return a.flatMap(av ->
+            b.flatMap(bv ->
+                Result.success(combiner.apply(av, bv))
+            )
+        );
     }
 
     @Override

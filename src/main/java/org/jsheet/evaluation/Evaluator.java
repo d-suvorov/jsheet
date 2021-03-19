@@ -4,13 +4,13 @@ import org.jsheet.data.Cell;
 import org.jsheet.data.JSheetTableModel;
 import org.jsheet.expression.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.StreamSupport;
 
 import static org.jsheet.evaluation.Type.*;
 
-public class Evaluator implements ExpressionVisitor<Value> {
+public class Evaluator implements ExpressionVisitor<Result> {
     private final JSheetTableModel model;
 
     public Evaluator(JSheetTableModel model) {
@@ -18,23 +18,21 @@ public class Evaluator implements ExpressionVisitor<Value> {
     }
 
     @Override
-    public Value visit(Binop binop) {
-        Value leftValue = binop.getLeft().accept(this);
-        Value rightValue = binop.getRight().accept(this);
+    public Result visit(Binop binop) {
+        Result left = binop.getLeft().accept(this);
+        Result right = binop.getRight().accept(this);
         String op = binop.getOp();
         if (isArithmetic(op))
-            return evalArithmetic(op, leftValue, rightValue);
+            return evalArithmetic(op, left, right);
         if (isLogical(op))
-            return evalLogical(op, leftValue, rightValue);
+            return evalLogical(op, left, right);
         if (isComparison(op))
-            return evalComparison(op, leftValue, rightValue);
+            return evalComparison(op, left, right);
         throw new AssertionError();
     }
 
     @SuppressWarnings("Convert2MethodRef")
-    private Value evalArithmetic(String op, Value left, Value right) {
-        typecheck(left, DOUBLE);
-        typecheck(right, DOUBLE);
+    private Result evalArithmetic(String op, Result left, Result right) {
         BiFunction<Double, Double, Double> binary;
         switch (op) {
             case "+":
@@ -52,13 +50,21 @@ public class Evaluator implements ExpressionVisitor<Value> {
             default:
                 throw new AssertionError();
         }
-        Double result = binary.apply(left.getAsDouble(), right.getAsDouble());
-        return Value.of(result);
+        return left
+            .typecheck(DOUBLE)
+            .flatMap(l ->
+                right
+                    .typecheck(DOUBLE)
+                    .flatMap(r -> Result.success(
+                        Value.of(binary.apply(
+                            l.getAsDouble(),
+                            r.getAsDouble()
+                        ))
+                    ))
+            );
     }
 
-    private Value evalLogical(String op, Value left, Value right) {
-        typecheck(left, BOOLEAN);
-        typecheck(right, BOOLEAN);
+    private Result evalLogical(String op, Result left, Result right) {
         BiFunction<Boolean, Boolean, Boolean> binary;
         switch (op) {
             case "&&":
@@ -70,14 +76,22 @@ public class Evaluator implements ExpressionVisitor<Value> {
             default:
                 throw new AssertionError();
         }
-        Boolean result = binary.apply(left.getAsBoolean(), right.getAsBoolean());
-        return Value.of(result);
+        return left
+            .typecheck(BOOLEAN)
+            .flatMap(l ->
+                right
+                    .typecheck(BOOLEAN)
+                    .flatMap(r -> Result.success(
+                        Value.of(binary.apply(
+                            l.getAsBoolean(),
+                            r.getAsBoolean()
+                        ))
+                    ))
+            );
     }
 
     @SuppressWarnings("Convert2MethodRef")
-    private Value evalComparison(String op, Value left, Value right) {
-        typecheck(left, DOUBLE);
-        typecheck(right, DOUBLE);
+    private Result evalComparison(String op, Result left, Result right) {
         BiFunction<Double, Double, Boolean> binary;
         switch (op) {
             case "<":
@@ -101,8 +115,18 @@ public class Evaluator implements ExpressionVisitor<Value> {
             default:
                 throw new AssertionError();
         }
-        Boolean result = binary.apply(left.getAsDouble(), right.getAsDouble());
-        return Value.of(result);
+        return left
+            .typecheck(DOUBLE)
+            .flatMap(l ->
+                right
+                    .typecheck(DOUBLE)
+                    .flatMap(r -> Result.success(
+                        Value.of(binary.apply(
+                            l.getAsDouble(),
+                            r.getAsDouble()
+                        ))
+                    ))
+            );
     }
 
     private boolean isArithmetic(String op) {
@@ -118,17 +142,19 @@ public class Evaluator implements ExpressionVisitor<Value> {
     }
 
     @Override
-    public Value visit(Conditional conditional) {
-        Value condValue = conditional.getCondition().accept(this);
-        typecheck(condValue, Type.BOOLEAN);
-        Expression chosen = condValue.getAsBoolean()
-            ? conditional.getThenClause()
-            : conditional.getElseClause();
-        return chosen.accept(this);
+    public Result visit(Conditional conditional) {
+        return conditional.getCondition().accept(this)
+            .typecheck(Type.BOOLEAN)
+            .flatMap(v -> (
+                    v.getAsBoolean()
+                    ? conditional.getThenClause()
+                    : conditional.getElseClause()
+                ).accept(this)
+            );
     }
 
     @Override
-    public Value visit(Function function) {
+    public Result visit(Function function) {
         String name = function.getName();
         List<Expression> args = function.getArgs();
         if (name.equals("pow"))
@@ -137,119 +163,98 @@ public class Evaluator implements ExpressionVisitor<Value> {
             return evalLength(args);
         if (name.equals("sum"))
             return evalSum(args);
-        throw new EvaluationException("Unknown function: " + name);
+        return Result.failure("Unknown function: " + name);
     }
 
-    private Value evalPow(List<Expression> args) {
-        checkArgumentsNumber("pow", 2, args.size());
-        List<Value> values = evalArgs(args);
-        typecheck(values, List.of(DOUBLE, DOUBLE));
-        Value baseValue = values.get(0);
-        Value expValue = values.get(1);
-        double result = Math.pow(baseValue.getAsDouble(), expValue.getAsDouble());
-        return Value.of(result);
+    private Result evalPow(List<Expression> args) {
+        if (args.size() != 2)
+            return Result.failure(wrongNumberOfArgumentsMessage("pow"));
+        return args.get(0).accept(this)
+            .typecheck(DOUBLE)
+            .flatMap(base ->
+                args.get(1).accept(this)
+                    .typecheck(DOUBLE)
+                    .flatMap(exp -> Result.success(
+                        Value.of(Math.pow(
+                            base.getAsDouble(),
+                            exp.getAsDouble()
+                        ))
+                    ))
+            );
     }
 
-    private Value evalLength(List<Expression> args) {
-        checkArgumentsNumber("length", 1, args.size());
-        Value strValue = args.get(0).accept(this);
-        typecheck(strValue, STRING);
-        double result = strValue.getAsString().length();
-        return Value.of(result);
+    private Result evalLength(List<Expression> args) {
+        if (args.size() != 1)
+            return Result.failure(wrongNumberOfArgumentsMessage("length"));
+        return args.get(0).accept(this)
+            .typecheck(STRING)
+            .map(v -> Value.of((double) v.getAsString().length()));
     }
 
-    private Value evalSum(List<Expression> args) {
-        checkArgumentsNumber("sum", 1, args.size());
-        Value range = args.get(0).accept(this);
-        typecheck(range, RANGE);
-        double sum = 0;
-        for (var c : range.getAsRange()) {
-            Result res = model.getResultAt(c);
-            if (!res.isPresent())
-                throw new EvaluationException(res.message());
-            Value addend = res.get();
-            typecheck(addend, DOUBLE);
-            sum += addend.getAsDouble();
-        }
-        return Value.of(sum);
+    private Result evalSum(List<Expression> args) {
+        if (args.size() != 1)
+            return Result.failure(wrongNumberOfArgumentsMessage("sum"));
+        return args.get(0).accept(this)
+            .typecheck(RANGE)
+            .flatMap(range -> StreamSupport
+                .stream(range.getAsRange().spliterator(), false)
+                .map(model::getResultAt)
+                .map(r -> r.typecheck(DOUBLE))
+                .reduce(
+                    Result.success(Value.of(0.)),
+                    (acc, e) -> Result.combine(acc, e, (accVal, eVal) ->
+                        Value.of(accVal.getAsDouble() + eVal.getAsDouble())
+                    )
+                )
+            );
     }
 
-    private void checkArgumentsNumber(String name, int expected, int actual) {
-        if (expected != actual) {
-            String message = "Wrong number of arguments for function: " + name;
-            throw new EvaluationException(message);
-        }
-    }
-
-    private List<Value> evalArgs(List<Expression> args) {
-        List<Value> values = new ArrayList<>(args.size());
-        for (var arg : args) {
-            values.add(arg.accept(this));
-        }
-        return values;
-    }
-
-    @Override
-    public Value visit(BooleanLiteral literal) {
-        return Value.of(literal.getValue());
+    private String wrongNumberOfArgumentsMessage(String name) {
+        return "Wrong number of arguments for function: " + name;
     }
 
     @Override
-    public Value visit(DoubleLiteral literal) {
-        return Value.of(literal.getValue());
+    public Result visit(BooleanLiteral literal) {
+        return Result.success(Value.of(literal.getValue()));
     }
 
     @Override
-    public Value visit(StringLiteral literal) {
-        return Value.of(literal.getValue());
+    public Result visit(DoubleLiteral literal) {
+        return Result.success(Value.of(literal.getValue()));
     }
 
     @Override
-    public Value visit(Range range) {
+    public Result visit(StringLiteral literal) {
+        return Result.success(Value.of(literal.getValue()));
+    }
+
+    @Override
+    public Result visit(Range range) {
         Reference first = range.getFirst();
         Reference last = range.getLast();
         if (!first.isResolved())
-            throw new EvaluationException(unresolvedMessage(first));
+            return Result.failure(unresolvedMessage(first));
         if (!last.isResolved())
-            throw new EvaluationException(unresolvedMessage(last));
+            return Result.failure(unresolvedMessage(last));
         Cell firstCell = first.getCell();
         Cell lastCell = last.getCell();
         if (firstCell.getRow() > lastCell.getRow()
             || firstCell.getColumn() > lastCell.getColumn())
         {
-            throw new EvaluationException("Incorrect range: " + range);
+            return Result.failure("Incorrect range: " + range);
         }
         RangeValue result = new RangeValue(firstCell, lastCell, range.toString());
-        return Value.of(result);
+        return Result.success(Value.of(result));
     }
 
     @Override
-    public Value visit(Reference reference) {
+    public Result visit(Reference reference) {
         if (!reference.isResolved())
-            throw new EvaluationException(unresolvedMessage(reference));
-        Result result = model.getResultAt(reference.getCell());
-        if (!result.isPresent())
-            throw new EvaluationException(result.message());
-        return result.get();
+            return Result.failure(unresolvedMessage(reference));
+        return model.getResultAt(reference.getCell());
     }
 
     private String unresolvedMessage(Reference reference) {
         return String.format("Reference %s unresolved", reference.getName());
-    }
-
-    private void typecheck(List<Value> values, List<Type> types) {
-        for (int i = 0; i < values.size(); i++)
-            typecheck(values.get(i), types.get(i));
-    }
-
-    private void typecheck(Value value, Type type) {
-        if (value.getTag() != type) {
-            String message = typeMismatchMessage(type, value.getTag());
-            throw new EvaluationException(message);
-        }
-    }
-
-    private String typeMismatchMessage(Type expected, Type actual) {
-        return String.format("Expected %s and got %s", expected.name(), actual.name());
     }
 }
