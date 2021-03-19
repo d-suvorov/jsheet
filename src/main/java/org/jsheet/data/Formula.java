@@ -21,13 +21,11 @@ public class Formula {
 
     private Result result;
 
-    public Formula(String originalDefinition, Expression expression,
-        List<Reference> references, List<Range> ranges)
-    {
+    public Formula(String originalDefinition, Expression expression) {
         this.originalDefinition = originalDefinition;
         this.expression = expression;
-        this.references = references;
-        this.ranges = ranges;
+        this.references = expression.getReferences().collect(Collectors.toList());
+        this.ranges = expression.getRanges().collect(Collectors.toList());
     }
 
     /**
@@ -94,7 +92,7 @@ public class Formula {
             .getRanges()
             .collect(Collectors.toList());
         String newDefinition = "= " + shiftedExpr.toString();
-        return new Formula(newDefinition, shiftedExpr, references, ranges);
+        return new Formula(newDefinition, shiftedExpr);
     }
 
     private static class ExpressionShifter implements ExpressionVisitor<Expression> {

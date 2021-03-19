@@ -19,7 +19,7 @@ public class ParserUtils {
         Lexer lexer = new Lexer(formula);
         Parser parser = new Parser(lexer);
         Expression expr = parser.parse();
-        return new Formula(definition, expr, parser.getReferences(), parser.getRanges());
+        return new Formula(definition, expr);
     }
 
     private static Value parseLiteral(String strValue) {

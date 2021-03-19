@@ -12,19 +12,8 @@ public class Parser {
     private final Lexer lexer;
     private Lexer.Token current;
 
-    private final List<Reference> references = new ArrayList<>();
-    private final List<Range> ranges = new ArrayList<>();
-
     public Parser(Lexer lexer) {
         this.lexer = lexer;
-    }
-
-    public List<Reference> getReferences() {
-        return references;
-    }
-
-    public List<Range> getRanges() {
-        return ranges;
     }
 
     public Expression parse() throws ParseException {
@@ -130,7 +119,7 @@ public class Parser {
                 } else if (current == LPAREN) {
                     return function(name);
                 } else {
-                    return reference(name);
+                    return new Reference(name);
                 }
             }
             case IF: return conditional();
@@ -167,9 +156,6 @@ public class Parser {
         Reference first = new Reference(firstName);
         Reference last = new Reference(lexer.currentId());
         Range range = new Range(first, last);
-        references.add(first);
-        references.add(last);
-        ranges.add(range);
         readNextToken();
         return range;
     }
@@ -191,12 +177,6 @@ public class Parser {
             throw new ParseException();
         readNextToken();
         return new Function(name, args);
-    }
-
-    private Expression reference(String name) {
-        Reference ref = new Reference(name);
-        references.add(ref);
-        return ref;
     }
 
     private Conditional conditional() throws ParseException {
