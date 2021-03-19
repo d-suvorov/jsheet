@@ -3,7 +3,7 @@ package org.jsheet.expression;
 import org.jsheet.evaluation.EvaluationException;
 import org.jsheet.evaluation.EvaluationVisitor;
 
-public class BooleanLiteral extends Literal {
+public class BooleanLiteral extends Expression {
     private final boolean value;
 
     public BooleanLiteral(boolean value) {

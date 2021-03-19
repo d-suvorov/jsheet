@@ -5,7 +5,7 @@ import org.jsheet.evaluation.EvaluationVisitor;
 
 import java.util.Objects;
 
-public class StringLiteral extends Literal {
+public class StringLiteral extends Expression {
     private final String value;
 
     public StringLiteral(String value) {

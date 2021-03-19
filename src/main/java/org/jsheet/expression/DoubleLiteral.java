@@ -3,7 +3,7 @@ package org.jsheet.expression;
 import org.jsheet.evaluation.EvaluationException;
 import org.jsheet.evaluation.EvaluationVisitor;
 
-public class DoubleLiteral extends Literal {
+public class DoubleLiteral extends Expression {
     private final double value;
 
     public DoubleLiteral(double value) {
