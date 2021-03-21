@@ -10,27 +10,26 @@ import static org.jsheet.parser.Lexer.Token.*;
 
 public class Parser {
     private final Lexer lexer;
-    private Lexer.Token current;
 
     public Parser(Lexer lexer) {
         this.lexer = lexer;
     }
 
     public Expression parse() throws ParseException {
-        readNextToken();
-        if (current == END)
+        lexer.next();
+        if (lexer.current() == END)
             throw new ParseException();
         Expression expression = or();
-        if (current != END)
+        if (lexer.current() != END)
             throw new ParseException();
         return expression;
     }
 
     private Expression or() throws ParseException {
         Expression expr = and();
-        while (current == OR) {
-            String op = current.binop();
-            readNextToken();
+        while (lexer.current() == OR) {
+            String op = lexer.current().binop();
+            lexer.next();
             Expression term = and();
             expr = new Binop(op, expr, term);
         }
@@ -39,9 +38,9 @@ public class Parser {
 
     private Expression and() throws ParseException {
         Expression expr = comparison();
-        while (current == AND) {
-            String op = current.binop();
-            readNextToken();
+        while (lexer.current() == AND) {
+            String op = lexer.current().binop();
+            lexer.next();
             Expression term = comparison();
             expr = new Binop(op, expr, term);
         }
@@ -50,11 +49,11 @@ public class Parser {
 
     private Expression comparison() throws ParseException {
         Expression expr = sum();
-        while (current == EQ || current == NE || current == LT
-            || current == LE || current == GT || current == GE)
+        while (lexer.current() == EQ || lexer.current() == NE || lexer.current() == LT
+            || lexer.current() == LE || lexer.current() == GT || lexer.current() == GE)
         {
-            String op = current.binop();
-            readNextToken();
+            String op = lexer.current().binop();
+            lexer.next();
             Expression term = sum();
             expr = new Binop(op, expr, term);
         }
@@ -63,9 +62,9 @@ public class Parser {
 
     private Expression sum() throws ParseException {
         Expression expr = product();
-        while (current == PLUS || current == MINUS) {
-            String op = current.binop();
-            readNextToken();
+        while (lexer.current() == PLUS || lexer.current() == MINUS) {
+            String op = lexer.current().binop();
+            lexer.next();
             Expression term = product();
             expr = new Binop(op, expr, term);
         }
@@ -74,9 +73,9 @@ public class Parser {
 
     private Expression product() throws ParseException  {
         Expression expr = factor();
-        while (current == MUL || current == DIV) {
-            String op = current.binop();
-            readNextToken();
+        while (lexer.current() == MUL || lexer.current() == DIV) {
+            String op = lexer.current().binop();
+            lexer.next();
             Expression term = factor();
             expr = new Binop(op, expr, term);
         }
@@ -84,21 +83,21 @@ public class Parser {
     }
 
     private Expression factor() throws ParseException {
-        switch (current) {
+        switch (lexer.current()) {
             case BOOL: return literal(lexer.currentBool());
             case NUM: return literal(lexer.currentNum());
             case MINUS: {
-                readNextToken();
-                if (current != NUM) throw new ParseException();
+                lexer.next();
+                if (lexer.current() != NUM) throw new ParseException();
                 return literal(-lexer.currentNum());
             }
             case STR: return literal(lexer.currentString());
             case ID: {
                 String name = lexer.currentId();
-                readNextToken();
-                if (current == COLON) {
+                lexer.next();
+                if (lexer.current() == COLON) {
                     return range(name);
-                } else if (current == LPAREN) {
+                } else if (lexer.current() == LPAREN) {
                     return function(name);
                 } else {
                     return new Reference(name);
@@ -106,11 +105,9 @@ public class Parser {
             }
             case IF: return conditional();
             case LPAREN: {
-                readNextToken();
+                lexer.next();
                 Expression expr = or();
-                if (current != RPAREN)
-                    throw new ParseException();
-                readNextToken();
+                lexer.match(RPAREN);
                 return expr;
             }
         }
@@ -118,65 +115,55 @@ public class Parser {
     }
 
     private BooleanLiteral literal(boolean value) throws ParseException {
-        readNextToken();
+        lexer.next();
         return new BooleanLiteral(value);
     }
 
     private DoubleLiteral literal(double value) throws ParseException {
-        readNextToken();
+        lexer.next();
         return new DoubleLiteral(value);
     }
 
     private StringLiteral literal(String value) throws ParseException {
-        readNextToken();
+        lexer.next();
         return new StringLiteral(value);
     }
 
     private Expression range(String firstName) throws ParseException {
-        readNextToken();
-        if (current != ID)
+        lexer.next();
+        if (lexer.current() != ID)
             throw new ParseException();
         Reference first = new Reference(firstName);
         Reference last = new Reference(lexer.currentId());
         Range range = new Range(first, last);
-        readNextToken();
+        lexer.next();
         return range;
     }
 
     private Expression function(String name) throws ParseException {
-        readNextToken();
-        if (current == RPAREN) {
-            readNextToken();
+        lexer.next();
+        if (lexer.current() == RPAREN) {
+            lexer.next();
             return new Function(name, Collections.emptyList());
         }
         List<Expression> args = new ArrayList<>();
         while (true) {
             args.add(or());
-            if (current != COMMA)
+            if (lexer.current() != COMMA)
                 break;
-            readNextToken();
+            lexer.next();
         }
-        if (current != RPAREN)
-            throw new ParseException();
-        readNextToken();
+        lexer.match(RPAREN);
         return new Function(name, args);
     }
 
     private Conditional conditional() throws ParseException {
-        readNextToken();
+        lexer.next();
         Expression condition = or();
-        if (current != THEN)
-            throw new ParseException();
-        readNextToken();
+        lexer.match(THEN);
         Expression thenClause = or();
-        if (current != ELSE)
-            throw new ParseException();
-        readNextToken();
+        lexer.match(ELSE);
         Expression elseClause = or();
         return new Conditional(condition, thenClause, elseClause);
-    }
-
-    private void readNextToken() throws ParseException {
-        current = lexer.next();
     }
 }

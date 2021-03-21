@@ -43,6 +43,7 @@ public class Lexer {
     private final CharSequence input;
     private int position;
 
+    private Token current;
     private String currentId;
     private boolean currentBool;
     private double currentNum;
@@ -51,6 +52,10 @@ public class Lexer {
     public Lexer(CharSequence input) {
         this.input = input;
         this.position = 0;
+    }
+
+    public Token current() {
+        return current;
     }
 
     public String currentId() {
@@ -70,6 +75,16 @@ public class Lexer {
     }
 
     public Token next() throws ParseException {
+        return current = nextImpl();
+    }
+
+    public void match(Token expected) throws ParseException {
+        if (current != expected)
+            throw new ParseException();
+        next();
+    }
+
+    private Token nextImpl() throws ParseException {
         char c;
         do {
             if (!hasNextChar())
