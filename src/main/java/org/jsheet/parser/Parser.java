@@ -20,88 +20,67 @@ public class Parser {
         readNextToken();
         if (current == END)
             throw new ParseException();
-        return or(true);
+        return or();
     }
 
-    /**
-     * Reads the next token after.
-     * @param read is the first token of the expression read.
-     */
-    private Expression or(boolean read) throws ParseException {
-        Expression expr = and(read);
+    private Expression or() throws ParseException {
+        Expression expr = and();
         while (current == OR) {
             String op = current.binop();
-            Expression term = and(false);
+            readNextToken();
+            Expression term = and();
             expr = new Binop(op, expr, term);
         }
         return expr;
     }
 
-    /**
-     * Reads the next token after.
-     * @param read is the first token of the expression read.
-     */
-    private Expression and(boolean read) throws ParseException {
-        Expression expr = comparison(read);
+    private Expression and() throws ParseException {
+        Expression expr = comparison();
         while (current == AND) {
             String op = current.binop();
-            Expression term = comparison(false);
+            readNextToken();
+            Expression term = comparison();
             expr = new Binop(op, expr, term);
         }
         return expr;
     }
 
-    /**
-     * Reads the next token after.
-     * @param read is the first token of the expression read.
-     */
-    private Expression comparison(boolean read) throws ParseException {
-        Expression expr = sum(read);
+    private Expression comparison() throws ParseException {
+        Expression expr = sum();
         while (current == EQ || current == NE || current == LT
             || current == LE || current == GT || current == GE)
         {
             String op = current.binop();
-            Expression term = sum(false);
+            readNextToken();
+            Expression term = sum();
             expr = new Binop(op, expr, term);
         }
         return expr;
     }
 
-    /**
-     * Reads the next token after.
-     * @param read is the first token of the expression read.
-     */
-    private Expression sum(boolean read) throws ParseException {
-        Expression expr = product(read);
+    private Expression sum() throws ParseException {
+        Expression expr = product();
         while (current == PLUS || current == MINUS) {
             String op = current.binop();
-            Expression term = product(false);
+            readNextToken();
+            Expression term = product();
             expr = new Binop(op, expr, term);
         }
         return expr;
     }
 
-    /**
-     * Reads the next token after.
-     * @param read is the first token of the expression read.
-     */
-    private Expression product(boolean read) throws ParseException  {
-        Expression expr = factor(read);
+    private Expression product() throws ParseException  {
+        Expression expr = factor();
         while (current == MUL || current == DIV) {
             String op = current.binop();
-            Expression term = factor(false);
+            readNextToken();
+            Expression term = factor();
             expr = new Binop(op, expr, term);
         }
         return expr;
     }
 
-    /**
-     * Reads the next token after.
-     * @param read is the first token of the expression read.
-     */
-    private Expression factor(boolean read) throws ParseException {
-        if (!read)
-            readNextToken();
+    private Expression factor() throws ParseException {
         switch (current) {
             case BOOL: return literal(lexer.currentBool());
             case NUM: return literal(lexer.currentNum());
@@ -124,7 +103,8 @@ public class Parser {
             }
             case IF: return conditional();
             case LPAREN: {
-                Expression expr = or(false);
+                readNextToken();
+                Expression expr = or();
                 if (current != RPAREN)
                     throw new ParseException();
                 readNextToken();
@@ -168,7 +148,7 @@ public class Parser {
         }
         List<Expression> args = new ArrayList<>();
         while (true) {
-            args.add(or(true));
+            args.add(or());
             if (current != COMMA)
                 break;
             readNextToken();
@@ -180,13 +160,16 @@ public class Parser {
     }
 
     private Conditional conditional() throws ParseException {
-        Expression condition = or(false);
+        readNextToken();
+        Expression condition = or();
         if (current != THEN)
             throw new ParseException();
-        Expression thenClause = or(false);
+        readNextToken();
+        Expression thenClause = or();
         if (current != ELSE)
             throw new ParseException();
-        Expression elseClause = or(false);
+        readNextToken();
+        Expression elseClause = or();
         return new Conditional(condition, thenClause, elseClause);
     }
 
