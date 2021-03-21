@@ -16,8 +16,7 @@ public class Parser {
     }
 
     public Expression parse() throws ParseException {
-        lexer.next();
-        if (lexer.current() == END)
+        if (lexer.next() == END)
             throw new ParseException();
         Expression expression = or();
         if (lexer.current() != END)
@@ -49,9 +48,7 @@ public class Parser {
 
     private Expression comparison() throws ParseException {
         Expression expr = sum();
-        while (lexer.current() == EQ || lexer.current() == NE || lexer.current() == LT
-            || lexer.current() == LE || lexer.current() == GT || lexer.current() == GE)
-        {
+        while (List.of(EQ, NE, LT, LE, GT, GE).contains(lexer.current())) {
             String op = lexer.current().binop();
             lexer.next();
             Expression term = sum();
@@ -87,8 +84,7 @@ public class Parser {
             case BOOL: return literal(lexer.currentBool());
             case NUM: return literal(lexer.currentNum());
             case MINUS: {
-                lexer.next();
-                if (lexer.current() != NUM) throw new ParseException();
+                if (lexer.next() != NUM) throw new ParseException();
                 return literal(-lexer.currentNum());
             }
             case STR: return literal(lexer.currentString());
@@ -130,8 +126,7 @@ public class Parser {
     }
 
     private Expression range(String firstName) throws ParseException {
-        lexer.next();
-        if (lexer.current() != ID)
+        if (lexer.next() != ID)
             throw new ParseException();
         Reference first = new Reference(firstName);
         Reference last = new Reference(lexer.currentId());
@@ -141,8 +136,7 @@ public class Parser {
     }
 
     private Expression function(String name) throws ParseException {
-        lexer.next();
-        if (lexer.current() == RPAREN) {
+        if (lexer.next() == RPAREN) {
             lexer.next();
             return new Function(name, Collections.emptyList());
         }
