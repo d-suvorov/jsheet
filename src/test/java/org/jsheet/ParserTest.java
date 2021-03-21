@@ -11,13 +11,19 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ParserTest {
+    private Expression parse(String input) throws ParseException {
+        Lexer lexer = new Lexer(input);
+        Parser parser = new Parser(lexer);
+        return parser.parse();
+    }
+
     private void testParserImpl(String input, Expression expected) {
         try {
-            Lexer lexer = new Lexer(input);
-            Parser parser = new Parser(lexer);
-            assertEquals(expected, parser.parse());
+            Expression actual = parse(input);
+            assertEquals(expected, actual);
         } catch (ParseException ignored) {
             Assertions.fail("should be correctly parsed");
         }
@@ -133,5 +139,11 @@ public class ParserTest {
     public void conditional() {
         Expression expected = new Conditional(lit(true), lit(42), lit(43));
         testParserImpl("if true then 42 else 43", expected);
+    }
+
+    @Test
+    public void tooMuch() {
+        assertThrows(ParseException.class, () -> parse("1+2)"));
+        assertThrows(ParseException.class, () -> parse("1+2("));
     }
 }

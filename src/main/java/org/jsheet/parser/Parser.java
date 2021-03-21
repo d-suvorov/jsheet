@@ -20,7 +20,10 @@ public class Parser {
         readNextToken();
         if (current == END)
             throw new ParseException();
-        return or();
+        Expression expression = or();
+        if (current != END)
+            throw new ParseException();
+        return expression;
     }
 
     private Expression or() throws ParseException {
